@@ -1,174 +1,236 @@
-<div id="rolyfe"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RO'Lyfe Market Terminal</title>
+<script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
-#rolyfe{background:#0f172a;color:#e2e8f0;font-family:Arial,sans-serif;padding:15px;}
-.top-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;}
-select{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none;cursor:pointer;}
-#score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;}
-#heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px;}
-.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer;}
-.alert{position:fixed;top:15px;right:15px;padding:10px 14px;border-radius:8px;color:#fff;font-weight:bold;z-index:999;animation:slideIn 0.5s;}
-@keyframes slideIn {from {opacity:0; transform:translateY(-20px);} to {opacity:1; transform:translateY(0);}}
-.links{margin-top:20px;font-size:13px;line-height:1.5;}
-.links a{color:#38bdf8;text-decoration:none;}
-.links a:hover{text-decoration:underline;}
-.full-watchlist{margin-top:10px;font-size:12px;line-height:1.4;}
+html, body {
+  margin:0;
+  padding:0;
+  background: radial-gradient(circle at top, #020617, #020617 40%, #000000);
+  color:#e2e8f0;
+  font-family:Arial, sans-serif;
+  min-height:100vh;
+}
+
+#rolyfe{
+  background:#0f172a;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 0 40px rgba(34,197,94,0.15);
+}
+
+.top-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+select{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none}
+#score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer}
+#heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer}
+.alert{position:fixed;top:15px;right:15px;padding:10px 14px;border-radius:8px;color:#fff;font-weight:bold;z-index:999;opacity:0.95;transition:all 0.4s}
+h4,h5{margin:8px 0 4px 0;}
+a{color:#38bdf8;text-decoration:none}
+a:hover{text-decoration:underline}
 </style>
+</head>
+<body>
+<div id="rolyfe">
+  <div class="top-bar">
+    <select onchange="setSymbol(this.value)">
+      <option value="">Select Symbol</option>
+      <option>AAPL</option><option>TSLA</option><option>MSFT</option><option>NVDA</option>
+    </select>
+    <select onchange="setMode(this.value)">
+      <option value="live">LIVE MODE</option>
+      <option value="sniper">SNIPER MODE</option>
+    </select>
+  </div>
 
-<div class="top-bar">
-<select onchange="setSymbol(this.value)">
-<option value="">Select Symbol</option>
-<option>AAPL</option><option>TSLA</option><option>MSFT</option><option>NVDA</option>
-<option>AMZN</option><option>META</option><option>GOOGL</option><option>SPY</option>
-</select>
+  <div id="score-bar"></div>
+  <div id="tv_chart"></div>
+
+  <h4>Heatmap</h4>
+  <div id="heatmap"></div>
+
+  <h5>Market & Tools Links</h5>
+  <ul>
+    <li><a href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX" target="_blank">Market Posture - Major Market Analysis</a></li>
+    <li><a href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF" target="_blank">Market Posture - Sector Rotation</a></li>
+    <li><a href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000,sh_opt_optionshort,sh_price_o10,ta_sma200_pa,ta_sma50_pa&o=-perf4w" target="_blank">FinViz Bullish Screener</a></li>
+    <li><a href="https://www.marketwatch.com/economy-politics/calendar" target="_blank">MarketWatch Economic Calendar</a></li>
+    <li><a href="https://finviz.com/map.ashx?t=sec" target="_blank">S&P 500 Heat Map</a></li>
+    <li><a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank">The FedWatch - Interest Rate Tool</a></li>
+    <li><a href="https://finance.yahoo.com/" target="_blank">Yahoo! Finance</a></li>
+  </ul>
 </div>
 
-<div id="score-bar"></div>
-<div id="tv_chart" style="margin-top:15px;"></div>
-
-<h4>Heatmap</h4>
-<div id="heatmap"></div>
-
-<div class="full-watchlist">
-<strong>Watchlist (updated 12/18/25):</strong><br>
-AAPL AMKR AMZN APH ASX AVGO AXP BAC BK C CAT CIEN CLS COHR CRDO CSCO DAL DIA FOXA FSLR GE GLD GM GOOGL GS GTX HWM IBM INTC IWM JCI JNJ LITE LLY LRCX M MA META MS MSFT MU NFLX NVDA NXT PLTR QQQ REAL RKLB ROKU ROST RTX SLV SNDK SOFI SPY STX TER TJX TSLA TSM UUP VIX W WBD WDC WMT XLB XLC XLE XLF XLI XLK XLP XLU XLV XLY
-</div>
-
-<div class="links">
-<strong>Market Posture - Major Market Analysis:</strong><br>
-<a href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX" target="_blank">PerfCharts | StockCharts.com</a><br><br>
-
-<strong>Market Posture - Sector Rotation:</strong><br>
-<a href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF" target="_blank">Sector Rotation</a><br><br>
-
-<strong>FinViz Basic Bullish Search Parameters:</strong><br>
-<a href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000,sh_opt_optionshort,sh_price_o10,ta_sma200_pa,ta_sma50_pa&o=-perf4w" target="_blank">FinViz Screener</a><br>
-<a href="https://www.marketwatch.com/economy-politics/calendar" target="_blank">MarketWatch Economic Calendar</a><br><br>
-
-<strong>S&P 500 Heat Map:</strong><br>
-<a href="https://finviz.com/map.ashx?t=sec" target="_blank">FinViz Heat Map</a><br><br>
-
-<strong>The FedWatch - Interest Rate Monitoring Tool:</strong><br>
-<a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank">CME FedWatch Tool</a><br><br>
-
-<strong>Yahoo! Finance (Opening Futures and News):</strong><br>
-<a href="https://finance.yahoo.com/" target="_blank">Yahoo Finance</a>
-</div>
-
-<div class="full-heatmap" style="margin-top:15px;">
-<h4>Example Heatmap Values:</h4>
-AAPL28 AMZN82 TSLA81 NVDA48 MSFT45 META14 GOOGL74 SPY68 QQQ30 BAC20 JPM96 GS82 XLF68 XLE93 XLK26 XLV6 XLY68
-</div>
-
-<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-let symbol="AAPL";
-let tf="D";
+let symbol = "AAPL";
+let tf = "D";
 let widget;
-const watchlist = ["AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR","CRDO","CSCO","DAL","DIA","FOXA","FSLR","GE","GLD","GM","GOOGL","GS","GTX","HWM","IBM","INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX","NVDA","NXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX","TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI","XLK","XLP","XLU","XLV","XLY"];
+let mode = "live";
 
+const watchlist = [
+"AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR",
+"CRDO","CSCO","DAL","DIA","FOXA","FSLR","GEGLD","GM","GOOGL","GS","GTX","HWM","IBM",
+"INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX",
+"NVDANXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX",
+"TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI",
+"XLK","XLP","XLU","XLV","XLY"
+];
+
+// STORE SIGNALS
 let signals = {};
 let lastAlertTime = {};
 let alertQueue = [];
 let showingAlert = false;
-const API_KEY="KB8VDDU1NHB0E3OJ";
 
-// FALLBACK SIMULATION
-function calcSignal(sym){
-  let macd=Math.random()*2-1;
-  let signal=Math.random()*2-1;
-  let rsi=Math.floor(Math.random()*100);
-  let stochastic=Math.floor(Math.random()*100);
-  let atr=Math.floor(Math.random()*10);
-  let trend="NEUTRAL", action="WAIT";
-  if(macd>signal && rsi>40 && rsi<70){trend="UPTREND"; action="BUY";}
-  if(macd<signal && rsi>70){trend="DOWNTREND"; action="SELL";}
-  return {macd,signal,rsi,trend,action,stochastic,atr};
-}
+// 🔥 FETCH REAL RSI + MACD + STOCH + ATR (AlphaVantage)
+const API_KEY = "KB8VDDU1NHB0E3OJ"; // replace with yours
 
-// FAKE DATA / REAL DATA FETCH CAN BE PLUGGED
 async function getData(sym){
-  return calcSignal(sym);
+  try {
+    let rsiRes = await fetch(`https://www.alphavantage.co/query?function=RSI&symbol=${sym}&interval=daily&time_period=14&series_type=close&apikey=${API_KEY}`);
+    let macdRes = await fetch(`https://www.alphavantage.co/query?function=MACD&symbol=${sym}&interval=daily&series_type=close&apikey=${API_KEY}`);
+    let stochRes = await fetch(`https://www.alphavantage.co/query?function=STOCH&symbol=${sym}&interval=daily&apikey=${API_KEY}`);
+    let atrRes = await fetch(`https://www.alphavantage.co/query?function=ATR&symbol=${sym}&interval=daily&time_period=14&apikey=${API_KEY}`);
+
+    let rsiData = await rsiRes.json();
+    let macdData = await macdRes.json();
+    let stochData = await stochRes.json();
+    let atrData = await atrRes.json();
+
+    let rsiKey = Object.keys(rsiData["Technical Analysis: RSI"]||{})[0];
+    let macdKey = Object.keys(macdData["Technical Analysis: MACD"]||{})[0];
+    let stochKey = Object.keys(stochData["Technical Analysis: STOCH"]||{})[0];
+    let atrKey = Object.keys(atrData["Technical Analysis: ATR"]||{})[0];
+
+    if(!rsiKey||!macdKey||!stochKey||!atrKey) return null;
+
+    return {
+      rsi: parseFloat(rsiData["Technical Analysis: RSI"][rsiKey].RSI),
+      macd: parseFloat(macdData["Technical Analysis: MACD"][macdKey].MACD),
+      signal: parseFloat(macdData["Technical Analysis: MACD"][macdKey].MACD_Signal),
+      stochastic: parseFloat(stochData["Technical Analysis: STOCH"][stochKey].SlowK),
+      atr: parseFloat(atrData["Technical Analysis: ATR"][atrKey].ATR)
+    };
+  } catch(e){
+    return null;
+  }
 }
 
-// SIGNAL LOGIC
+// 🧠 COMPUTE SIGNAL (LIVE / SNIPER)
 function computeSignal(data){
-  let trend=data.trend;
-  let action=data.action;
-  let score=50+Math.random()*50;
-  return {...data,trend,action,score};
+  let trend="NEUTRAL", action="WAIT", score=50;
+
+  if(mode==="live"){
+    if(data.macd>data.signal && data.rsi>40 && data.rsi<70){trend="UPTREND";action="BUY";}
+    else if(data.macd<data.signal && data.rsi>70){trend="DOWNTREND";action="SELL";}
+    score = 50 + Math.random()*50;
+  }
+
+  if(mode==="sniper"){
+    let macdCrossUp = data.macd > data.signal;
+    let macdCrossDown = data.macd < data.signal;
+    let strongRSI = data.rsi>45 && data.rsi<65;
+    let overbought = data.rsi>70;
+    let oversold = data.rsi<30;
+    let momentum = data.stochastic>50;
+    let volatility = data.atr>3;
+
+    if(macdCrossUp && strongRSI && momentum && volatility){
+      trend="SNIPER UPTREND"; action="BUY"; score=80+Math.random()*20;
+    }
+    else if(macdCrossDown && overbought && volatility){
+      trend="SNIPER DOWNTREND"; action="SELL"; score=80+Math.random()*20;
+    }
+    else {trend="NO SETUP"; action="WAIT"; score=40;}
+  }
+
+  return {...data, trend, action, score};
 }
 
-// UPDATE LOOP
+// 🔄 UPDATE LOOP
 async function update(){
   for(let sym of watchlist){
-    let data=await getData(sym);
-    let s=computeSignal(data);
+    let data = await getData(sym);
+    if(!data) continue;
+    let s = computeSignal(data);
     signals[sym]=s;
-    let now=Date.now();
+    let now = Date.now();
     if(s.action!=="WAIT" && (!lastAlertTime[sym] || now-lastAlertTime[sym]>60000)){
       alertQueue.push({sym,...s});
       lastAlertTime[sym]=now;
     }
   }
-  renderBar(); renderHeatmap(); processAlerts();
+  renderBar();
+  renderHeatmap();
+  processAlerts();
 }
 
-// SCORE BAR
+// 🎯 RENDER SCORE BAR
 function renderBar(){
   let bar=document.getElementById("score-bar"); bar.innerHTML="";
-  for(let sym of watchlist){
-    let d=signals[sym]||{action:"WAIT",score:50};
-    let div=document.createElement("div");
-    div.className="box";
+  Object.keys(signals).forEach(sym=>{
+    let d=signals[sym];
+    let div=document.createElement("div"); div.className="box";
     div.innerText=`${sym} ${d.action} (${Math.round(d.score)})`;
-    div.style.background=d.action==="BUY"?"#16a34a":d.action==="SELL"?"#dc2626":"#facc15";
+    div.style.background = mode==="sniper"? "#0ea5e9" : (d.action==="BUY"? "#14532d":"#7f1d1d");
     div.onclick=()=>setSymbol(sym);
     bar.appendChild(div);
-  }
+  });
 }
 
-// HEATMAP
+// 🔥 RENDER HEATMAP
 function renderHeatmap(){
   let map=document.getElementById("heatmap"); map.innerHTML="";
-  for(let sym of watchlist){
-    let d=signals[sym]||{rsi:50};
-    let tile=document.createElement("div");
-    tile.className="tile";
-    tile.innerText=`${sym}\nRSI:${Math.round(d.rsi)}\nSTOCH:${Math.round(d.stochastic)}`;
-    tile.style.background=d.rsi>70?"#dc2626":d.rsi<30?"#16a34a":"#facc15";
-    tile.onclick=()=>setSymbol(sym);
-    map.appendChild(tile);
-  }
+  Object.keys(signals).forEach(sym=>{
+    let d=signals[sym]; let t=document.createElement("div"); t.className="tile";
+    t.innerText=`${sym}\nRSI:${Math.round(d.rsi)}\nSTOCH:${Math.round(d.stochastic)}`;
+    t.style.background = d.rsi>70? "#7f1d1d" : d.rsi<30? "#14532d" : "#78350f";
+    t.onclick=()=>setSymbol(sym);
+    map.appendChild(t);
+  });
 }
 
-// ALERT QUEUE
+// 🚨 ALERT QUEUE
 function processAlerts(){
-  if(showingAlert || alertQueue.length===0) return;
+  if(showingAlert||alertQueue.length===0) return;
   showingAlert=true;
   let a=alertQueue.shift();
   let div=document.createElement("div"); div.className="alert";
-  div.style.background=a.action==="BUY"?"#16a34a":"#dc2626";
-  div.innerText=`${a.action} ${a.sym}\nRSI:${Math.round(a.rsi)} | STOCH:${Math.round(a.stochastic)} | ATR:${a.atr}\n${a.trend}`;
+  div.style.background= mode==="sniper"? "#0ea5e9": (a.action==="BUY"? "#14532d":"#7f1d1d");
+  div.innerText=`${a.action} ${a.sym}\nRSI:${Math.round(a.rsi)} | ${a.trend}`;
   div.onclick=()=>setSymbol(a.sym);
   document.body.appendChild(div);
   setTimeout(()=>{div.remove(); showingAlert=false; processAlerts();},3000);
 }
 
-// CHART
+// 📊 TRADINGVIEW CHART
 function loadChart(){
   document.getElementById("tv_chart").innerHTML="";
   widget=new TradingView.widget({
-    width:"100%", height:500, symbol:symbol, interval:tf,
-    theme:"dark", style:"1", container_id:"tv_chart",
-    allow_symbol_change:true, hide_top_toolbar:false,
-    studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","Moving Average@tv-basicstudies"]
+    width:"100%",
+    height:500,
+    symbol:symbol,
+    interval:tf,
+    theme:"dark",
+    style:"1",
+    container_id:"tv_chart",
+    allow_symbol_change:true,
+    hide_top_toolbar:false,
+    studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","MAExp@tv-basicstudies"]
   });
 }
 
 function setSymbol(s){symbol=s; loadChart();}
+function setMode(m){mode=m;}
 
-// START
-loadChart(); update(); setInterval(update,120000);
-  </script>
+loadChart();
+update();
+setInterval(update, mode==="sniper"?15000:5000);
+</script>
+</body>
+</html>

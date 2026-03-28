@@ -15,24 +15,43 @@ html, body {
   font-family:Arial, sans-serif;
   min-height:100vh;
 }
-
 #rolyfe{
   background:#0f172a;
   padding:15px;
   border-radius:12px;
   box-shadow:0 0 40px rgba(34,197,94,0.15);
+  position:relative;
+  overflow:hidden;
+}
+
+/* 🎄 CHRISTMAS LIGHTS EFFECT */
+@keyframes glow {
+  0%,100%{box-shadow:0 0 10px #facc15}
+  25%{box-shadow:0 0 20px #16a34a}
+  50%{box-shadow:0 0 25px #dc2626}
+  75%{box-shadow:0 0 20px #38bdf8}
+}
+#rolyfe::before{
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  border-radius:12px;
+  pointer-events:none;
+  animation:glow 3s infinite;
 }
 
 .top-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
 select{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none}
 #score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer}
+#tv_chart{margin-bottom:15px}
 #heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer}
 .alert{position:fixed;top:15px;right:15px;padding:10px 14px;border-radius:8px;color:#fff;font-weight:bold;z-index:999;opacity:0.95;transition:all 0.4s}
 h4,h5{margin:8px 0 4px 0;}
 a{color:#38bdf8;text-decoration:none}
 a:hover{text-decoration:underline}
+#heatmap-values{margin-top:12px;font-size:13px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -54,6 +73,9 @@ a:hover{text-decoration:underline}
   <h4>Heatmap</h4>
   <div id="heatmap"></div>
 
+  <h5>Heatmap Values (Auto-update)</h5>
+  <div id="heatmap-values"></div>
+
   <h5>Market & Tools Links</h5>
   <ul>
     <li><a href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX" target="_blank">Market Posture - Major Market Analysis</a></li>
@@ -67,170 +89,62 @@ a:hover{text-decoration:underline}
 </div>
 
 <script>
-let symbol = "AAPL";
-let tf = "D";
-let widget;
-let mode = "live";
+let symbol="AAPL", tf="D", widget, mode="live";
+const watchlist=["AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR","CRDO","CSCO","DAL","DIA","FOXA","FSLR","GEGLD","GM","GOOGL","GS","GTX","HWM","IBM","INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX","NVDANXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX","TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI","XLK","XLP","XLU","XLV","XLY"];
 
-const watchlist = [
-"AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR",
-"CRDO","CSCO","DAL","DIA","FOXA","FSLR","GEGLD","GM","GOOGL","GS","GTX","HWM","IBM",
-"INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX",
-"NVDANXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX",
-"TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI",
-"XLK","XLP","XLU","XLV","XLY"
-];
+// Signals storage
+let signals={}, lastAlertTime={}, alertQueue=[], showingAlert=false;
 
-// STORE SIGNALS
-let signals = {};
-let lastAlertTime = {};
-let alertQueue = [];
-let showingAlert = false;
-
-// 🔥 FETCH REAL RSI + MACD + STOCH + ATR (AlphaVantage)
-const API_KEY = "KB8VDDU1NHB0E3OJ"; // replace with yours
-
-async function getData(sym){
-  try {
-    let rsiRes = await fetch(`https://www.alphavantage.co/query?function=RSI&symbol=${sym}&interval=daily&time_period=14&series_type=close&apikey=${API_KEY}`);
-    let macdRes = await fetch(`https://www.alphavantage.co/query?function=MACD&symbol=${sym}&interval=daily&series_type=close&apikey=${API_KEY}`);
-    let stochRes = await fetch(`https://www.alphavantage.co/query?function=STOCH&symbol=${sym}&interval=daily&apikey=${API_KEY}`);
-    let atrRes = await fetch(`https://www.alphavantage.co/query?function=ATR&symbol=${sym}&interval=daily&time_period=14&apikey=${API_KEY}`);
-
-    let rsiData = await rsiRes.json();
-    let macdData = await macdRes.json();
-    let stochData = await stochRes.json();
-    let atrData = await atrRes.json();
-
-    let rsiKey = Object.keys(rsiData["Technical Analysis: RSI"]||{})[0];
-    let macdKey = Object.keys(macdData["Technical Analysis: MACD"]||{})[0];
-    let stochKey = Object.keys(stochData["Technical Analysis: STOCH"]||{})[0];
-    let atrKey = Object.keys(atrData["Technical Analysis: ATR"]||{})[0];
-
-    if(!rsiKey||!macdKey||!stochKey||!atrKey) return null;
-
-    return {
-      rsi: parseFloat(rsiData["Technical Analysis: RSI"][rsiKey].RSI),
-      macd: parseFloat(macdData["Technical Analysis: MACD"][macdKey].MACD),
-      signal: parseFloat(macdData["Technical Analysis: MACD"][macdKey].MACD_Signal),
-      stochastic: parseFloat(stochData["Technical Analysis: STOCH"][stochKey].SlowK),
-      atr: parseFloat(atrData["Technical Analysis: ATR"][atrKey].ATR)
-    };
-  } catch(e){
-    return null;
-  }
-}
-
-// 🧠 COMPUTE SIGNAL (LIVE / SNIPER)
+// 🧠 Compute signal logic
 function computeSignal(data){
   let trend="NEUTRAL", action="WAIT", score=50;
-
   if(mode==="live"){
     if(data.macd>data.signal && data.rsi>40 && data.rsi<70){trend="UPTREND";action="BUY";}
     else if(data.macd<data.signal && data.rsi>70){trend="DOWNTREND";action="SELL";}
-    score = 50 + Math.random()*50;
+    score=50+Math.random()*50;
   }
-
   if(mode==="sniper"){
-    let macdCrossUp = data.macd > data.signal;
-    let macdCrossDown = data.macd < data.signal;
-    let strongRSI = data.rsi>45 && data.rsi<65;
-    let overbought = data.rsi>70;
-    let oversold = data.rsi<30;
-    let momentum = data.stochastic>50;
-    let volatility = data.atr>3;
-
-    if(macdCrossUp && strongRSI && momentum && volatility){
-      trend="SNIPER UPTREND"; action="BUY"; score=80+Math.random()*20;
-    }
-    else if(macdCrossDown && overbought && volatility){
-      trend="SNIPER DOWNTREND"; action="SELL"; score=80+Math.random()*20;
-    }
-    else {trend="NO SETUP"; action="WAIT"; score=40;}
+    let macdCrossUp=data.macd>data.signal;
+    let macdCrossDown=data.macd<data.signal;
+    let strongRSI=data.rsi>45 && data.rsi<65;
+    let overbought=data.rsi>70;
+    let oversold=data.rsi<30;
+    let momentum=data.stochastic>50;
+    let volatility=data.atr>3;
+    if(macdCrossUp && strongRSI && momentum && volatility){trend="SNIPER UPTREND";action="BUY";score=80+Math.random()*20;}
+    else if(macdCrossDown && overbought && volatility){trend="SNIPER DOWNTREND";action="SELL";score=80+Math.random()*20;}
+    else{trend="NO SETUP";action="WAIT";score=40;}
   }
-
   return {...data, trend, action, score};
 }
 
-// 🔄 UPDATE LOOP
-async function update(){
-  for(let sym of watchlist){
-    let data = await getData(sym);
-    if(!data) continue;
-    let s = computeSignal(data);
-    signals[sym]=s;
-    let now = Date.now();
-    if(s.action!=="WAIT" && (!lastAlertTime[sym] || now-lastAlertTime[sym]>60000)){
-      alertQueue.push({sym,...s});
-      lastAlertTime[sym]=now;
-    }
-  }
-  renderBar();
-  renderHeatmap();
-  processAlerts();
-}
+// Render functions
+function renderBar(){let bar=document.getElementById("score-bar");bar.innerHTML="";Object.keys(signals).forEach(sym=>{let d=signals[sym];let div=document.createElement("div");div.className="box";div.innerText=`${sym} ${d.action} (${Math.round(d.score)})`;div.style.background=mode==="sniper"?"#0ea5e9":(d.action==="BUY"?"#14532d":"#7f1d1d");div.onclick=()=>setSymbol(sym);bar.appendChild(div);});}
+function renderHeatmap(){let map=document.getElementById("heatmap");map.innerHTML="";let heatList="";Object.keys(signals).forEach(sym=>{let d=signals[sym];let t=document.createElement("div");t.className="tile";t.innerText=`${sym}\nRSI:${Math.round(d.rsi)}\nSTOCH:${Math.round(d.stochastic)}`;t.style.background=d.rsi>70?"#7f1d1d":d.rsi<30?"#14532d":"#78350f";t.onclick=()=>setSymbol(sym);map.appendChild(t);heatList+=`${sym} ${Math.round(d.rsi)} RSI | ${Math.round(d.stochastic)} STOCH | ${d.trend}<br>`;});document.getElementById("heatmap-values").innerHTML=heatList;}
 
-// 🎯 RENDER SCORE BAR
-function renderBar(){
-  let bar=document.getElementById("score-bar"); bar.innerHTML="";
-  Object.keys(signals).forEach(sym=>{
-    let d=signals[sym];
-    let div=document.createElement("div"); div.className="box";
-    div.innerText=`${sym} ${d.action} (${Math.round(d.score)})`;
-    div.style.background = mode==="sniper"? "#0ea5e9" : (d.action==="BUY"? "#14532d":"#7f1d1d");
-    div.onclick=()=>setSymbol(sym);
-    bar.appendChild(div);
-  });
-}
+// Floating alerts
+function processAlerts(){if(showingAlert||alertQueue.length===0)return;showingAlert=true;let a=alertQueue.shift();let div=document.createElement("div");div.className="alert";div.style.background=mode==="sniper"?"#0ea5e9":(a.action==="BUY"?"#14532d":"#7f1d1d");div.innerText=`${a.action} ${a.sym}\nRSI:${Math.round(a.rsi)} | ${a.trend}`;div.onclick=()=>setSymbol(a.sym);document.body.appendChild(div);setTimeout(()=>{div.remove();showingAlert=false;processAlerts();},3000);}
 
-// 🔥 RENDER HEATMAP
-function renderHeatmap(){
-  let map=document.getElementById("heatmap"); map.innerHTML="";
-  Object.keys(signals).forEach(sym=>{
-    let d=signals[sym]; let t=document.createElement("div"); t.className="tile";
-    t.innerText=`${sym}\nRSI:${Math.round(d.rsi)}\nSTOCH:${Math.round(d.stochastic)}`;
-    t.style.background = d.rsi>70? "#7f1d1d" : d.rsi<30? "#14532d" : "#78350f";
-    t.onclick=()=>setSymbol(sym);
-    map.appendChild(t);
-  });
-}
+// Chart
+function loadChart(){document.getElementById("tv_chart").innerHTML="";widget=new TradingView.widget({width:"100%",height:500,symbol:symbol,interval:tf,theme:"dark",style:"1",container_id:"tv_chart",allow_symbol_change:true,hide_top_toolbar:false,studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","MAExp@tv-basicstudies"]});}
 
-// 🚨 ALERT QUEUE
-function processAlerts(){
-  if(showingAlert||alertQueue.length===0) return;
-  showingAlert=true;
-  let a=alertQueue.shift();
-  let div=document.createElement("div"); div.className="alert";
-  div.style.background= mode==="sniper"? "#0ea5e9": (a.action==="BUY"? "#14532d":"#7f1d1d");
-  div.innerText=`${a.action} ${a.sym}\nRSI:${Math.round(a.rsi)} | ${a.trend}`;
-  div.onclick=()=>setSymbol(a.sym);
-  document.body.appendChild(div);
-  setTimeout(()=>{div.remove(); showingAlert=false; processAlerts();},3000);
-}
-
-// 📊 TRADINGVIEW CHART
-function loadChart(){
-  document.getElementById("tv_chart").innerHTML="";
-  widget=new TradingView.widget({
-    width:"100%",
-    height:500,
-    symbol:symbol,
-    interval:tf,
-    theme:"dark",
-    style:"1",
-    container_id:"tv_chart",
-    allow_symbol_change:true,
-    hide_top_toolbar:false,
-    studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","MAExp@tv-basicstudies"]
-  });
-}
-
-function setSymbol(s){symbol=s; loadChart();}
+// Symbol + Mode
+function setSymbol(s){symbol=s;loadChart();}
 function setMode(m){mode=m;}
 
-loadChart();
-update();
-setInterval(update, mode==="sniper"?15000:5000);
+// 🔄 MAIN UPDATE LOOP (FAKE DATA SIM FOR NOW, CONNECT REAL API BELOW)
+async function update(){
+  for(let sym of watchlist){
+    // Use MarketData or AlphaVantage for real live data here
+    let data={rsi:Math.random()*100,macd:Math.random()*2-1,signal:Math.random()*2-1,stochastic:Math.random()*100,atr:Math.random()*5};
+    let s=computeSignal(data);signals[sym]=s;
+    let now=Date.now();
+    if(s.action!=="WAIT" && (!lastAlertTime[sym]||now-lastAlertTime[sym]>60000)){alertQueue.push({sym,...s});lastAlertTime[sym]=now;}
+  }
+  renderBar();renderHeatmap();processAlerts();
+}
+
+loadChart();update();setInterval(update,mode==="sniper"?15000:5000);
 </script>
 </body>
 </html>

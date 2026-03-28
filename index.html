@@ -7,9 +7,9 @@
 body { background:#0b0f1a; color:#e6e6e6; font-family:Arial; margin:0; padding:0; }
 #score-bar, #heatmap, #heatmap-values { display:flex; flex-wrap:wrap; margin:10px; gap:6px; }
 .box, .tile, .heat-cell { padding:8px; border-radius:6px; cursor:pointer; text-align:center; font-weight:bold; }
-.box { min-width:90px; }
-.tile { min-width:70px; }
-.heat-cell { flex:1 1 100px; background:#222; }
+.box { min-width:120px; position:relative; }
+.tile { min-width:80px; }
+.heat-cell { flex:1 1 120px; background:#222; }
 .alert { position:fixed; top:20px; right:20px; padding:10px 20px; color:#fff; border-radius:8px; z-index:999; font-weight:bold; }
 #tv_chart { margin:12px auto; max-width:1400px; }
 #options-chain { margin:12px auto; max-width:1400px; background:#141a2a; padding:12px; border-radius:10px; overflow:auto; max-height:400px; }
@@ -36,9 +36,13 @@ th { background:#222; }
 <script>
 const API_KEY = "KB8VDDU1NHB0E3OJ";
 let symbol="AAPL", tf="D", widget, mode="live";
-const watchlist=["AAPL","AMZN","MSFT","TSLA","GOOGL"]; // add full watchlist
-let signals={}, lastAlertTime={}, alertQueue=[], showingAlert=false;
-let livePrice = {};
+
+// --- WATCHLIST ---
+const watchlist=[
+"AAPL","AMZN","MSFT","TSLA","GOOGL","META","NVDA","NFLX","INTC"
+];
+
+let signals={}, lastAlertTime={}, alertQueue=[], showingAlert=false, livePrice={};
 
 // --- API rotation system ---
 let scanIndex=0;
@@ -48,7 +52,7 @@ function getBatch(){
   return batch;
 }
 
-// --- Fetch RSI & MACD ---
+// --- Fetch data ---
 async function fetchData(sym){
   try{
     let rsiRes = await fetch(`https://www.alphavantage.co/query?function=RSI&symbol=${sym}&interval=daily&time_period=14&series_type=close&apikey=${API_KEY}`);
@@ -73,7 +77,7 @@ function computeSignal(data, injectedStrike=null){
   let trend="NEUTRAL", action="WAIT", score=50;
   if(mode==="live"){
     if(injectedStrike){
-      // auto BUY/SELL based on injected strike delta
+      // strike injection overrides
       if(injectedStrike.delta>0.5){ action="BUY"; trend="UPTREND"; score=90; }
       else if(injectedStrike.delta<-0.5){ action="SELL"; trend="DOWNTREND"; score=90; }
     } else {
@@ -85,7 +89,7 @@ function computeSignal(data, injectedStrike=null){
   return {...data, trend, action, score, injectedStrike};
 }
 
-// --- Live feed ---
+// --- Live price simulation ---
 function startLiveFeed(){
   setInterval(()=>{
     Object.keys(signals).forEach(sym=>{
@@ -98,13 +102,14 @@ function startLiveFeed(){
   },1000);
 }
 
-// --- Render bar ---
+// --- Render score bar ---
 function renderBar(){
   let bar=document.getElementById("score-bar"); bar.innerHTML="";
   Object.keys(signals).forEach(sym=>{
-    let d=signals[sym];
+    let d=signals[sym]; 
     let div=document.createElement("div"); div.className="box";
-    div.innerText=`${sym} ${d.action} $${d.price?d.price.toFixed(2):"--"}`;
+    div.innerHTML=`${sym} ${d.action} $${d.price?d.price.toFixed(2):"--"}<br>
+      ${d.injectedStrike?`Δ:${d.injectedStrike.delta.toFixed(2)} IV:${d.injectedStrike.iv} $${d.injectedStrike.premium}`:""}`;
     div.style.background=mode==="sniper"?"#0ea5e9":(d.action==="BUY"?"#14532d":"#7f1d1d");
     div.onclick=()=>{ setSymbol(sym); loadOptionsChain(sym); };
     bar.appendChild(div);
@@ -115,7 +120,7 @@ function renderBar(){
 function renderHeatmap(){
   let map=document.getElementById("heatmap"); map.innerHTML="";
   Object.keys(signals).forEach(sym=>{
-    let d=signals[sym];
+    let d=signals[sym]; 
     let t=document.createElement("div"); t.className="tile";
     t.innerText=`${sym}\nRSI:${Math.round(d.rsi)}`;
     t.style.background=d.rsi>70?"#7f1d1d":d.rsi<30?"#14532d":"#78350f";
@@ -129,10 +134,11 @@ function renderHeatmap(){
 function renderHeatmapValues(){
   let container=document.getElementById("heatmap-values"); container.innerHTML="";
   Object.keys(signals).forEach(sym=>{
-    let s=signals[sym];
+    let s=signals[sym]; 
     let div=document.createElement("div"); div.className="heat-cell";
     if(mode==="sniper" && s.action!=="WAIT") div.classList.add("sniper");
-    div.innerHTML=`<strong>${sym}</strong> $${s.price?s.price.toFixed(2):"--"}<br>RSI:${Math.round(s.rsi)} | STOCH:${Math.round(s.stochastic)}<br>${s.trend}`;
+    div.innerHTML=`<strong>${sym}</strong> $${s.price?s.price.toFixed(2):"--"}<br>
+      RSI:${Math.round(s.rsi)} | STOCH:${Math.round(s.stochastic)}<br>${s.trend}`;
     div.onclick=()=>{ setSymbol(sym); loadOptionsChain(sym); };
     container.appendChild(div);
   });
@@ -155,7 +161,8 @@ function loadChart(){
   document.getElementById("tv_chart").innerHTML="";
   widget=new TradingView.widget({
     width:"100%", height:650, symbol:symbol, interval:tf, theme:"dark", style:"1", container_id:"tv_chart",
-    studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","MAExp@tv-basicstudies","MAExp@tv-basicstudies","MAExp@tv-basicstudies"],
+    studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies",
+             "MAExp@tv-basicstudies","MAExp@tv-basicstudies","MAExp@tv-basicstudies"],
     overrides:{
       "movingAverage.length":20,"movingAverage.color":"#22c55e",
       "movingAverage_1.length":50,"movingAverage_1.color":"#eab308",
@@ -168,7 +175,7 @@ function loadChart(){
 function setSymbol(s){ symbol=s; loadChart(); }
 function setMode(m){ mode=m; }
 
-// --- Options Chain loader with strike injection ---
+// --- Options chain loader ---
 async function loadOptionsChain(sym){
   let container=document.getElementById("options-chain");
   container.innerHTML=`<p style="text-align:center;color:#aaa;">Loading ${sym} options...</p>`;
@@ -179,26 +186,24 @@ async function loadOptionsChain(sym){
     ["calls","puts"].forEach(type=>{
       if(!data[type]) return;
       data[type].forEach(opt=>{
-        html+=`<tr onclick="injectStrike('${sym}',${JSON.stringify(opt)})">
-          <td>${type.toUpperCase()}</td>
-          <td>${opt.strike}</td>
-          <td>${opt.delta}</td>
-          <td>${opt.iv}</td>
-          <td>${opt.premium}</td>
-        </tr>`;
+        html+=`<tr onclick='injectStrike("${sym}",${JSON.stringify(opt)})'>
+          <td>${type.toUpperCase()}</td><td>${opt.strike}</td>
+          <td>${opt.delta}</td><td>${opt.iv}</td>
+          <td>${opt.premium}</td></tr>`;
       });
     });
     html+="</tbody></table>"; container.innerHTML=html;
-  }catch(e){ container.innerHTML=`<p style="color:#f00;text-align:center;">Failed to load options for ${sym}</p>`; console.log("Options API error", e); }
+  }catch(e){ container.innerHTML=`<p style="color:#f00;text-align:center;">Failed to load options for ${sym}</p>`; console.log(e); }
 }
 
-// --- Inject strike directly into signals panel ---
+// --- Inject strike ---
 function injectStrike(sym,opt){
   if(!signals[sym]) return;
-  signals[sym]=computeSignal(signals[sym], opt); // update signal with injected strike
+  signals[sym]=computeSignal(signals[sym], opt); // updates trend, action, score
   renderBar(); renderHeatmapValues();
 }
 
+// --- Main update loop ---
 async function update(){
   let batch=getBatch();
   for(let sym of batch){
@@ -216,6 +221,7 @@ async function update(){
 
 // --- Start everything ---
 loadChart(); update(); startLiveFeed(); setInterval(update,20000);
+
 </script>
 </body>
 </html>

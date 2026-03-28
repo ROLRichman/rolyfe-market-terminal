@@ -4,17 +4,18 @@
 <meta charset="UTF-8">
 <title>RO’Lyfe LIVE Terminal</title>
 <style>
-  body { background:#0b0f1a; color:#e6e6e6; font-family:Arial; margin:0; padding:0; }
-  #score-bar, #heatmap, #heatmap-values { display:flex; flex-wrap:wrap; margin:10px; gap:6px; }
-  .box, .tile, .heat-cell { padding:8px; border-radius:6px; cursor:pointer; text-align:center; font-weight:bold; }
-  .box { min-width:90px; }
-  .tile { min-width:70px; }
-  .heat-cell { flex:1 1 100px; background:#222; }
-  .alert { position:fixed; top:20px; right:20px; padding:10px 20px; color:#fff; border-radius:8px; z-index:999; font-weight:bold; }
-  #tv_chart { margin:12px auto; max-width:1400px; }
-  #options-chain { margin:12px auto; max-width:1400px; background:#141a2a; padding:12px; border-radius:10px; overflow:auto; max-height:400px; }
-  table { width:100%; border-collapse:collapse; }
-  th, td { padding:6px 8px; text-align:center; border-bottom:1px solid #333; }
+body { background:#0b0f1a; color:#e6e6e6; font-family:Arial; margin:0; padding:0; }
+#score-bar, #heatmap, #heatmap-values { display:flex; flex-wrap:wrap; margin:10px; gap:6px; }
+.box, .tile, .heat-cell { padding:8px; border-radius:6px; cursor:pointer; text-align:center; font-weight:bold; }
+.box { min-width:90px; }
+.tile { min-width:70px; }
+.heat-cell { flex:1 1 100px; background:#222; }
+.alert { position:fixed; top:20px; right:20px; padding:10px 20px; color:#fff; border-radius:8px; z-index:999; font-weight:bold; }
+#tv_chart { margin:12px auto; max-width:1400px; }
+#options-chain { margin:12px auto; max-width:1400px; background:#141a2a; padding:12px; border-radius:10px; overflow:auto; max-height:400px; }
+table { width:100%; border-collapse:collapse; }
+th, td { padding:6px 8px; text-align:center; border-bottom:1px solid #333; cursor:pointer; }
+th { background:#222; }
 </style>
 <script src="https://s3.tradingview.com/tv.js"></script>
 </head>
@@ -35,15 +36,15 @@
 <script>
 const API_KEY = "KB8VDDU1NHB0E3OJ";
 let symbol="AAPL", tf="D", widget, mode="live";
-const watchlist=[/* your full watchlist */];
+const watchlist=["AAPL","AMZN","MSFT","TSLA","GOOGL"]; // add full watchlist
 let signals={}, lastAlertTime={}, alertQueue=[], showingAlert=false;
 let livePrice = {};
 
 // --- API rotation system ---
-let scanIndex = 0;
-function getBatch(){
-  let batch = watchlist.slice(scanIndex, scanIndex + 5);
-  scanIndex = (scanIndex + 5) % watchlist.length;
+let scanIndex=0;
+function getBatch(){ 
+  let batch = watchlist.slice(scanIndex, scanIndex+5);
+  scanIndex=(scanIndex+5)%watchlist.length;
   return batch;
 }
 
@@ -57,7 +58,7 @@ async function fetchData(sym){
     let rKey = Object.keys(rsiData["Technical Analysis: RSI"]||{})[0];
     let mKey = Object.keys(macdData["Technical Analysis: MACD"]||{})[0];
     if(!rKey || !mKey) return null;
-    return {
+    return { 
       rsi: parseFloat(rsiData["Technical Analysis: RSI"][rKey].RSI),
       macd: parseFloat(macdData["Technical Analysis: MACD"][mKey].MACD),
       signal: parseFloat(macdData["Technical Analysis: MACD"][mKey].MACD_Signal),
@@ -68,25 +69,20 @@ async function fetchData(sym){
 }
 
 // --- Compute signal ---
-function computeSignal(data){
+function computeSignal(data, injectedStrike=null){
   let trend="NEUTRAL", action="WAIT", score=50;
   if(mode==="live"){
-    if(data.macd>data.signal && data.rsi>40 && data.rsi<70){ trend="UPTREND"; action="BUY"; }
-    else if(data.macd<data.signal && data.rsi>70){ trend="DOWNTREND"; action="SELL"; }
-    score = 50 + (data.rsi/2);
+    if(injectedStrike){
+      // auto BUY/SELL based on injected strike delta
+      if(injectedStrike.delta>0.5){ action="BUY"; trend="UPTREND"; score=90; }
+      else if(injectedStrike.delta<-0.5){ action="SELL"; trend="DOWNTREND"; score=90; }
+    } else {
+      if(data.macd>data.signal && data.rsi>40 && data.rsi<70){ trend="UPTREND"; action="BUY"; }
+      else if(data.macd<data.signal && data.rsi>70){ trend="DOWNTREND"; action="SELL"; }
+      score=50+(data.rsi/2);
+    }
   }
-  if(mode==="sniper"){
-    let macdCrossUp = data.macd>data.signal;
-    let macdCrossDown = data.macd<data.signal;
-    let strongRSI=data.rsi>45&&data.rsi<65;
-    let overbought=data.rsi>70;
-    let momentum=data.stochastic>50;
-    let volatility=data.atr>3;
-    if(macdCrossUp && strongRSI && momentum && volatility){ trend="SNIPER UPTREND"; action="BUY"; score=85; }
-    else if(macdCrossDown && overbought && volatility){ trend="SNIPER DOWNTREND"; action="SELL"; score=85; }
-    else{ trend="NO SETUP"; action="WAIT"; score=40; }
-  }
-  return {...data, trend, action, score};
+  return {...data, trend, action, score, injectedStrike};
 }
 
 // --- Live feed ---
@@ -94,8 +90,7 @@ function startLiveFeed(){
   setInterval(()=>{
     Object.keys(signals).forEach(sym=>{
       if(!livePrice[sym]) livePrice[sym]=100;
-      let move=(Math.random()-0.5)*0.5;
-      livePrice[sym]+=move;
+      livePrice[sym]+=(Math.random()-0.5)*0.5;
       signals[sym].price=livePrice[sym];
     });
     renderBar();
@@ -117,7 +112,7 @@ function renderBar(){
 }
 
 // --- Heatmap ---
-function renderHeatmap(){ 
+function renderHeatmap(){
   let map=document.getElementById("heatmap"); map.innerHTML="";
   Object.keys(signals).forEach(sym=>{
     let d=signals[sym];
@@ -145,7 +140,7 @@ function renderHeatmapValues(){
 
 // --- Alerts ---
 function processAlerts(){
-  if(showingAlert || alertQueue.length===0) return;
+  if(showingAlert||alertQueue.length===0) return;
   showingAlert=true; let a=alertQueue.shift();
   let div=document.createElement("div"); div.className="alert";
   div.style.background=mode==="sniper"?"#0ea5e9":(a.action==="BUY"?"#14532d":"#7f1d1d");
@@ -173,20 +168,18 @@ function loadChart(){
 function setSymbol(s){ symbol=s; loadChart(); }
 function setMode(m){ mode=m; }
 
-// --- Options Chain loader ---
+// --- Options Chain loader with strike injection ---
 async function loadOptionsChain(sym){
   let container=document.getElementById("options-chain");
   container.innerHTML=`<p style="text-align:center;color:#aaa;">Loading ${sym} options...</p>`;
-  
   try{
     let res = await fetch(`https://phx.unusualwhales.com/api/historic_chains/${sym}?limit=50`);
-    let data = await res.json(); // mock structure: {calls:[{strike,delta,iv,premium}],puts:[...]}
-
+    let data = await res.json();
     let html=`<table><thead><tr><th>Type</th><th>Strike</th><th>Delta</th><th>IV</th><th>Premium</th></tr></thead><tbody>`;
     ["calls","puts"].forEach(type=>{
       if(!data[type]) return;
       data[type].forEach(opt=>{
-        html+=`<tr>
+        html+=`<tr onclick="injectStrike('${sym}',${JSON.stringify(opt)})">
           <td>${type.toUpperCase()}</td>
           <td>${opt.strike}</td>
           <td>${opt.delta}</td>
@@ -195,15 +188,17 @@ async function loadOptionsChain(sym){
         </tr>`;
       });
     });
-    html+="</tbody></table>";
-    container.innerHTML=html;
-  }catch(e){
-    container.innerHTML=`<p style="color:#f00;text-align:center;">Failed to load options for ${sym}</p>`;
-    console.log("Options API error", e);
-  }
+    html+="</tbody></table>"; container.innerHTML=html;
+  }catch(e){ container.innerHTML=`<p style="color:#f00;text-align:center;">Failed to load options for ${sym}</p>`; console.log("Options API error", e); }
 }
 
-// --- Main update loop ---
+// --- Inject strike directly into signals panel ---
+function injectStrike(sym,opt){
+  if(!signals[sym]) return;
+  signals[sym]=computeSignal(signals[sym], opt); // update signal with injected strike
+  renderBar(); renderHeatmapValues();
+}
+
 async function update(){
   let batch=getBatch();
   for(let sym of batch){
@@ -219,7 +214,7 @@ async function update(){
   renderBar(); renderHeatmap(); processAlerts();
 }
 
-// --- Start ---
+// --- Start everything ---
 loadChart(); update(); startLiveFeed(); setInterval(update,20000);
 </script>
 </body>

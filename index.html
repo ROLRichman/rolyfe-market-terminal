@@ -3,32 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RO'Lyfe Market Terminal</title>
+<title>RO'Lyfe Ultimate Market Terminal</title>
 <script src="https://s3.tradingview.com/tv.js"></script>
 <style>
-body{margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:Arial,sans-serif;}
-#rolyfe{padding:15px;max-width:1400px;margin:auto;}
-.top-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}
-select,input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none;}
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(180deg,#0f172a,#111827);
+  color:#e2e8f0;
+}
+#rolyfe{padding:15px;max-width:1500px;margin:auto;}
+.top-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+select,input,button{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none;font-weight:bold;}
+button{cursor:pointer;transition:.3s;}
+button:hover{background:#0f766e;}
 #score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;text-align:center;transition:0.3s;}
+.box{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;text-align:center;transition:0.3s;}
 .box:hover{transform:scale(1.05);}
-#tv_chart,#multiChart{margin-bottom:15px;border-radius:10px;}
+#tv_chart,#multiChart{margin-bottom:15px;border-radius:10px;background:#0f172a;}
 #heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer;flex-direction:column;text-align:center;}
-.heat-cell{background:#1f2937;padding:8px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;gap:2px;}
+.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer;flex-direction:column;text-align:center;transition:.3s;}
+.tile.flashing{animation:flash 1s infinite alternate;}
+@keyframes flash{0%{opacity:1;}50%{opacity:0.5;}100%{opacity:1;}}
+.heat-cell{background:#1f2937;padding:8px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;gap:2px;justify-content:center;align-items:center;}
 .heat-cell:hover{transform:scale(1.03);box-shadow:0 0 12px #38bdf8;}
 .option-cell{background:#111827;padding:6px;margin:2px;border-radius:6px;font-size:11px;cursor:pointer;display:flex;justify-content:space-between;}
 .option-cell:hover{background:#1e293b;}
 #heatmap-values{max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
 #chart-search{margin-top:6px;}
+a{color:#22c55e;text-decoration:none;font-weight:bold;}
+a:hover{text-decoration:underline;}
+.sparkle{color:#fef3c7;animation:twinkle 1.2s infinite;}
+@keyframes twinkle{0%,100%{opacity:1;}50%{opacity:0.5;}}
 </style>
 </head>
 <body>
 <div id="rolyfe">
 
+  <!-- Top Bar -->
   <div class="top-bar">
-    <select id="symbol-select" onchange="setSymbol(this.value)"><option value="">Select Symbol</option></select>
+    <select id="symbol-select" onchange="setSymbol(this.value)">
+      <option value="">Select Symbol</option>
+    </select>
     <select id="sector-select">
       <option value="">All Sectors</option>
       <option value="Technology">Technology</option>
@@ -42,21 +59,27 @@ select,input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:
       <option value="sniper">SNIPER MODE</option>
     </select>
     <select onchange="setTimeframe(this.value)">
-      <option value="D">Daily</option>
-      <option value="60">1H</option>
-      <option value="15">15Min</option>
+      <option value="5">5 Min</option>
+      <option value="15">15 Min</option>
+      <option value="240">4 H</option>
+      <option value="D" selected>Daily</option>
+      <option value="M">Monthly</option>
+      <option value="Y">Yearly</option>
     </select>
+    <button onclick="fetchOptions(symbol)">💥 Show Options Ladder</button>
   </div>
 
+  <!-- Score Bar -->
   <div id="score-bar"></div>
 
   <!-- Primary Chart -->
   <div id="tv_chart" style="width:100%;height:450px;"></div>
 
-  <!-- Options Ladder Below Chart -->
+  <!-- Options Ladder -->
   <h5>Options Ladder (Click to inject)</h5>
   <div id="options-panel"></div>
 
+  <!-- Heatmap -->
   <h4>Heatmap</h4>
   <div id="heatmap"></div>
 
@@ -74,13 +97,9 @@ select,input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:
   <!-- Links -->
   <h5>Market & Tools Links</h5>
   <ul>
-    <li><a href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX" target="_blank">Market Posture - Major Market Analysis</a></li>
-    <li><a href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF" target="_blank">Market Posture - Sector Rotation</a></li>
-    <li><a href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000,sh_opt_optionshort,sh_price_o10,ta_sma200_pa,ta_sma50_pa&o=-perf4w" target="_blank">FinViz Bullish Screener</a></li>
-    <li><a href="https://www.marketwatch.com/economy-politics/calendar" target="_blank">MarketWatch Economic Calendar</a></li>
-    <li><a href="https://finviz.com/map.ashx?t=sec" target="_blank">S&P 500 Heat Map</a></li>
-    <li><a href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank">The FedWatch - Interest Rate Tool</a></li>
-    <li><a href="https://finance.yahoo.com/" target="_blank">Yahoo! Finance</a></li>
+    <li><a href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX" target="_blank">Major Market Analysis</a></li>
+    <li><a href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF" target="_blank">Sector Rotation</a></li>
+    <li><a href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000,sh_opt_optionshort,sh_price_o10,ta_sma200_pa,ta_sma50_pa&o=-perf4w" target="_blank">💚 FinViz Bullish Screener</a></li>
   </ul>
 </div>
 
@@ -109,8 +128,8 @@ function renderBar(){
     const d=signals[sym];
     const div=document.createElement("div");
     div.className="box";
-    div.innerHTML=`<strong>${sym}</strong><br>${d.action} (${Math.round(d.score)})<br>Δ:${d.option?d.option.delta:"--"} IV:${d.option?d.option.iv:"--"}`;
-    div.style.background=d.action==="BUY"?"#14532d":d.action==="SELL"?"#7f1d1d":"#1f2937";
+    div.innerHTML=`<strong>${sym}</strong><br>${d.action} (${Math.round(d.score)})<br>Δ:${d.option?d.option.delta:"--"} IV:${d.option?d.option.iv:"--"} <span class="sparkle">✨</span>`;
+    div.style.background=d.action==="BUY"?"#16a34a":d.action==="SELL"?"#dc2626":"#1f2937";
     div.onclick=()=>setSymbol(sym);
     bar.appendChild(div);
   }
@@ -123,6 +142,7 @@ function renderHeatmapValues(){
     const d=signals[sym];
     const cell=document.createElement("div");
     cell.className="heat-cell";
+    if(d.action!=="WAIT") cell.classList.add("flashing");
     cell.innerHTML=`<strong>${sym}</strong>
 RSI:${Math.round(d.rsi)}
 ${d.trend}
@@ -142,8 +162,8 @@ function filterSymbols(val){
 }
 
 // --- TradingView Charts ---
-function loadChart(){ if(widget) widget.remove(); widget=new TradingView.widget({width:"100%",height:450,symbol:symbol,interval:tf,theme:"dark",style:1,container_id:"tv_chart",allow_symbol_change:true,studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies"]}); }
-function loadMultiChart(){ if(multiWidget) multiWidget.remove(); multiWidget=new TradingView.widget({width:"100%",height:350,symbol:"BTCUSD",interval:tf,theme:"dark",style:1,container_id:"multiChart",allow_symbol_change:true}); }
+function loadChart(){ if(widget) widget.remove(); widget=new TradingView.widget({width:"100%",height:450,symbol:symbol,interval:tf,theme:"dark",style:1,container_id:"tv_chart",allow_symbol_change:true,studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","ATR@tv-basicstudies","MAExp@tv-basicstudies"]}); }
+function loadMultiChart(){ if(multiWidget) multiWidget.remove(); multiWidget=new TradingView.widget({width:"100%",height:350,symbol:"BTCUSD",interval:"15",theme:"dark",style:1,container_id:"multiChart",allow_symbol_change:true}); }
 
 // --- Symbol & Mode ---
 function setSymbol(s){symbol=s; loadChart();}

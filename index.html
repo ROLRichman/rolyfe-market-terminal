@@ -6,33 +6,29 @@
 <title>RO'Lyfe Market Terminal</title>
 <script src="https://s3.tradingview.com/tv.js"></script>
 <style>
-html, body {margin:0; padding:0; background: radial-gradient(circle at top,#020617,#000); color:#e2e8f0; font-family:Arial,sans-serif; min-height:100vh;}
-#rolyfe{background:#0f172a;padding:15px;border-radius:12px;box-shadow:0 0 40px rgba(34,197,94,0.15);position:relative;overflow:hidden;}
-@keyframes glow{0%,100%{box-shadow:0 0 10px #facc15}25%{box-shadow:0 0 20px #16a34a}50%{box-shadow:0 0 25px #dc2626}75%{box-shadow:0 0 20px #38bdf8}}
-#rolyfe::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:12px;pointer-events:none;animation:glow 3s infinite;}
-.top-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
-select, input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none}
-#score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;transition:0.3s;display:flex;flex-direction:column;text-align:center;}
+body{margin:0;padding:0;background:#0f172a;color:#e2e8f0;font-family:Arial,sans-serif;}
+#rolyfe{padding:15px;max-width:1400px;margin:auto;}
+.top-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}
+select,input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none;}
+#score-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.box{padding:6px 10px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;text-align:center;transition:0.3s;}
 .box:hover{transform:scale(1.05);}
-#tv_chart, #multiChart{margin-bottom:15px}
-#heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer;flex-direction:column;text-align:center}
-.heat-cell{background:#1f2937;padding:8px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;transition:0.3s all;display:flex;justify-content:space-between;align-items:center}
+#tv_chart,#multiChart{margin-bottom:15px;border-radius:10px;}
+#heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.tile{width:65px;height:65px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;cursor:pointer;flex-direction:column;text-align:center;}
+.heat-cell{background:#1f2937;padding:8px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;display:flex;flex-direction:column;gap:2px;}
 .heat-cell:hover{transform:scale(1.03);box-shadow:0 0 12px #38bdf8;}
-.option-cell{background:#111827;padding:6px;margin:2px;border-radius:6px;font-size:11px;cursor:pointer;transition:0.3s;display:flex;justify-content:space-between;}
+.option-cell{background:#111827;padding:6px;margin:2px;border-radius:6px;font-size:11px;cursor:pointer;display:flex;justify-content:space-between;}
 .option-cell:hover{background:#1e293b;}
-.alert{position:fixed;top:60px;right:15px;padding:10px 14px;border-radius:8px;color:#fff;font-weight:bold;z-index:999;opacity:0.95;transition:all 0.4s}
+#heatmap-values{max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+#chart-search{margin-top:6px;}
 </style>
 </head>
 <body>
 <div id="rolyfe">
 
   <div class="top-bar">
-    <select id="symbol-select" onchange="setSymbol(this.value)">
-      <option value="">Select Symbol</option>
-    </select>
-
+    <select id="symbol-select" onchange="setSymbol(this.value)"><option value="">Select Symbol</option></select>
     <select id="sector-select">
       <option value="">All Sectors</option>
       <option value="Technology">Technology</option>
@@ -41,12 +37,10 @@ select, input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border
       <option value="Financial">Financial</option>
       <option value="Energy">Energy</option>
     </select>
-
     <select onchange="setMode(this.value)">
       <option value="live">LIVE MODE</option>
       <option value="sniper">SNIPER MODE</option>
     </select>
-
     <select onchange="setTimeframe(this.value)">
       <option value="D">Daily</option>
       <option value="60">1H</option>
@@ -59,24 +53,23 @@ select, input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border
   <!-- Primary Chart -->
   <div id="tv_chart" style="width:100%;height:450px;"></div>
 
+  <!-- Options Ladder Below Chart -->
+  <h5>Options Ladder (Click to inject)</h5>
+  <div id="options-panel"></div>
+
   <h4>Heatmap</h4>
   <div id="heatmap"></div>
 
-  <!-- Search & Heatmap Values Scrollable -->
-  <div id="chart-search" style="margin-top:6px;">
+  <!-- Search & Scrollable Heatmap Values -->
+  <div id="chart-search">
     <input type="text" placeholder="Search Symbol on Chart" oninput="filterSymbols(this.value)">
   </div>
-
   <h5>Heatmap Values (Auto-update)</h5>
-  <div id="heatmap-values" style="max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-
-  <!-- Options Panel -->
-  <h5>Options Chain (Click to inject into signals panel)</h5>
-  <div id="options-panel"></div>
+  <div id="heatmap-values"></div>
 
   <!-- Multi-Chart Section -->
   <h4>Market Multi-Chart</h4>
-  <div id="multiChart" style="width:100%;height:350px;border-radius:10px;margin-top:10px;"></div>
+  <div id="multiChart" style="width:100%;height:350px;"></div>
 
   <!-- Links -->
   <h5>Market & Tools Links</h5>
@@ -92,32 +85,19 @@ select, input{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border
 </div>
 
 <script>
-// --- Variables ---
-const API_KEY = "KB8VDDU1NHB0E3OJ";
-let symbol="AAPL", tf="D", widget, multiWidget, mode="live";
-const watchlist=["AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR","CRDO","CSCO","DAL","DIA","FOXA","FSLR","GEGLD","GM","GOOGL","GS","GTX","HWM","IBM","INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX","NVDANXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX","TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI","XLK","XLP","XLU","XLV","XLY","BTCUSD","ETHUSD","EURUSD","JPYUSD"];  
-
-let signals={}, lastAlertTime={}, alertQueue=[], showingAlert=false;
+const watchlist=["AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR","CRDO","CSCO","DAL","DIA","FOXA","FSLR","GEGLD","GM","GOOGL","GS","GTX","HWM","IBM","INTC","IWM","JCI","JNJ"];
+let signals={}, mode="live", symbol="AAPL", tf="D", widget, multiWidget;
 
 // --- Compute Signals ---
 function computeSignal(data){
-  let trend="NEUTRAL", action="WAIT", score=50;
+  let trend="NO SETUP", action="WAIT", score=50;
   if(mode==="live"){
-    if(data.macd>data.signal && data.rsi>40 && data.rsi<70){trend="UPTREND";action="BUY";}
-    else if(data.macd<data.signal && data.rsi>70){trend="DOWNTREND";action="SELL";}
-    score=50+Math.random()*50;
+    if(data.rsi>70) trend="DOWNTREND", action="SELL";
+    else if(data.rsi<30) trend="UPTREND", action="BUY";
   }
   if(mode==="sniper"){
-    let macdCrossUp=data.macd>data.signal;
-    let macdCrossDown=data.macd<data.signal;
-    let strongRSI=data.rsi>45 && data.rsi<65;
-    let overbought=data.rsi>70;
-    let oversold=data.rsi<30;
-    let momentum=data.stochastic>50;
-    let volatility=data.atr>3;
-    if(macdCrossUp && strongRSI && momentum && volatility){trend="SNIPER UPTREND";action="BUY";score=80+Math.random()*20;}
-    else if(macdCrossDown && overbought && volatility){trend="SNIPER DOWNTREND";action="SELL";score=80+Math.random()*20;}
-    else{trend="NO SETUP";action="WAIT";score=40;}
+    if(data.rsi>85) trend="SNIPER DOWNTREND", action="SELL";
+    else if(data.rsi<15) trend="SNIPER UPTREND", action="BUY";
   }
   return {...data, trend, action, score};
 }
@@ -125,112 +105,77 @@ function computeSignal(data){
 // --- Render Functions ---
 function renderBar(){
   const bar=document.getElementById("score-bar"); bar.innerHTML="";
-  Object.keys(signals).forEach(sym=>{
+  for(const sym of watchlist){
     const d=signals[sym];
     const div=document.createElement("div");
     div.className="box";
     div.innerHTML=`<strong>${sym}</strong><br>${d.action} (${Math.round(d.score)})<br>Δ:${d.option?d.option.delta:"--"} IV:${d.option?d.option.iv:"--"}`;
-    div.style.background=mode==="sniper"?"#0ea5e9":(d.action==="BUY"?"#14532d":"#7f1d1d");
+    div.style.background=d.action==="BUY"?"#14532d":d.action==="SELL"?"#7f1d1d":"#1f2937";
     div.onclick=()=>setSymbol(sym);
     bar.appendChild(div);
-  });
-}
-
-function renderHeatmap(){
-  const map=document.getElementById("heatmap"); map.innerHTML="";
-  Object.keys(signals).forEach(sym=>{
-    const d=signals[sym];
-    const t=document.createElement("div");
-    t.className="tile";
-    t.innerText=`${sym}\nRSI:${Math.round(d.rsi)}\nSTOCH:${Math.round(d.stochastic)}`;
-    t.style.background=d.rsi>70?"#7f1d1d":d.rsi<30?"#14532d":"#78350f";
-    t.onclick=()=>setSymbol(sym);
-    map.appendChild(t);
-  });
-  renderHeatmapValues();
+  }
 }
 
 function renderHeatmapValues(){
-  const container = document.getElementById("heatmap-values");
-  container.innerHTML = "";
-  Object.keys(signals).forEach(sym => {
-    const s = signals[sym];
-    const div = document.createElement("div");
-    div.className = "heat-cell";
-    if(mode==="sniper" && s.action!=="WAIT") div.style.boxShadow = "0 0 10px #0ea5e9";
-    div.innerHTML = `
-      <div><strong>${sym}</strong></div>
-      <div>RSI:${Math.round(s.rsi)}</div>
-      <div>${s.trend}</div>
-      <div>${s.action}</div>
-      <div>Δ:${s.option?s.option.delta:'--'} IV:${s.option?s.option.iv:'--'}</div>
-    `;
-    div.onclick = () => setSymbol(sym);
-    container.appendChild(div);
-  });
+  const container=document.getElementById("heatmap-values");
+  container.innerHTML="";
+  for(const sym of watchlist){
+    const d=signals[sym];
+    const cell=document.createElement("div");
+    cell.className="heat-cell";
+    cell.innerHTML=`<strong>${sym}</strong>
+RSI:${Math.round(d.rsi)}
+${d.trend}
+${d.action}
+Δ:${d.option?d.option.delta:"--"} IV:${d.option?d.option.iv:"--"}`;
+    cell.onclick=()=>setSymbol(sym);
+    container.appendChild(cell);
+  }
 }
 
 // --- Search Filter ---
 function filterSymbols(val){
-  val = val.toUpperCase();
-  Object.keys(signals).forEach(sym=>{
-    const cell = Array.from(document.getElementsByClassName("heat-cell")).find(c=>c.innerText.includes(sym));
-    if(cell) cell.style.display = sym.includes(val) ? "flex" : "none";
+  val=val.toUpperCase();
+  Array.from(document.getElementsByClassName("heat-cell")).forEach(c=>{
+    c.style.display=c.innerText.includes(val)?"flex":"none";
   });
 }
 
 // --- TradingView Charts ---
-function loadChart(){ 
-  if(widget) widget.remove();
-  widget=new TradingView.widget({width:"100%", height:450, symbol:symbol, interval:tf, theme:"dark", style:1, container_id:"tv_chart", allow_symbol_change:true, studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies","MAExp@tv-basicstudies"]});
-}
-function loadMultiChart(){
-  if(multiWidget) multiWidget.remove();
-  multiWidget=new TradingView.widget({width:"100%", height:350, symbol:"BTCUSD", interval:tf, theme:"dark", style:1, container_id:"multiChart", allow_symbol_change:true});
-}
+function loadChart(){ if(widget) widget.remove(); widget=new TradingView.widget({width:"100%",height:450,symbol:symbol,interval:tf,theme:"dark",style:1,container_id:"tv_chart",allow_symbol_change:true,studies:["MACD@tv-basicstudies","RSI@tv-basicstudies","Stochastic@tv-basicstudies"]}); }
+function loadMultiChart(){ if(multiWidget) multiWidget.remove(); multiWidget=new TradingView.widget({width:"100%",height:350,symbol:"BTCUSD",interval:tf,theme:"dark",style:1,container_id:"multiChart",allow_symbol_change:true}); }
 
 // --- Symbol & Mode ---
-function setSymbol(s){symbol=s; loadChart(); fetchOptions(s);}
+function setSymbol(s){symbol=s; loadChart();}
 function setMode(m){mode=m;}
 function setTimeframe(v){tf=v; loadChart(); loadMultiChart();}
 
-// --- Mock API / Signals ---
-async function fetchData(sym){
-  return {rsi:Math.random()*100, macd:Math.random()*2-1, signal:Math.random()*2-1, stochastic:Math.random()*100, atr:Math.random()*5};
-}
+// --- Mock Data ---
+function fetchData(sym){return {rsi:Math.random()*100};}
 
 // --- Update Loop ---
-async function update(){
-  for(const sym of watchlist){
-    const data = await fetchData(sym);
-    const s = computeSignal(data);
-    signals[sym]=s;
-  }
+function update(){
+  for(const sym of watchlist){signals[sym]=computeSignal(fetchData(sym));}
   renderBar();
-  renderHeatmap();
+  renderHeatmapValues();
 }
-setInterval(update,20000);
-update(); loadChart(); loadMultiChart();
+setInterval(update,15000);
+update();
+loadChart();
+loadMultiChart();
 
-// --- Options Panel Mock ---
+// --- Mock Options Ladder ---
 function fetchOptions(sym){
-  const panel=document.getElementById("options-panel"); panel.innerHTML="";
-  const options=[];
-  for(let i=1;i<=3;i++){
-    const type=i%2===0?"PUT":"CALL";
-    const strike=Math.round(Math.random()*50+100);
-    const price=Math.random()*5+1;
-    const delta=(type==="CALL"?Math.random():-Math.random()).toFixed(2);
-    const iv=(Math.random()*50+10).toFixed(1);
-    options.push({strike,type,price,delta,iv});
-  }
-  options.forEach(o=>{
+  const panel=document.getElementById("options-panel");
+  panel.innerHTML="";
+  for(let i=0;i<5;i++){
+    const o={type:i%2===0?"CALL":"PUT",strike:100+i*5,price:(Math.random()*5+1).toFixed(2),delta:(Math.random()).toFixed(2),iv:(Math.random()*50+10).toFixed(1)};
     const div=document.createElement("div");
     div.className="option-cell";
-    div.innerHTML=`${o.type} ${o.strike} $${o.price.toFixed(2)} Δ:${o.delta} IV:${o.iv}`;
+    div.innerHTML=`${o.type} ${o.strike} $${o.price} Δ:${o.delta} IV:${o.iv}`;
     div.onclick=()=>{if(signals[sym]) signals[sym].option=o; renderBar();};
     panel.appendChild(div);
-  });
+  }
 }
 </script>
 </body>

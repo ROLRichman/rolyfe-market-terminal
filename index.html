@@ -1,61 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RO'Lyfe Terminal</title>
+<title>RO'Lyfe Market Terminal</title>
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
 body{margin:0;background:#020617;color:#e2e8f0;font-family:Arial}
+
+/* MAIN WRAP */
 #rolyfe{padding:10px}
-.box{padding:6px;border-radius:6px;margin:3px;cursor:pointer;font-size:12px}
-.alert{position:fixed;top:70px;right:15px;padding:10px;border-radius:8px;color:#fff}
-.option{background:#111827;padding:6px;margin:3px;border-radius:6px;cursor:pointer}
+
+/* TOP CHART */
+#mainChart{height:450px;margin-bottom:10px;border-radius:10px;overflow:hidden}
+
+/* CONTROLS */
+.top-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+select{padding:8px;border-radius:6px;background:#1e293b;color:#fff;border:none}
+
+/* SIGNAL SYSTEM */
+#signal-wrap{
+background:#0f172a;
+padding:12px;
+border-radius:12px;
+box-shadow:0 0 30px rgba(34,197,94,0.15);
+position:relative;
+}
+
+/* GLOW */
+@keyframes glow{
+0%,100%{box-shadow:0 0 10px #facc15}
+25%{box-shadow:0 0 20px #16a34a}
+50%{box-shadow:0 0 25px #dc2626}
+75%{box-shadow:0 0 20px #38bdf8}
+}
+#signal-wrap.sniper{
+animation:glow 3s infinite;
+}
+
+/* SCORE BAR */
+#score-bar{display:flex;flex-wrap:wrap;gap:6px}
+.box{
+padding:6px 10px;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+text-align:center;
+}
+
+/* HEATMAP */
+#heatmap{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tile{
+width:65px;height:65px;
+border-radius:6px;
+display:flex;align-items:center;justify-content:center;
+font-size:11px;cursor:pointer;text-align:center;
+flex-direction:column;
+}
+
+/* VALUES */
+#heatmap-values{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+gap:6px;
+margin-top:10px;
+}
+.heat-cell{
+background:#1f2937;
+padding:6px;
+border-radius:6px;
+cursor:pointer;
+}
+
+/* OPTIONS */
+.option-cell{
+background:#111827;
+padding:6px;
+margin:3px;
+border-radius:6px;
+cursor:pointer;
+}
+
+/* ALERT */
+.alert{
+position:fixed;
+top:60px;
+right:15px;
+padding:10px;
+border-radius:8px;
+color:#fff;
+font-weight:bold;
+z-index:999;
+}
 </style>
 </head>
 
 <body>
 <div id="rolyfe">
 
-<h2 style="text-align:center">🔥 RO'Lyfe Terminal</h2>
+<!-- 🔥 TOP CHART -->
+<div class="top-bar">
+<select onchange="setSymbol(this.value)">
+<option value="AAPL">AAPL</option>
+<option value="TSLA">TSLA</option>
+<option value="NVDA">NVDA</option>
+<option value="SPY">SPY</option>
+</select>
 
-<div style="display:flex;flex-wrap:wrap;gap:10px">
+<select onchange="setTF(this.value)">
+<option value="D">Daily</option>
+<option value="240">4H</option>
+<option value="15">15m</option>
+<option value="5">5m</option>
+</select>
 
-<div id="tv" style="flex:2;height:400px"></div>
-
-<div style="flex:1">
-<div id="gauge" style="height:190px"></div>
-<div id="news" style="height:190px"></div>
+<select onchange="setMode(this.value)">
+<option value="live">LIVE MODE</option>
+<option value="sniper">SNIPER MODE</option>
+</select>
 </div>
 
+<div id="mainChart"></div>
+
+<!-- 🔥 SIGNAL ENGINE -->
+<div id="signal-wrap">
+
+<div id="score-bar"></div>
+
+<h4>Heatmap</h4>
+<div id="heatmap"></div>
+
+<h5>Heatmap Values</h5>
+<div id="heatmap-values"></div>
+
+<h5>Options Chain</h5>
+<div id="options-panel"></div>
+
 </div>
-
-<div id="scoreBar"></div>
-
-<h3>Options Chain</h3>
-<div id="options"></div>
-
-<h3>Account</h3>
-<input id="bal" value="500">
-<input id="risk" value="5">
-<input id="stop" value="25">
-<button onclick="calc()">RUN</button>
-
-<div id="ladder"></div>
-
-<h3>Watchlist</h3>
-<div id="wl"></div>
-
-<h3>Trade Log</h3>
-<div id="log"></div>
 
 </div>
 
 <script>
-const API="demo";
-let current="AAPL";
-let signals={};
-let alertQueue=[];
+let symbol="AAPL", tf="D", mode="live";
+let widget;
+const watchlist=["AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN"];
+
+let signals={}, alertQueue=[], showingAlert=false;
+
+/* ---------- CHART ---------- */
+function loadChart(){
+document.getElementById("mainChart").innerHTML="";
+widget=new TradingView.widget({
+container_id:"mainChart",
+symbol:symbol,
+interval:tf,
+theme:"dark",
+width:"100%",
+height:450,
+studies:[
+"RSI@tv-basicstudies",
+"MACD@tv-basicstudies",
+"Stochastic@tv-basicstudies",
+"MAExp@tv-basicstudies"
+]
+});
+}
 
 /* ---------- SIGNAL ---------- */
 function compute(d){
@@ -65,18 +175,19 @@ if(d.rsi>70 && d.macd<d.signal) action="SELL";
 return {...d,action};
 }
 
-/* ---------- DATA ---------- */
+/* ---------- FAKE DATA ---------- */
 function fakeData(){
-return {
+return{
 rsi:Math.random()*100,
 macd:Math.random(),
-signal:Math.random()
+signal:Math.random(),
+stochastic:Math.random()*100
 };
 }
 
 /* ---------- RENDER ---------- */
 function renderBar(){
-let bar=document.getElementById("scoreBar");
+let bar=document.getElementById("score-bar");
 bar.innerHTML="";
 
 Object.keys(signals).forEach(sym=>{
@@ -84,124 +195,150 @@ let s=signals[sym];
 
 let div=document.createElement("div");
 div.className="box";
-div.style.background=s.action==="BUY"?"green":s.action==="SELL"?"red":"gray";
 
 div.innerHTML=`
-<b>${sym}</b> ${s.action}<br>
-RSI:${Math.round(s.rsi)}
-<br>${s.option?`$${s.option.last} Δ:${s.option.delta}`:""}
+<b>${sym}</b><br>
+${s.action}
+<br>
+${s.option?`$${s.option.price} Δ:${s.option.delta}`:"Δ:-- IV:--"}
 `;
 
-div.onclick=()=>setSym(sym);
+div.style.background=
+mode==="sniper"?"#0ea5e9":
+(s.action==="BUY"?"#14532d":"#7f1d1d");
+
+div.onclick=()=>setSymbol(sym);
 
 bar.appendChild(div);
 });
 }
 
-/* ---------- OPTIONS ---------- */
-function genOptions(){
-let o=document.getElementById("options");
-o.innerHTML="";
+function renderHeatmap(){
+let map=document.getElementById("heatmap");
+map.innerHTML="";
 
-["CALL","PUT"].forEach(t=>{
+Object.keys(signals).forEach(sym=>{
+let d=signals[sym];
+
+let t=document.createElement("div");
+t.className="tile";
+
+t.innerText=`${sym}\n${Math.round(d.rsi)}`;
+
+t.style.background=
+d.rsi>70?"red":
+d.rsi<30?"green":"orange";
+
+t.onclick=()=>setSymbol(sym);
+
+map.appendChild(t);
+});
+
+renderHeatmapValues();
+}
+
+function renderHeatmapValues(){
+let c=document.getElementById("heatmap-values");
+c.innerHTML="";
+
+Object.keys(signals).forEach(sym=>{
+let s=signals[sym];
+
+let div=document.createElement("div");
+div.className="heat-cell";
+
+div.innerHTML=`
+<b>${sym}</b><br>
+RSI:${Math.round(s.rsi)}
+<br>${s.action}
+`;
+
+div.onclick=()=>setSymbol(sym);
+
+c.appendChild(div);
+});
+}
+
+/* ---------- OPTIONS ---------- */
+function loadOptions(sym){
+let panel=document.getElementById("options-panel");
+panel.innerHTML="";
+
 for(let i=0;i<3;i++){
 let strike=100+Math.floor(Math.random()*50);
 
 let div=document.createElement("div");
-div.className="option";
-div.innerText=`${t} ${strike}`;
+div.className="option-cell";
+
+div.innerText=`CALL ${strike}`;
 
 div.onclick=()=>{
-signals[current].option={
-last:(Math.random()*5).toFixed(2),
+signals[sym].option={
+price:(Math.random()*5).toFixed(2),
 delta:(Math.random()).toFixed(2)
 };
 renderBar();
-calc();
 };
 
-o.appendChild(div);
+panel.appendChild(div);
 }
-});
-}
-
-/* ---------- ACCOUNT ---------- */
-function calc(){
-let B=+bal.value;
-let R=risk.value/100;
-let S=stop.value/100;
-
-let contracts=Math.floor((B*R)/(1*S))||1;
-
-ladder.innerHTML=`Contracts: ${contracts}`;
 }
 
 /* ---------- ALERT ---------- */
-function alertPop(a){
+function processAlerts(){
+if(showingAlert||alertQueue.length===0)return;
+
+showingAlert=true;
+let a=alertQueue.shift();
+
 let d=document.createElement("div");
 d.className="alert";
-d.style.background=a==="BUY"?"green":"red";
-d.innerText=a;
+d.style.background=a.action==="BUY"?"green":"red";
+d.innerText=`${a.action} ${a.sym}`;
+
 document.body.appendChild(d);
-setTimeout(()=>d.remove(),2000);
-}
 
-/* ---------- WATCHLIST ---------- */
-const wl=["AAPL","TSLA","NVDA","SPY"];
-
-function renderWL(){
-let w=document.getElementById("wl");
-w.innerHTML="";
-
-wl.forEach(s=>{
-let div=document.createElement("div");
-div.className="box";
-div.innerText=s;
-div.onclick=()=>setSym(s);
-w.appendChild(div);
-});
-}
-
-/* ---------- CHART ---------- */
-function loadChart(s){
-tv.innerHTML="";
-new TradingView.widget({
-container_id:"tv",
-symbol:s,
-theme:"dark",
-width:"100%",
-height:400
-});
-}
-
-/* ---------- SET SYMBOL ---------- */
-function setSym(s){
-current=s;
-loadChart(s);
-genOptions();
+setTimeout(()=>{
+d.remove();
+showingAlert=false;
+processAlerts();
+},2000);
 }
 
 /* ---------- LOOP ---------- */
-function loop(){
-wl.forEach(sym=>{
+function update(){
+watchlist.forEach(sym=>{
 let d=fakeData();
 let s=compute(d);
+
 signals[sym]=s;
 
 if(s.action!=="WAIT"){
-alertPop(s.action);
+alertQueue.push({sym,...s});
 }
 });
 
 renderBar();
+renderHeatmap();
+processAlerts();
 }
 
-setInterval(loop,4000);
+/* ---------- SETTERS ---------- */
+function setSymbol(s){
+symbol=s;
+loadChart();
+loadOptions(s);
+}
+function setTF(t){tf=t;loadChart();}
+function setMode(m){
+mode=m;
+document.getElementById("signal-wrap").classList.toggle("sniper", m==="sniper");
+}
 
-/* ---------- INIT ---------- */
-renderWL();
-setSym("AAPL");
-loop();
+/* INIT */
+loadChart();
+setSymbol("AAPL");
+setInterval(update,4000);
 </script>
 </body>
 </html>

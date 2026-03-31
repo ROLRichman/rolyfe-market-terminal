@@ -7,7 +7,7 @@
 <style>
 body{
 margin:0;
-background:#020617;
+background:linear-gradient(#020617,#012a1a); /* subtle dark green tint */
 color:#e2e8f0;
 font-family:Arial;
 }
@@ -31,7 +31,7 @@ gap:6px;
 }
 
 /* CONTROLS */
-select,input,button{
+select,input{
 padding:8px;
 border-radius:6px;
 border:none;
@@ -43,6 +43,16 @@ button{
 background:#00ff88;
 color:#000;
 font-weight:bold;
+border:none;
+border-radius:6px;
+cursor:pointer;
+animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+0%{box-shadow:0 0 4px #00ff88;}
+50%{box-shadow:0 0 10px #00ff88;}
+100%{box-shadow:0 0 15px #00ff88;}
 }
 
 /* SECTIONS */
@@ -53,7 +63,7 @@ background:#0b0f1a;
 border-radius:10px;
 }
 
-/* CHART FIX */
+/* CHART WRAP */
 .chart-wrap{
 width:100%;
 overflow:hidden;
@@ -74,6 +84,9 @@ cursor:pointer;
 font-size:12px;
 }
 
+.buy{box-shadow:0 0 10px #00ff88}
+.sell{box-shadow:0 0 10px #ff4444}
+
 /* HEATMAP */
 .grid{
 display:grid;
@@ -89,9 +102,6 @@ text-align:center;
 cursor:pointer;
 font-size:12px;
 }
-
-.buy{box-shadow:0 0 10px #00ff88}
-.sell{box-shadow:0 0 10px #8b0000}
 
 /* ALERT */
 .alert{
@@ -151,21 +161,15 @@ text-decoration:none;
 <div id="watch" class="list"></div>
 </div>
 
-<!-- CHART -->
+<!-- MAIN CHART -->
 <div class="section chart-wrap">
-<div id="chart" style="height:350px"></div>
-</div>
+<div id="chart" style="height:450px"></div>
+<!-- OPTIONS & CALC BELOW CHART -->
+<button onclick="toggleOptions('options')">💥 Options Ladder</button>
+<div id="options" class="option-box"></div>
 
-<!-- OPTIONS -->
-<div class="section">
-<button onclick="toggleOptions()">💥 Options Ladder</button>
-<div id="options"></div>
-</div>
-
-<!-- CALC -->
-<div class="section">
-<button onclick="toggleCalc()">📊 Trade Calculator</button>
-<div id="calc"></div>
+<button onclick="toggleCalc('calc')">📊 Trade Calculator</button>
+<div id="calc" class="option-box"></div>
 </div>
 
 <!-- HEATMAP -->
@@ -188,7 +192,14 @@ text-decoration:none;
 <option>NQ1!</option>
 </select>
 
-<div id="chart2" style="height:300px"></div>
+<div id="chart2" style="height:400px"></div>
+
+<!-- OPTIONS & CALC BELOW SECOND CHART -->
+<button onclick="toggleOptions('options2')">💥 Options Ladder</button>
+<div id="options2" class="option-box"></div>
+
+<button onclick="toggleCalc('calc2')">📊 Trade Calculator</button>
+<div id="calc2" class="option-box"></div>
 </div>
 
 <!-- LINKS -->
@@ -206,11 +217,11 @@ text-decoration:none;
 </div>
 
 <script>
-
 let symbol="AAPL";
 let tf="15";
 let mode="live";
 
+/* FULL WATCHLIST FOR LIVE/SNIPER */
 const watchlist=[
 "AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META",
 "GOOGL","BAC","C","AMD","PLTR","COIN","SHOP","TSM",
@@ -219,7 +230,14 @@ const watchlist=[
 "ES1!","NQ1!","DXY","GLD","SLV"
 ];
 
-let signals={};
+/* PRESET SIGNALS FOR DEMO PURPOSES */
+let signals={
+"AAPL":"SELL","TSLA":"SELL","NVDA":"SELL","SPY":"WAIT","QQQ":"SELL","MSFT":"BUY",
+"AMZN":"BUY","META":"SELL","GOOGL":"WAIT","BAC":"WAIT","C":"WAIT","AMD":"SELL",
+"PLTR":"WAIT","COIN":"WAIT","SHOP":"SELL","TSM":"BUY","BTCUSD":"SELL","ETHUSD":"WAIT",
+"SOLUSD":"SELL","XRPUSD":"BUY","EURUSD":"BUY","GBPUSD":"WAIT","USDJPY":"WAIT",
+"ES1!":"WAIT","NQ1!":"SELL","DXY":"BUY","GLD":"WAIT","SLV":"WAIT"
+};
 
 window.onload=()=>{
 let sel=document.getElementById("symbol-select");
@@ -228,32 +246,22 @@ let o=document.createElement("option");
 o.value=s;o.text=s;
 sel.appendChild(o);
 });
-
 loadChart();
 loadChart2("AAPL");
 renderWatchlist();
 loop();
 };
 
-/* WATCHLIST / SNIPER */
 function renderWatchlist(){
 let w=document.getElementById("watch");
 w.innerHTML="";
-
 watchlist.forEach(s=>{
-let d=signals[s]||{action:"WAIT"};
-
-if(mode==="sniper" && d.action==="WAIT") return;
-
+let action=signals[s];
+if(mode==="sniper" && action==="WAIT") return;
 let div=document.createElement("div");
-div.className="item";
-div.innerText=s+" "+d.action;
-
-div.onclick=()=>{
-symbol=s;
-loadChart();
-};
-
+div.className="item "+(action==="BUY"?"buy":action==="SELL"?"sell":"");
+div.innerText=s+" "+action;
+div.onclick=()=>{symbol=s;loadChart();}
 w.appendChild(div);
 });
 }
@@ -294,65 +302,10 @@ studies:[
 });
 }
 
-/* SIGNALS */
-function buildSignal(sym){
-let rsi=Math.random()*100;
-let stoch=Math.random()*100;
-
-let action="WAIT";
-
-if(mode==="sniper"){
-if(rsi<25 && stoch<20) action="BUY";
-if(rsi>75 && stoch>80) action="SELL";
-}else{
-if(rsi<30) action="BUY";
-if(rsi>70) action="SELL";
-}
-
-signals[sym]={rsi,stoch,action};
-
-if(action!=="WAIT") fireAlert(sym,action,rsi);
-}
-
-/* HEATMAP */
-function renderHeat(){
-let map=document.getElementById("heatmap");
-map.innerHTML="";
-
-Object.keys(signals).forEach(s=>{
-let d=signals[s];
-
-let c=document.createElement("div");
-c.className="cell "+(d.action==="BUY"?"buy":d.action==="SELL"?"sell":"");
-
-c.innerHTML=`${s}<br>${d.action}<br>${Math.round(d.rsi)}`;
-
-c.onclick=()=>{
-symbol=s;
-loadChart();
-};
-
-map.appendChild(c);
-});
-}
-
-/* ALERT */
-function fireAlert(sym,act,rsi){
-let div=document.createElement("div");
-div.className="alert";
-div.style.top=(60+document.querySelectorAll(".alert").length*50)+"px";
-div.style.color=act==="BUY"?"#00ff88":"#ff4444";
-div.innerText=act+" "+sym+" RSI:"+Math.round(rsi);
-
-document.body.appendChild(div);
-setTimeout(()=>div.remove(),4000);
-}
-
-/* OPTIONS */
-function toggleOptions(){
-let o=document.getElementById("options");
+/* OPTIONS & CALC */
+function toggleOptions(id){
+let o=document.getElementById(id);
 o.innerHTML="";
-
 for(let i=0;i<5;i++){
 let d=document.createElement("div");
 d.className="option-box";
@@ -361,47 +314,68 @@ o.appendChild(d);
 }
 }
 
-/* CALC */
-function toggleCalc(){
-let c=document.getElementById("calc");
+function toggleCalc(id){
+let c=document.getElementById(id);
 c.innerHTML=`
 Balance <input id="bal" value="500">
 Risk % <input id="risk" value="5">
 Entry <input id="entry" value="1.5">
 Stop <input id="stop" value="1.2">
-<button onclick="runCalc()">CALCULATE</button>
-<div id="result"></div>
+<button onclick="runCalc('${id}')">CALCULATE</button>
+<div id="result_${id}"></div>
 `;
 }
 
-function runCalc(){
+function runCalc(id){
 let B=+bal.value||0;
 let R=+risk.value/100||0;
 let E=+entry.value||0;
 let S=+stop.value||0;
-
 let riskAmt=B*R;
 let diff=Math.abs(E-S)||1;
-
 let qty=Math.floor(riskAmt/diff);
-
-result.innerHTML=`
-Qty:${qty}<br>
-Risk:$${riskAmt.toFixed(2)}<br>
-T1:${(E+diff).toFixed(2)}<br>
-T2:${(E+2*diff).toFixed(2)}<br>
-T3:${(E+3*diff).toFixed(2)}
+document.getElementById("result_"+id).innerHTML=`
+Qty:${qty}<br>Risk:$${riskAmt.toFixed(2)}<br>T1:${(E+diff).toFixed(2)}<br>T2:${(E+2*diff).toFixed(2)}<br>T3:${(E+3*diff).toFixed(2)}
 `;
 }
 
-/* LOOP */
+/* ALERTS DEMO */
+function fireAlert(sym,act){
+let div=document.createElement("div");
+div.className="alert";
+div.style.top=(60+document.querySelectorAll(".alert").length*50)+"px";
+div.style.color=act==="BUY"?"#00ff88":"#ff4444";
+div.innerText=act+" "+sym;
+document.body.appendChild(div);
+setTimeout(()=>div.remove(),4000);
+}
+
 function loop(){
-watchlist.forEach(s=>buildSignal(s));
-renderHeat();
+watchlist.forEach(s=>{
+buildSignal(s);
+});
 renderWatchlist();
 setTimeout(loop,12000);
 }
 
+function buildSignal(sym){
+let action=signals[sym];
+signals[sym]=action;
+renderHeat();
+}
+
+function renderHeat(){
+let map=document.getElementById("heatmap");
+map.innerHTML="";
+Object.keys(signals).forEach(s=>{
+let d=signals[s];
+let c=document.createElement("div");
+c.className="cell "+(d==="BUY"?"buy":d==="SELL"?"sell":"");
+c.innerHTML=`${s}<br>${d}`;
+c.onclick=()=>{symbol=s;loadChart();}
+map.appendChild(c);
+});
+}
 </script>
 </body>
 </html>

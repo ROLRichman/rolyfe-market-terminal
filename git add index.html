@@ -5,21 +5,62 @@
 <script src="https://s3.tradingview.com/tv.js"></script>
 
 <style>
-body{background:#020617;color:#e2e8f0;font-family:Arial;margin:0;transition:.4s}
+body{
+margin:0;
+font-family:Arial;
+color:#e2e8f0;
+background:linear-gradient(#022c22,#020617);
+transition:.4s;
+}
+
 #app{padding:12px;max-width:1400px;margin:auto}
 
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+
+select,input,button{
+padding:8px;
+border-radius:6px;
+border:none;
+}
+
+select,input{background:#111;color:#fff}
+button{background:#00ff88;color:#000;font-weight:bold;cursor:pointer}
+
 .section{margin-top:20px}
 
-select,input{padding:8px;border-radius:6px;background:#111;color:#fff;border:none}
-button{padding:10px;border:none;border-radius:8px;background:#00ff88;color:#000;font-weight:bold;cursor:pointer}
+.box{
+background:#111;
+padding:8px;
+border-radius:6px;
+font-size:12px;
+cursor:pointer;
+}
 
-.box{background:#111;padding:10px;border-radius:8px;font-size:12px;cursor:pointer}
-.tile{width:80px;height:80px;background:#111;border-radius:8px;font-size:11px;display:flex;align-items:center;justify-content:center;text-align:center}
+.box:hover{transform:scale(1.05)}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+gap:8px;
+max-height:320px;
+overflow-y:auto;
+}
 
-.alert{position:fixed;right:10px;padding:10px;border-radius:8px;font-weight:bold;z-index:999}
+.cell{
+background:#111;
+padding:10px;
+border-radius:6px;
+font-size:12px;
+}
+
+.alert{
+position:fixed;
+right:10px;
+padding:10px;
+border-radius:8px;
+font-weight:bold;
+z-index:999;
+}
 
 .link-green{color:#00ff88;text-decoration:none}
 .link-green:hover{text-shadow:0 0 8px #00ff88}
@@ -51,14 +92,12 @@ button{padding:10px;border:none;border-radius:8px;background:#00ff88;color:#000;
 <div id="score-bar" class="row"></div>
 
 <!-- MAIN CHART -->
-<div class="section">
-<div id="chart" style="height:420px"></div>
-</div>
+<div id="chart" style="height:400px"></div>
 
 <!-- OPTIONS -->
 <div class="section">
 <button onclick="toggleOptions()">💥 Show Options Ladder</button>
-<div id="options" class="row"></div>
+<div id="options"></div>
 </div>
 
 <!-- CALCULATOR -->
@@ -76,19 +115,31 @@ button{padding:10px;border:none;border-radius:8px;background:#00ff88;color:#000;
 <div id="heatmap-values" class="grid"></div>
 </div>
 
+<!-- SNIPER TRIGGERS -->
+<div class="section">
+<h3>🎯 Sniper Triggers</h3>
+<div id="triggers" class="grid"></div>
+</div>
+
 <!-- SECOND CHART -->
 <div class="section">
 <h3>Market Multi-Chart</h3>
 
 <select onchange="loadChart2(this.value)">
-<option>AAPL</option><option>TSLA</option><option>NVDA</option>
-<option>SPY</option><option>QQQ</option>
-<option>BTCUSD</option><option>ETHUSD</option>
-<option>EURUSD</option><option>GBPUSD</option>
-<option>ES1!</option><option>NQ1!</option>
+<option>BTCUSD</option>
+<option>ETHUSD</option>
+<option>SOLUSD</option>
+<option>EURUSD</option>
+<option>GBPUSD</option>
+<option>USDJPY</option>
+<option>ES1!</option>
+<option>NQ1!</option>
 </select>
 
-<div id="chart2" style="height:360px"></div>
+<div id="chart2" style="height:350px"></div>
+
+<button onclick="toggleOptions()">💥 Show Options Ladder</button>
+<button onclick="toggleCalc()">📊 Trade Calculator</button>
 </div>
 
 <!-- LINKS -->
@@ -97,8 +148,11 @@ button{padding:10px;border:none;border-radius:8px;background:#00ff88;color:#000;
 <ul>
 <li><a class="link-green" target="_blank" href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX">Major Market</a></li>
 <li><a class="link-green" target="_blank" href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF">Sector Rotation</a></li>
-<li><a class="link-green" target="_blank" href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000,sh_opt_optionshort">FinViz Screener</a></li>
+<li><a class="link-green" target="_blank" href="https://finviz.com/screener.ashx?v=211&f=sh_avgvol_o2000">FinViz Screener</a></li>
 <li><a class="link-green" target="_blank" href="https://finance.yahoo.com/">Yahoo Finance</a></li>
+<li><a class="link-green" target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Economic Calendar</a></li>
+<li><a class="link-green" target="_blank" href="https://finviz.com/map.ashx?t=sec">S&P Heatmap</a></li>
+<li><a class="link-green" target="_blank" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html">FedWatch</a></li>
 </ul>
 </div>
 
@@ -106,11 +160,12 @@ button{padding:10px;border:none;border-radius:8px;background:#00ff88;color:#000;
 
 <script>
 
+// STATE
 let symbol="AAPL", tf="15", mode="live";
 
 const watchlist=[
-"AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META","GOOGL","BAC","C",
-"AMD","PLTR","COIN","SHOP","TSM",
+"AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META","GOOGL",
+"BAC","C","AMD","PLTR","COIN","SHOP","TSM",
 "BTCUSD","ETHUSD","SOLUSD","XRPUSD",
 "EURUSD","GBPUSD","USDJPY",
 "ES1!","NQ1!"
@@ -118,28 +173,27 @@ const watchlist=[
 
 let signals={};
 
+// INIT
 window.onload=()=>{
 let sel=document.getElementById("symbol-select");
-
 watchlist.forEach(s=>{
 let o=document.createElement("option");
 o.value=s;o.text=s;
 sel.appendChild(o);
 });
-
-sel.onchange=(e)=>{symbol=e.target.value;loadChart();};
-
 loadChart();
 loadChart2("BTCUSD");
 loop();
 };
 
+// FILTER
 function filter(v){
 document.querySelectorAll("#symbol-select option").forEach(o=>{
 o.style.display=o.value.includes(v.toUpperCase())?"block":"none";
 });
 }
 
+// CHARTS (SEARCH ENABLED)
 function loadChart(){
 document.getElementById("chart").innerHTML="";
 new TradingView.widget({
@@ -147,12 +201,8 @@ container_id:"chart",
 symbol:symbol,
 interval:tf,
 theme:"dark",
-studies:[
-"RSI@tv-basicstudies",
-"MACD@tv-basicstudies",
-"Stochastic@tv-basicstudies",
-"MASimple@tv-basicstudies"
-]
+allow_symbol_change:true,
+studies:["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies","MASimple@tv-basicstudies"]
 });
 }
 
@@ -162,66 +212,104 @@ new TradingView.widget({
 container_id:"chart2",
 symbol:sym,
 interval:"15",
-theme:"dark"
+theme:"dark",
+allow_symbol_change:true,
+studies:["RSI@tv-basicstudies","Stochastic@tv-basicstudies"]
 });
 }
 
-function buildSignal(sym){
+// SIGNAL ENGINE
+async function buildSignal(sym){
 let rsi=Math.random()*100;
 let stoch=Math.random()*100;
 
-let action="WAIT";
+let action="WAIT",trend="NO SETUP";
 
-if(rsi<30 && stoch<20) action="BUY";
-if(rsi>70 && stoch>80) action="SELL";
+if(rsi<30 && stoch<20){action="BUY";trend="OVERSOLD";}
+if(rsi>70 && stoch>80){action="SELL";trend="OVERBOUGHT";}
 
-signals[sym]={rsi,stoch,action};
+signals[sym]={rsi,stoch,action,trend};
 
-if(action!=="WAIT") fireAlert(sym,action,rsi,stoch);
+if(action!=="WAIT"){
+fireAlert(sym,action,rsi,stoch);
+flashBackground(action);
+}
 }
 
+// RENDER
 function render(){
 
 let bar=document.getElementById("score-bar");
 let heat=document.getElementById("heatmap");
 let grid=document.getElementById("heatmap-values");
+let trig=document.getElementById("triggers");
 
 bar.innerHTML="";
 heat.innerHTML="";
 grid.innerHTML="";
+trig.innerHTML="";
 
 Object.keys(signals).forEach(s=>{
 let d=signals[s];
 
+// BAR
 let b=document.createElement("div");
 b.className="box";
 b.innerHTML=`${s}<br>${d.action}<br>${Math.round(d.rsi)}`;
-b.onclick=()=>{symbol=s;loadChart();};
+b.style.background = mode==="sniper" ? "#0ea5e9" : (d.action==="BUY"?"#14532d":"#7f1d1d");
+
+b.onclick=()=>{
+symbol=s;
+loadChart();
+loadChart2(s);
+};
+
 bar.appendChild(b);
 
+// HEATMAP
 let t=document.createElement("div");
-t.className="tile";
+t.className="box";
 t.innerText=s+"\n"+Math.round(d.rsi);
+t.onclick=()=>loadChart2(s);
 heat.appendChild(t);
 
+// GRID
 let c=document.createElement("div");
-c.className="box";
-c.innerHTML=`${s}<br>RSI:${Math.round(d.rsi)}<br>${d.action}`;
+c.className="cell";
+c.innerHTML=`<b>${s}</b><br>RSI:${Math.round(d.rsi)}<br>${d.trend}<br>${d.action}`;
 grid.appendChild(c);
+
+// TRIGGERS
+if(d.rsi<30 || d.stoch<20 || d.rsi>70 || d.stoch>80){
+let tr=document.createElement("div");
+tr.className="box";
+tr.innerHTML=`${s}<br>RSI:${Math.round(d.rsi)}<br>STOCH:${Math.round(d.stoch)}`;
+tr.onclick=()=>{symbol=s;loadChart();};
+trig.appendChild(tr);
+}
 
 });
 }
 
+// ALERTS
 function fireAlert(sym,act,rsi,stoch){
 let div=document.createElement("div");
 div.className="alert";
-div.style.top=(60+document.querySelectorAll(".alert").length*60)+"px";
+div.style.top=(60 + document.querySelectorAll(".alert").length*60)+"px";
 div.style.background=act==="BUY"?"#00ff88":"#ff4444";
 div.innerHTML=`${act} ${sym}<br>RSI:${Math.round(rsi)} STOCH:${Math.round(stoch)}`;
 document.body.appendChild(div);
 setTimeout(()=>div.remove(),5000);
 }
 
+// BACKGROUND FLOW
+function flashBackground(type){
+document.body.style.background=type==="BUY"
+? "linear-gradient(#022c22,#020617)"
+: "linear-gradient(#3f0000,#020617)";
+}
+
+// OPTIONS
 function toggleOptions(){
 let o=document.getElementById("options");
 o.innerHTML="";
@@ -233,6 +321,7 @@ o.appendChild(d);
 }
 }
 
+// CALCULATOR
 function toggleCalc(){
 let c=document.getElementById("calc");
 c.innerHTML=`
@@ -252,21 +341,29 @@ let E=+entry.value;
 let S=+stop.value;
 
 let riskAmt=B*R;
-let per=Math.abs(E-S)||1;
-
+let per=Math.abs(E-S);
 let qty=Math.floor(riskAmt/per);
+
+let pnl1=(E+per - E)*qty;
+let pnl2=(E+2*per - E)*qty;
+let pnl3=(E+3*per - E)*qty;
 
 result.innerHTML=`
 Qty:${qty}<br>
-Risk:$${riskAmt.toFixed(2)}<br>
-T1:${(E+per).toFixed(2)}<br>
-T2:${(E+2*per).toFixed(2)}<br>
-T3:${(E+3*per).toFixed(2)}
+Risk:$${riskAmt.toFixed(2)}<br><br>
+T1:$${pnl1.toFixed(2)}<br>
+T2:$${pnl2.toFixed(2)}<br>
+T3:$${pnl3.toFixed(2)}<br><br>
+Early Exit:${(E+0.5*per).toFixed(2)}<br>
+Runner: OPEN
 `;
 }
 
-function loop(){
-watchlist.forEach(buildSignal);
+// LOOP
+async function loop(){
+for(let s of watchlist){
+await buildSignal(s);
+}
 render();
 setTimeout(loop,15000);
 }

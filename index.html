@@ -6,14 +6,18 @@
 
 <style>
 body{
-background:linear-gradient(#020617,#022c22,#020617);
+margin:0;
+background:#020617;
 color:#e2e8f0;
 font-family:Arial;
-margin:0;
 }
 
-#app{padding:12px}
+#app{padding:10px;max-width:100%}
 
+/* HEADER */
+h2{text-align:center}
+
+/* TOP BAR */
 .topbar{
 position:sticky;
 top:0;
@@ -21,77 +25,100 @@ background:#020617;
 padding:10px;
 z-index:1000;
 border-bottom:1px solid #111;
+display:flex;
+flex-wrap:wrap;
+gap:6px;
 }
 
-.section{
-margin-top:18px;
-padding:12px;
-background:#0b0f1a;
-border-radius:12px;
-}
-
-.stack{display:flex;flex-direction:column;gap:12px}
-
-button,select,input{
+/* CONTROLS */
+select,input,button{
 padding:8px;
 border-radius:6px;
+border:none;
 background:#111;
 color:#fff;
-border:none;
-margin:4px;
 }
 
 button{
 background:#00ff88;
 color:#000;
 font-weight:bold;
-cursor:pointer;
 }
 
-#chart,#chart2{
-height:420px;
-margin-top:10px;
+/* SECTIONS */
+.section{
+margin-top:15px;
+padding:10px;
+background:#0b0f1a;
+border-radius:10px;
+}
+
+/* CHART FIX */
+.chart-wrap{
+width:100%;
+overflow:hidden;
+}
+
+/* WATCHLIST */
+.list{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+}
+
+.item{
+background:#111;
+padding:6px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
 }
 
 /* HEATMAP */
 .grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-gap:8px;
+grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+gap:6px;
 }
 
 .cell{
 background:#111;
-padding:8px;
+padding:6px;
 border-radius:6px;
-cursor:pointer;
 text-align:center;
-transition:0.2s;
+cursor:pointer;
+font-size:12px;
 }
-
-.cell:hover{transform:scale(1.05)}
 
 .buy{box-shadow:0 0 10px #00ff88}
 .sell{box-shadow:0 0 10px #8b0000}
 
-/* ALERTS */
+/* ALERT */
 .alert{
 position:fixed;
 right:10px;
 padding:10px;
-border-radius:8px;
-font-weight:bold;
-z-index:999;
 background:#000;
 color:#fff;
+border-radius:8px;
+z-index:999;
+font-size:12px;
 }
 
 /* OPTIONS */
 .option-box{
 background:#111;
-padding:8px;
-border-radius:6px;
+padding:6px;
 margin:4px 0;
+border-radius:6px;
+}
+
+/* LINKS */
+.link{
+color:#00ff88;
+display:block;
+margin:3px 0;
+text-decoration:none;
 }
 </style>
 </head>
@@ -99,13 +126,13 @@ margin:4px 0;
 <body>
 <div id="app">
 
-<h2>🔥 RO’Lyfe Sniper Terminal</h2>
+<h2>🔥 RO’Lyfe Terminal</h2>
 
 <!-- CONTROLS -->
 <div class="topbar">
 <select id="symbol-select"></select>
 
-<select onchange="mode=this.value">
+<select onchange="mode=this.value;renderWatchlist()">
 <option value="live">LIVE</option>
 <option value="sniper">SNIPER</option>
 </select>
@@ -118,53 +145,62 @@ margin:4px 0;
 </select>
 </div>
 
-<!-- VIDEO -->
+<!-- WATCHLIST / SNIPER LIST -->
 <div class="section">
-<iframe width="100%" height="300"
-src="https://www.youtube.com/embed/S7vkiIX6yG4"
-frameborder="0" allowfullscreen></iframe>
+<h3>Market List</h3>
+<div id="watch" class="list"></div>
 </div>
 
-<!-- MAIN CHART -->
-<div class="section">
-<div id="chart"></div>
+<!-- CHART -->
+<div class="section chart-wrap">
+<div id="chart" style="height:350px"></div>
 </div>
 
-<!-- OPTIONS + CALC -->
-<div class="section stack">
-
+<!-- OPTIONS -->
+<div class="section">
 <button onclick="toggleOptions()">💥 Options Ladder</button>
 <div id="options"></div>
+</div>
 
+<!-- CALC -->
+<div class="section">
 <button onclick="toggleCalc()">📊 Trade Calculator</button>
 <div id="calc"></div>
-
 </div>
 
 <!-- HEATMAP -->
 <div class="section">
-<h3>Market Heatmap (RSI + STOCH)</h3>
+<h3>Heatmap</h3>
 <div id="heatmap" class="grid"></div>
 </div>
 
 <!-- SECOND CHART -->
-<div class="section">
-<h3>Market Multi Chart</h3>
+<div class="section chart-wrap">
+<h3>Multi Chart</h3>
 
 <select onchange="loadChart2(this.value)">
 <option>AAPL</option>
 <option>TSLA</option>
-<option>NVDA</option>
 <option>SPY</option>
 <option>BTCUSD</option>
-<option>ETHUSD</option>
 <option>EURUSD</option>
 <option>ES1!</option>
 <option>NQ1!</option>
 </select>
 
-<div id="chart2"></div>
+<div id="chart2" style="height:300px"></div>
+</div>
 
+<!-- LINKS -->
+<div class="section">
+<h3>Market & Tools</h3>
+<a class="link" target="_blank" href="https://stockcharts.com/freecharts/perf.php?$COMPQ,iwm,$INDU,$SPX">Major Market</a>
+<a class="link" target="_blank" href="https://stockcharts.com/freecharts/perf.php?SPY,XLY,XLC,XLK,XLI,XLB,XLE,XLP,XLV,XLU,XLF">Sector Rotation</a>
+<a class="link" target="_blank" href="https://finviz.com/screener.ashx?v=211">FinViz Screener</a>
+<a class="link" target="_blank" href="https://finance.yahoo.com/">Yahoo Finance</a>
+<a class="link" target="_blank" href="https://www.marketwatch.com/economy-politics/calendar">Economic Calendar</a>
+<a class="link" target="_blank" href="https://finviz.com/map.ashx">S&P Heatmap</a>
+<a class="link" target="_blank" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html">FedWatch</a>
 </div>
 
 </div>
@@ -179,7 +215,8 @@ const watchlist=[
 "AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META",
 "GOOGL","BAC","C","AMD","PLTR","COIN","SHOP","TSM",
 "BTCUSD","ETHUSD","SOLUSD","XRPUSD",
-"EURUSD","GBPUSD","USDJPY","ES1!","NQ1!"
+"EURUSD","GBPUSD","USDJPY",
+"ES1!","NQ1!","DXY","GLD","SLV"
 ];
 
 let signals={};
@@ -194,10 +231,34 @@ sel.appendChild(o);
 
 loadChart();
 loadChart2("AAPL");
+renderWatchlist();
 loop();
 };
 
-/* CHART 1 */
+/* WATCHLIST / SNIPER */
+function renderWatchlist(){
+let w=document.getElementById("watch");
+w.innerHTML="";
+
+watchlist.forEach(s=>{
+let d=signals[s]||{action:"WAIT"};
+
+if(mode==="sniper" && d.action==="WAIT") return;
+
+let div=document.createElement("div");
+div.className="item";
+div.innerText=s+" "+d.action;
+
+div.onclick=()=>{
+symbol=s;
+loadChart();
+};
+
+w.appendChild(div);
+});
+}
+
+/* CHARTS */
 function loadChart(){
 document.getElementById("chart").innerHTML="";
 new TradingView.widget({
@@ -215,7 +276,6 @@ studies:[
 });
 }
 
-/* CHART 2 FULL INDICATORS */
 function loadChart2(sym){
 document.getElementById("chart2").innerHTML="";
 new TradingView.widget({
@@ -234,7 +294,7 @@ studies:[
 });
 }
 
-/* SIGNAL ENGINE */
+/* SIGNALS */
 function buildSignal(sym){
 let rsi=Math.random()*100;
 let stoch=Math.random()*100;
@@ -251,52 +311,41 @@ if(rsi>70) action="SELL";
 
 signals[sym]={rsi,stoch,action};
 
-if(action!=="WAIT"){
-fireAlert(sym,action,rsi,stoch);
-}
+if(action!=="WAIT") fireAlert(sym,action,rsi);
 }
 
 /* HEATMAP */
-function render(){
+function renderHeat(){
 let map=document.getElementById("heatmap");
 map.innerHTML="";
 
 Object.keys(signals).forEach(s=>{
 let d=signals[s];
 
-let div=document.createElement("div");
-div.className="cell "+(d.action==="BUY"?"buy":d.action==="SELL"?"sell":"");
+let c=document.createElement("div");
+c.className="cell "+(d.action==="BUY"?"buy":d.action==="SELL"?"sell":"");
 
-div.innerHTML=`
-<b>${s}</b><br>
-${d.action}<br>
-RSI:${Math.round(d.rsi)}<br>
-ST:${Math.round(d.stoch)}
-`;
+c.innerHTML=`${s}<br>${d.action}<br>${Math.round(d.rsi)}`;
 
-div.onclick=()=>{
+c.onclick=()=>{
 symbol=s;
 loadChart();
 };
 
-map.appendChild(div);
+map.appendChild(c);
 });
 }
 
-/* ALERTS */
-function fireAlert(sym,act,rsi,stoch){
+/* ALERT */
+function fireAlert(sym,act,rsi){
 let div=document.createElement("div");
 div.className="alert";
-div.style.top=(60+document.querySelectorAll(".alert").length*60)+"px";
+div.style.top=(60+document.querySelectorAll(".alert").length*50)+"px";
 div.style.color=act==="BUY"?"#00ff88":"#ff4444";
-
-div.innerHTML=`
-${act} ${sym}<br>
-RSI:${Math.round(rsi)} STO:${Math.round(stoch)}
-`;
+div.innerText=act+" "+sym+" RSI:"+Math.round(rsi);
 
 document.body.appendChild(div);
-setTimeout(()=>div.remove(),5000);
+setTimeout(()=>div.remove(),4000);
 }
 
 /* OPTIONS */
@@ -305,15 +354,14 @@ let o=document.getElementById("options");
 o.innerHTML="";
 
 for(let i=0;i<5;i++){
-let strike=100+i*5;
 let d=document.createElement("div");
 d.className="option-box";
-d.innerText=`${symbol} CALL ${strike}`;
+d.innerText=`${symbol} CALL ${100+i*5}`;
 o.appendChild(d);
 }
 }
 
-/* CALCULATOR */
+/* CALC */
 function toggleCalc(){
 let c=document.getElementById("calc");
 c.innerHTML=`
@@ -321,9 +369,7 @@ Balance <input id="bal" value="500">
 Risk % <input id="risk" value="5">
 Entry <input id="entry" value="1.5">
 Stop <input id="stop" value="1.2">
-
 <button onclick="runCalc()">CALCULATE</button>
-
 <div id="result"></div>
 `;
 }
@@ -339,23 +385,20 @@ let diff=Math.abs(E-S)||1;
 
 let qty=Math.floor(riskAmt/diff);
 
-let t1=E+diff;
-let t2=E+2*diff;
-let t3=E+3*diff;
-
 result.innerHTML=`
 Qty:${qty}<br>
 Risk:$${riskAmt.toFixed(2)}<br>
-T1:${t1.toFixed(2)}<br>
-T2:${t2.toFixed(2)}<br>
-T3:${t3.toFixed(2)}
+T1:${(E+diff).toFixed(2)}<br>
+T2:${(E+2*diff).toFixed(2)}<br>
+T3:${(E+3*diff).toFixed(2)}
 `;
 }
 
 /* LOOP */
 function loop(){
 watchlist.forEach(s=>buildSignal(s));
-render();
+renderHeat();
+renderWatchlist();
 setTimeout(loop,12000);
 }
 

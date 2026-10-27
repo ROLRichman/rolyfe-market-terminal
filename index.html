@@ -394,7 +394,7 @@ function showAnalysisStatus(result){
   if(!status)return;
   const barTime=Number(result.lastBarTime);
   const barDate=Number.isFinite(barTime)?new Date(barTime>1e12?barTime:barTime*1000).toLocaleString():"provider time unavailable";
-  status.textContent="DATA VERIFIED RESPONSE · "+symbol+" · "+result.provider+" · 15m candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
+  status.textContent="PROVIDER RESPONSE · "+symbol+" · "+result.provider+" · 15m candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
 }
 
 /* ALERT */
@@ -466,7 +466,7 @@ if((side==="long"&&S>=E)||(side==="short"&&S<=E)){
 }
 const riskAmt=B*R, diff=Math.abs(E-S), qty=Math.floor(riskAmt/diff);
 const direction=side==="long"?1:-1;
-result.innerHTML="Units: "+qty+"<br>Planned risk: $"+riskAmt.toFixed(2)+"<br>Risk per unit: $"+diff.toFixed(2)+"<br>T1: $"+(E+direction*diff).toFixed(2)+"<br>T2: $"+(E+direction*2*diff).toFixed(2)+"<br>T3: $"+(E+direction*3*diff).toFixed(2);
+result.innerHTML="Units: "+qty+"<br>Risk budget: $"+riskAmt.toFixed(2)+"<br>Estimated stop risk at this size: $"+(qty*diff).toFixed(2)+"<br>Risk per unit: $"+diff.toFixed(2)+"<br>T1: $"+(E+direction*diff).toFixed(2)+"<br>T2: $"+(E+direction*2*diff).toFixed(2)+"<br>T3: $"+(E+direction*3*diff).toFixed(2);
 }
 
 /* LOOP */

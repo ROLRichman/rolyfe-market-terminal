@@ -444,7 +444,7 @@ function loadChart(){
       container_id:"chart",
       symbol:chartSymbol(symbol),
       interval:tf,
-      range:chartRange==="ALL"?"all":chartRange,
+      range:chartRange,
       theme:"dark",
       allow_symbol_change:true,
       autosize:true,
@@ -468,7 +468,7 @@ function loadChart2(sym){
       container_id:"chart2",
       symbol:chartSymbol(sym),
       interval:tf,
-      range:chartRange==="ALL"?"all":chartRange,
+      range:chartRange,
       theme:"dark",
       autosize:true,
       studies:["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"]

@@ -193,7 +193,7 @@ color:#00ff88;
 margin:3px 0;
 text-decoration:none;
 }
-</style>
+.chart-container{width:100%;max-width:100%;overflow:hidden}.chart-inner{width:100%;min-width:0!important;max-width:100%;min-height:420px}#chart,#chart2{width:100%;height:480px;min-width:0}.chart-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 9px;font-size:11px;color:#aabbd0}.chart-controls input{flex:1;min-width:90px;max-width:220px}.learning-panel{margin-top:12px;padding:12px;background:linear-gradient(135deg,#071b17,#0b1220);border:1px solid #24503e;border-radius:12px}.learning-note{color:#aabbd0;font-size:12px;line-height:1.55;margin:6px 0 10px}.readiness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.readiness-card{border:1px solid #29384a;background:#080f19;border-radius:10px;padding:10px}.readiness-card p{margin:5px 0 0;color:#aabbd0;font-size:11px;line-height:1.5}.state-tag{display:inline-flex;border:1px solid #3a4a5d;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900}.state-tag.bull{color:#a6ffd4;border-color:#16865b}.state-tag.bear{color:#ffbac4;border-color:#b33b51}.state-tag.neutral{color:#d6dfeb}.indicator-list,.indicator-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.indicator-option{display:flex;gap:8px;padding:9px;border:1px solid #26364a;background:#080f19;border-radius:9px;font-size:12px}.indicator-option small{display:block;color:#90a5bd;font-size:10px;margin-top:3px}.indicator-mini{padding:9px;border:1px solid #25364a;border-radius:9px;background:#080f19}.indicator-mini p{font-size:11px;color:#aabbd0;line-height:1.45;margin:5px 0 0}.sniper-row{display:grid;grid-template-columns:60px minmax(0,1fr) auto;align-items:center;gap:8px;padding:9px;border:1px solid #26364a;border-radius:9px;background:#080f19;margin:6px 0}.sniper-row small{display:block;color:#9eb1c8;margin-top:3px}@media(max-width:650px){.chart-inner{min-width:0!important;width:100%}#chart,#chart2{height:480px}.chart-container{overflow:hidden}.readiness-grid,.indicator-list,.indicator-guide{grid-template-columns:1fr}.sniper-row{grid-template-columns:60px minmax(0,1fr)}.sniper-row button{grid-column:1/-1;width:100%}}</style>
 </head>
 
 <body>
@@ -257,9 +257,9 @@ text-decoration:none;
   </div>
 </details>
 
-<!-- MAIN CHART -->
+<details class="learning-panel" id="signal-guide" open><summary class="panel-summary"><span>🎯 Signal School · What are we waiting for?</span><span class="panel-summary-meta">Prepare → Confirm → Plan</span></summary><div class="panel-body"><div class="readiness-grid"><div class="readiness-card"><b>① PREPARE · 🟡</b><p>Build the watchlist. Check higher timeframe, trend, levels, liquidity and events. A low oscillator alone is not an entry.</p></div><div class="readiness-card"><b>② WATCH · 🔵</b><p>Price approaches a level. Wait for candle close and agreement between trend, momentum and volume.</p></div><div class="readiness-card"><b>③ SNIPER CANDIDATE · 🟢</b><p>Several checks align. Review chart, entry trigger, invalidation, target ladder and position size. Not “go now.”</p></div></div><p class="learning-note"><b>WAIT</b> means the defined threshold setup has not triggered. Direction can still be bullish, bearish or mixed. No flag is a prediction or order.</p><div class="signal-strip-head"><b>Current directional context</b><span id="direction-badge" class="state-tag neutral">↔ NEUTRAL / NOT ENOUGH DATA</span></div><p id="direction-explain" class="learning-note">Load provider candles to classify the current chart.</p><details id="indicator-dropdown"><summary class="panel-summary"><span>📊 Favorite Indicators · 11</span><span class="panel-summary-meta">EMA · VWAP · RSI · MACD · Stochastic · CCI · TTM</span></summary><div class="panel-body"><p class="learning-note">Select chart studies. TTM Squeeze is included in the guide; add it manually in TradingView if the embedded chart does not offer it.</p><div id="indicator-controls" class="indicator-list"></div><div id="indicator-guide-cards" class="indicator-guide"></div></div></details></div></details><details class="learning-panel" id="sniper-panel" open><summary class="panel-summary"><span>🎯 Sniper List · Long Momentum Watch</span><span id="sniper-summary" class="panel-summary-meta">Waiting for scans</span></summary><div class="panel-body"><p class="learning-note">Sorted into PREPARE, WATCH or SNIPER CANDIDATE. Nothing is labeled “buy now.” Every candidate needs chart confirmation, invalidation and acceptable risk.</p><div id="sniper-list"></div></div></details><!-- MAIN CHART -->
 <div class="section">
-<div class="chart-container">
+<div class="chart-controls"><label for="chart-zoom">Chart height</label><input id="chart-zoom" type="range" min="380" max="680" step="20" value="480" oninput="setChartHeight(this.value)" aria-label="Chart height slider"><span id="chart-height-label">480px</span><button type="button" onclick="resetChartView()">Reset</button></div><div class="chart-container">
 <div class="chart-inner">
 <div id="chart"></div>
 </div>
@@ -370,11 +370,24 @@ window.onload=()=>{
   document.getElementById("watch-group").value="stocks";
   renderWatchlist();
   renderHeatmap();
+  renderIndicatorControls();
+  renderSignalSchool();
   setDataPending(symbol,selectedMarketInterval());
   loadChart();
   loadChart2("AAPL");
   loop();
 };
+
+
+const INDICATORS=[{id:"ema5",name:"EMA 5",study:"MAExp@tv-basicstudies",help:"Fast, sensitive short-term direction."},{id:"ema10",name:"EMA 10",study:"MAExp@tv-basicstudies",help:"Short-term direction; compare with EMA 20."},{id:"ema20",name:"EMA 20",study:"MAExp@tv-basicstudies",help:"Price above a rising EMA 20 supports short-term bullish structure."},{id:"ema50",name:"EMA 50",study:"MAExp@tv-basicstudies",help:"Intermediate trend; compare EMA 20 and price."},{id:"ema200",name:"EMA 200",study:"MAExp@tv-basicstudies",help:"Major trend context, not an entry by itself."},{id:"vwap",name:"VWAP",study:"VWAP@tv-basicstudies",help:"Intraday volume-weighted average; check session reset."},{id:"rsi",name:"RSI (14)",study:"RSI@tv-basicstudies",help:"Above 50 often supports positive momentum; below 50 weaker. 70/30 are context, not automatic reversals."},{id:"macd",name:"MACD (12/26/9)",study:"MACD@tv-basicstudies",help:"Compare line, signal and histogram direction."},{id:"stoch",name:"Stochastic (14)",study:"Stochastic@tv-basicstudies",help:"20/80 are zones; wait for a turn and trend context."},{id:"cci",name:"CCI (20)",study:"CCI@tv-basicstudies",help:"Typical-price deviation; use zero and ±100 context."},{id:"squeeze",name:"TTM Squeeze / Momentum",study:null,help:"Compression-to-expansion context; add manually in TradingView if unavailable in the embed."}];
+let selectedIndicators=new Set(["ema20","ema50","ema200","rsi","macd","stoch","vwap"]);
+function selectedChartStudies(){const out=[];selectedIndicators.forEach(id=>{const it=INDICATORS.find(x=>x.id===id);if(it&&it.study&&!out.includes(it.study))out.push(it.study)});return out.length?out:["RSI@tv-basicstudies","MACD@tv-basicstudies"]}
+function renderIndicatorControls(){const root=document.getElementById("indicator-controls"),cards=document.getElementById("indicator-guide-cards");if(!root||!cards)return;root.innerHTML="";cards.innerHTML="";INDICATORS.forEach(it=>{const lab=document.createElement("label");lab.className="indicator-option";const inp=document.createElement("input");inp.type="checkbox";inp.checked=selectedIndicators.has(it.id);inp.onchange=()=>{if(inp.checked)selectedIndicators.add(it.id);else selectedIndicators.delete(it.id);if(it.study)loadChart()};const span=document.createElement("span"),b=document.createElement("b"),sm=document.createElement("small");b.textContent=it.name;sm.textContent=it.help;span.append(b,sm);lab.append(inp,span);root.append(lab);const card=document.createElement("div");card.className="indicator-mini";const title=document.createElement("b"),p=document.createElement("p");title.textContent=it.name;p.textContent=it.help;card.append(title,p);cards.append(card)})}
+function classifyDirection(r){if(!r)return{kind:"neutral",label:"↔ NEUTRAL / NOT ENOUGH DATA",explain:"No fresh provider snapshot. Load candles before assigning a directional bias."};const b=[r.close>r.ema20,r.ema20>r.ema50,r.close>r.ema50,r.macd&&r.macd.histogram>0,r.macd&&r.macd.line>r.macd.signal,r.rsi>50,r.stoch>50].filter(Boolean).length;const s=[r.close<r.ema20,r.ema20<r.ema50,r.close<r.ema50,r.macd&&r.macd.histogram<0,r.macd&&r.macd.line<r.macd.signal,r.rsi<50,r.stoch<50].filter(Boolean).length;if(b>=5&&b-s>=3)return{kind:"bull",label:"↗ BULLISH BIAS · WAIT FOR ENTRY",explain:"Most checks lean upward. Wait for a candle-close trigger; confirm support, volume, invalidation and risk."};if(s>=5&&s-b>=3)return{kind:"bear",label:"↘ BEARISH BIAS · NO LONG SETUP",explain:"Most checks lean downward. Do not treat oversold readings as a long entry; wait for structure to change."};return{kind:"neutral",label:"↔ NEUTRAL / MIXED",explain:"Factors disagree or lack strength. Keep it on the watchlist; do not force a trade."}}
+function classifySniper(r){if(!r)return{stage:"PREPARE",side:"—",why:"No fresh provider candles"};const trend=Number.isFinite(r.ema20)&&Number.isFinite(r.ema50)&&r.close>r.ema20&&r.ema20>r.ema50;const macd=Number.isFinite(r.macd&&r.macd.histogram)&&r.macd.histogram>0&&r.macd.line>r.macd.signal;const momentum=Number.isFinite(r.rsi)&&r.rsi>=50&&r.rsi<=68&&Number.isFinite(r.stoch)&&r.stoch>=20&&r.stoch<=80;const volume=!Number.isFinite(r.volumeRatio)||r.volumeRatio>=1;const stretched=(Number.isFinite(r.rsi)&&r.rsi>72)||(Number.isFinite(r.stoch)&&r.stoch>85);if(trend&&macd&&momentum&&volume&&!stretched)return{stage:"SNIPER CANDIDATE",side:"↗ LONG REVIEW",why:"Trend + MACD + momentum align; confirm candle-close trigger, level and stop."};const votes=[r.close>r.ema50,r.rsi>50,r.macd&&r.macd.histogram>0,r.stoch>50].filter(Boolean).length;if(votes>=2)return{stage:"WATCH",side:"↗ BULLISH WATCH",why:"Some upward evidence; wait for trend/momentum agreement and a valid trigger."};const down=[r.close<r.ema50,r.rsi<50,r.macd&&r.macd.histogram<0,r.stoch<50].filter(Boolean).length;if(down>=3)return{stage:"WATCH",side:"↘ BEARISH / NO LONG",why:"Downward context; do not force a long momentum setup."};return{stage:"PREPARE",side:"↔ MIXED",why:"Signals are mixed or incomplete; keep monitoring."}}
+function renderSignalSchool(){const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],d=classifyDirection(r),badge=document.getElementById("direction-badge"),exp=document.getElementById("direction-explain");if(badge){badge.className="state-tag "+d.kind;badge.textContent=d.label}if(exp)exp.textContent=d.explain;const root=document.getElementById("sniper-list"),summary=document.getElementById("sniper-summary");if(!root)return;root.innerHTML="";const rank={"SNIPER CANDIDATE":0,"WATCH":1,"PREPARE":2};const items=visibleSymbols().map(s=>({s:s,r:analysisCache[analysisKey(s,selectedMarketInterval())]})).map(x=>({s:x.s,r:x.r,signal:classifySniper(x.r)})).sort((a,b)=>rank[a.signal.stage]-rank[b.signal.stage]);let n=0,w=0;items.forEach(x=>{if(x.signal.stage==="SNIPER CANDIDATE")n++;if(x.signal.stage==="WATCH")w++;const row=document.createElement("div");row.className="sniper-row";const name=document.createElement("b");name.textContent=x.s;const info=document.createElement("span"),strong=document.createElement("b"),small=document.createElement("small");strong.textContent=x.signal.stage;small.textContent=x.signal.side+" · "+x.signal.why;info.append(strong,small);const btn=document.createElement("button");btn.textContent="Open chart";btn.onclick=()=>{symbol=x.s;const sel=document.getElementById("symbol-select");if(sel)sel.value=x.s;loadChart();document.getElementById("chart")&&document.getElementById("chart").scrollIntoView({behavior:"smooth",block:"start"})};row.append(name,info,btn);root.append(row)});if(summary)summary.textContent=n+" candidates · "+w+" watch · "+items.filter(x=>!x.r).length+" need data"}
+function setChartHeight(v){const n=Math.max(380,Math.min(680,Number(v)||480));["chart","chart2"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.height=n+"px"});const label=document.getElementById("chart-height-label");if(label)label.textContent=n+"px"}
+function resetChartView(){const s=document.getElementById("chart-zoom");if(s)s.value="480";setChartHeight(480);loadChart()}
 
 /* CHARTS */
 function loadChart(){
@@ -382,7 +395,8 @@ function loadChart(){
   if(chart) chart.innerHTML="";
   renderWatchlist();
   renderHeatmap();
-  analyzeSymbol(symbol);
+  renderSignalSchool();
+  analyzeSymbol(symbol).then(renderSignalSchool);
   if(typeof TradingView==="undefined"){
     if(chart) chart.textContent="Chart provider unavailable. The signal/data panels can still report provider status.";
     return;
@@ -394,12 +408,8 @@ function loadChart(){
       interval:tf,
       theme:"dark",
       allow_symbol_change:true,
-      studies:[
-        "RSI@tv-basicstudies",
-        "MACD@tv-basicstudies",
-        "Stochastic@tv-basicstudies",
-        "MASimple@tv-basicstudies"
-      ]
+      autosize:true,
+      studies:selectedChartStudies()
     });
   }catch(error){
     if(chart) chart.textContent="Chart could not be loaded from the chart provider. Refresh or use the research links below.";
@@ -420,13 +430,8 @@ function loadChart2(sym){
       symbol:sym,
       interval:"15",
       theme:"dark",
-      studies:[
-        "RSI@tv-basicstudies",
-        "Stochastic@tv-basicstudies",
-        "MASimple@tv-basicstudies",
-        "MASimple@tv-basicstudies",
-        "MASimple@tv-basicstudies"
-      ]
+      autosize:true,
+      studies:["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"]
     });
   }catch(error){
     chart.textContent="Multi-chart could not be loaded from the chart provider.";
@@ -528,7 +533,7 @@ async function analyzeSymbol(sym,options={}){
     cached.action=determineSignal(cached.rsi,cached.stoch,document.getElementById("mode").value);
     signals[key]=cached.action;
     if(updateMain)showAnalysisStatus(cached);
-    renderWatchlist();
+    renderWatchlist();renderSignalSchool();
     return cached;
   }
   const previousAction=cached?.action||signals[key]||null;
@@ -554,13 +559,13 @@ async function analyzeSymbol(sym,options={}){
     analysisCache[key]=result;signals[key]=action;
     if(updateMain)showAnalysisStatus(result);
     if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
-    renderWatchlist();
+    renderWatchlist();renderSignalSchool();
     return result;
   }catch(error){
     delete signals[key];delete analysisCache[key];
     const reason=error?.name==="AbortError"?"provider request timed out after 25 seconds":(error?.message||"unknown request error");
     if(updateMain){setDataUnavailable(sym,interval,reason);status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";}
-    renderWatchlist();
+    renderWatchlist();renderSignalSchool();
     return null;
   }
 }
@@ -695,7 +700,7 @@ function renderHeatmap(){
 function updateSignalMode(){
   const mode=document.getElementById("mode").value;
   Object.entries(analysisCache).forEach(([key,c])=>{c.action=determineSignal(c.rsi,c.stoch,mode);signals[key]=c.action;});
-  renderWatchlist();
+  renderWatchlist();renderSignalSchool();
   const cached=analysisCache[analysisKey(symbol,selectedMarketInterval())];
   if(cached)showAnalysisStatus(cached);
   else analyzeSymbol(symbol);

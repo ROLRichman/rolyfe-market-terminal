@@ -240,7 +240,8 @@ text-decoration:none;
   <div class="panel-body">
     <div class="watch-controls">
       <select id="watch-group" aria-label="Watchlist market group" onchange="renderWatchlist()">
-        <option value="stocks" selected>Stocks</option>
+        <option value="liquid" selected>Liquid Leaders</option>
+        <option value="stocks">Stocks</option>
         <option value="etfs">ETFs &amp; Metals</option>
         <option value="crypto">Crypto</option>
         <option value="forex">Forex</option>
@@ -353,6 +354,7 @@ let scanInProgress=false;
 let stopScanRequested=false;
 
 const WATCH_GROUPS={
+  liquid:["SPY","QQQ","AAPL","MSFT","NVDA","AMZN","META","GOOGL","TSLA","AMD","AVGO","NFLX","PLTR","COIN","BAC","JPM","TSM","GLD","SLV","BTCUSD"],
   stocks:["AAPL","TSLA","NVDA","MSFT","AMZN","META","GOOGL","BAC","C","AMD","PLTR","COIN","SHOP","TSM"],
   etfs:["SPY","QQQ","GLD","SLV"],
   crypto:["BTCUSD","ETHUSD","SOLUSD","XRPUSD"],
@@ -360,7 +362,7 @@ const WATCH_GROUPS={
   futures:["ES1!","NQ1!"],
   macro:["DXY"]
 };
-const WATCH_GROUP_LABELS={stocks:"Stocks",etfs:"ETFs & Metals",crypto:"Crypto",forex:"Forex",futures:"Futures",macro:"Macro",all:"All markets"};
+const WATCH_GROUP_LABELS={liquid:"Liquid Leaders",stocks:"Stocks",etfs:"ETFs & Metals",crypto:"Crypto",forex:"Forex",futures:"Futures",macro:"Macro",all:"All markets"};
 let activeScanSymbols=[];
 
 window.onload=()=>{
@@ -371,7 +373,7 @@ window.onload=()=>{
   });
   sel.value=symbol;
   tf=document.getElementById("timeframe-select")?.value || "5";
-  document.getElementById("watch-group").value="stocks";
+  document.getElementById("watch-group").value="liquid";
   renderWatchlist();
   renderHeatmap();
   renderIndicatorControls();

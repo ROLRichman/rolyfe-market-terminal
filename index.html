@@ -590,7 +590,13 @@ function showAnalysisStatus(result){
   const barDate=Number.isFinite(ts)?new Date(ts).toLocaleString():"provider time unavailable";
   const age=Number.isFinite(ts)?Math.round((Date.now()-ts)/60000):null;
   const ageText=age===null?"age unavailable":age<0?"device clock differs from bar time":age<60?age+" min old":Math.round(age/60)+" hr old";
-  const money=n=>Number.isFinite(n)?n.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:n<10?3:2}):"N/A";
+  const formatValue=(n,sym)=>{
+    if(!Number.isFinite(n))return"N/A";
+    const forex=["EURUSD","GBPUSD","USDJPY"].includes(sym);
+    const crypto=["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym);
+    const digits=forex?5:crypto?4:2;
+    return n.toLocaleString(undefined,{minimumFractionDigits:forex?4:2,maximumFractionDigits:digits});
+  };
   const signed=n=>!Number.isFinite(n)?"N/A":(n>0?"+":"")+n.toFixed(2)+"%";
   const action=result.action||"WAIT";
   if(status)status.textContent="PROVIDER RESPONSE · "+sym+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · Close "+money(result.close)+" · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+ageText+" · "+action+". Provider coverage: "+result.coverage+". This technical snapshot is not a trade recommendation.";
@@ -599,10 +605,10 @@ function showAnalysisStatus(result){
   if(actionEl)actionEl.textContent=action==="WAIT"?"WAIT":action+" WATCH";
   if(pill)pill.className="signal-pill "+(action==="BUY"?"buy":action==="SELL"?"sell":"");
   if(led)led.className="signal-led "+(action==="BUY"?"buy":action==="SELL"?"sell":"wait");
-  const closeEl=document.getElementById("metric-price");if(closeEl)closeEl.textContent=money(result.close);
-  const changeEl=document.getElementById("metric-change");if(changeEl){changeEl.textContent=result.change===null?"Previous bar unavailable":(money(result.change)+" · "+signed(result.changePercent));changeEl.className="metric-note "+(result.change>0?"positive":result.change<0?"negative":"");}
+  const closeEl=document.getElementById("metric-price");if(closeEl)closeEl.textContent=formatValue(result.close,sym);
+  const changeEl=document.getElementById("metric-change");if(changeEl){changeEl.textContent=result.change===null?"Previous bar unavailable":((result.change>0?"+":"")+formatValue(result.change,sym)+" points · "+signed(result.changePercent));changeEl.className="metric-note "+(result.change>0?"positive":result.change<0?"negative":"");}
   const trendEl=document.getElementById("metric-trend");if(trendEl){trendEl.textContent=result.trend;trendEl.className="metric-value "+(result.trend==="ABOVE EMA50"?"positive":result.trend==="BELOW EMA50"?"negative":"");}
-  const fmtPrice=n=>Number.isFinite(n)?money(n):"N/A";
+  const fmtPrice=n=>formatValue(n,sym);
   const emaEl=document.getElementById("metric-emas");if(emaEl)emaEl.textContent="20 "+fmtPrice(result.ema20)+" · 50 "+fmtPrice(result.ema50)+" · 200 "+fmtPrice(result.ema200);
   const macdEl=document.getElementById("metric-macd");if(macdEl){macdEl.textContent=Number.isFinite(result.macd?.histogram)?result.macd.histogram.toFixed(4):"N/A";macdEl.className="metric-value "+(result.macd?.histogram>0?"positive":result.macd?.histogram<0?"negative":"");}
   const macdNote=document.getElementById("metric-macd-note");if(macdNote)macdNote.textContent=Number.isFinite(result.macd?.line)?"Line "+result.macd.line.toFixed(4)+" · Signal "+result.macd.signal.toFixed(4):"Not enough candles";
@@ -618,7 +624,10 @@ function showAnalysisStatus(result){
 /* ALERT */
 function fireAlert(sym,act){
   const d=document.createElement("div");
+  const existing=[...document.querySelectorAll(".alert")];
+  if(existing.length>=3)existing[0].remove();
   d.className="alert "+(act==="BUY"?"buy":"sell");
+  d.style.top=(70+document.querySelectorAll(".alert").length*48)+"px";
   d.setAttribute("role","status");
   const led=document.createElement("i");led.className="signal-led "+(act==="BUY"?"buy":"sell");
   const text=document.createElement("span");text.textContent=act+" WATCH · "+sym;
@@ -655,8 +664,8 @@ function renderWatchlist(){
     w.appendChild(button);
   }
   if(!symbols.length){const empty=document.createElement("p");empty.className="scan-status";empty.textContent="No symbols match this filter.";w.appendChild(empty);}
-  const allCount=coverageCount(watchlist),shownCount=coverageCount(groupSymbols());
-  const summary=document.getElementById("watch-summary");if(summary)summary.textContent=allCount+" / "+watchlist.length+" scanned · "+(WATCH_GROUP_LABELS[group]||group);
+  const groupSymbolsNow=groupSymbols(),shownCount=coverageCount(groupSymbolsNow);
+  const summary=document.getElementById("watch-summary");if(summary)summary.textContent=shownCount+" / "+groupSymbolsNow.length+" fresh · "+(WATCH_GROUP_LABELS[group]||group);
   const scanStatus=document.getElementById("scan-status");
   if(!scanInProgress&&scanStatus&&scanStatus.classList.contains("active"))scanStatus.classList.remove("active");
   const scanButton=document.getElementById("scan-button"),stopButton=document.getElementById("stop-scan-button");

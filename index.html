@@ -270,12 +270,13 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
         <option value="stocks">Tactical Master 76</option><option value="classroom">Classroom Stocks 76</option><option value="etfs">ETFs &amp; Sectors</option><option value="crypto">Crypto 35</option><option value="forex">Forex</option><option value="futures">Futures 30</option><option value="macro">Macro</option><option value="all">All markets</option>
       </select>
       <input id="watch-search" type="search" placeholder="Filter symbols…" aria-label="Filter watchlist" oninput="renderWatchlist()">
+      <select id="scan-preset" aria-label="Scan timeframe preset" onchange="applyScanPreset(this.value)"><option value="intraday" selected>Preset · Intraday</option><option value="micro">Preset · 1m Timing</option><option value="quick">Preset · 5m Momentum</option><option value="session">Preset · 15m Confirmation</option><option value="swing">Preset · 4H Swing</option><option value="daily">Preset · Daily Trend</option><option value="weekly">Preset · Weekly Review</option></select>
       <input id="add-symbol-input" type="text" maxlength="18" placeholder="Add symbol…" aria-label="New symbol to add">
       <button id="add-symbol-button" type="button" onclick="addCurrentSymbol()">+ Add</button><button id="reset-group-button" type="button" onclick="resetCurrentGroup()">Restore group</button>
       <button id="scan-button" type="button" onclick="scanWatchlist()">Scan this group</button>
       <button id="stop-scan-button" type="button" onclick="stopWatchlistScan()" disabled>Stop scan</button>
     </div>
-    <div class="scan-status" id="scan-status" role="status" aria-live="polite">Select a market group or symbol. Scan runs only when you start it, to avoid unnecessary provider requests.</div>
+    <div class="scan-status" id="scan-status" role="status" aria-live="polite">Manual scan only · Select a preset, then scan a group. Pop-ups rotate fresh cached results every minute; no background requests start automatically.</div>
     <div id="watch" class="list"></div>
   </div>
 </details>
@@ -696,7 +697,7 @@ function renderWatchlist(){
  const list=groupSymbols(),n=coverageCount(list),summary=document.getElementById("watch-summary");if(summary)summary.textContent=n+" / "+list.length+" fresh · "+(WATCH_GROUP_LABELS[group]||group);
  const scanStatus=document.getElementById("scan-status");if(!scanInProgress&&scanStatus&&scanStatus.classList.contains("active"))scanStatus.classList.remove("active");
  const scan=document.getElementById("scan-button"),stop=document.getElementById("stop-scan-button");if(scan)scan.disabled=scanInProgress;if(stop)stop.disabled=!scanInProgress;if(scan)scan.textContent=scanInProgress?"Scan running…":"Scan this group";
- ["watch-group","watch-search","timeframe-select","add-symbol-input","add-symbol-button","reset-group-button"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=scanInProgress});
+ ["watch-group","watch-search","timeframe-select","chart-range","scan-preset","symbol-select","add-symbol-input","add-symbol-button","reset-group-button"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=scanInProgress});
  renderHeatmap();if(typeof renderSignalSchool==="function")renderSignalSchool();
 }
 function renderHeatmap(){
@@ -751,6 +752,14 @@ function stopWatchlistScan(){
 
 /* OPTIONS */
 
+function applyScanPreset(preset){
+ if(scanInProgress){setWatchStatus("Finish or stop the current scan before changing presets.");return}
+ const map={micro:{tf:"1",range:"6M",label:"1m Timing"},quick:{tf:"5",range:"6M",label:"5m Momentum"},intraday:{tf:"10",range:"6M",label:"Intraday"},session:{tf:"15",range:"6M",label:"15m Confirmation"},swing:{tf:"240",range:"12M",label:"4H Swing"},daily:{tf:"D",range:"12M",label:"Daily Trend"},weekly:{tf:"W",range:"12M",label:"Weekly Review"}};
+ const item=map[preset]||map.intraday;tf=item.tf;chartRange=item.range;
+ const t=document.getElementById("timeframe-select"),r=document.getElementById("chart-range");if(t)t.value=tf;if(r)r.value=chartRange;
+ const status=document.getElementById("scan-status");if(status)status.textContent=item.label+" preset selected. Press Scan this group when ready; scanning remains manual.";
+ loadChart()
+}
 function currentGroup(){const g=document.getElementById("watch-group")?.value||"liquid";return g==="all"?"liquid":g}
 function addCurrentSymbol(){const input=document.getElementById("add-symbol-input"),s=(input?.value||"").trim().toUpperCase(),g=currentGroup();if(!/^[A-Z0-9][A-Z0-9._:!^\-]{0,19}$/.test(s)){setWatchStatus("Enter a valid ticker, e.g. NVDA, BTC-USD or ES1!.");return}watchPrefs.removed[g]=(watchPrefs.removed[g]||[]).filter(x=>x!==s);watchPrefs.custom[g]=Array.from(new Set([...(watchPrefs.custom[g]||[]),s]));heatmapHidden[g]=(heatmapHidden[g]||[]).filter(x=>x!==s);persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();if(input)input.value="";renderWatchlist();setWatchStatus(s+" added to "+(WATCH_GROUP_LABELS[g]||g)+". Provider support is checked when loaded or scanned.")}
 function removeCurrentSymbol(s){const chosen=document.getElementById("watch-group")?.value||"liquid",groups=chosen==="all"?Object.keys(DEFAULT_WATCH_GROUPS):[currentGroup()];groups.forEach(g=>{if((DEFAULT_WATCH_GROUPS[g]||[]).includes(s))watchPrefs.removed[g]=Array.from(new Set([...(watchPrefs.removed[g]||[]),s]));watchPrefs.custom[g]=(watchPrefs.custom[g]||[]).filter(x=>x!==s)});persistWatchPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus(s+" removed from "+(chosen==="all"?"all groups":WATCH_GROUP_LABELS[chosen]||chosen)+". Restore group to bring defaults back.")}

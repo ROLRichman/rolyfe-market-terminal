@@ -395,11 +395,11 @@ async function analyzeSymbol(sym){
     return;
   }
   delete signals[sym];
-  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting "+interval+" provider OHLCV candles for "+sym+" (12-second timeout)…";
+  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting "+interval+" provider OHLCV candles for "+sym+" (25-second timeout)…";
   try{
     const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval="+encodeURIComponent(interval)+"&limit=100";
     const controller=new AbortController();
-    const timeoutId=setTimeout(()=>controller.abort(),12000);
+    const timeoutId=setTimeout(()=>controller.abort(),25000);
     let response, data;
     try{
       response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store",signal:controller.signal});
@@ -434,7 +434,7 @@ async function analyzeSymbol(sym){
   }catch(error){
     delete signals[sym];
     delete analysisCache[key];
-    const reason=error?.name==="AbortError"?"provider request timed out after 12 seconds":(error?.message||"unknown request error");
+    const reason=error?.name==="AbortError"?"provider request timed out after 25 seconds":(error?.message||"unknown request error");
     if(sym===symbol&&status) status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";
     renderWatchlist();
   }

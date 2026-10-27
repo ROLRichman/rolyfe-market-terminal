@@ -210,13 +210,8 @@ text-decoration:none;
 <option value="live">STANDARD</option>
 <option value="sniper">SNIPER</option>
 </select>
-<select id="timeframe-select" onchange="tf=this.value;loadChart()" aria-label="Chart timeframe">
-<option value="5" selected>5m</option>
-<option value="15">15m</option>
-<option value="60">1H</option>
-<option value="240">4H</option>
-<option value="D">DAY</option>
-</select>
+<select id="timeframe-select" onchange="tf=this.value;loadChart()" aria-label="Chart timeframe"><option value="1">1m</option><option value="5" selected>5m</option><option value="10">10m</option><option value="15">15m</option><option value="60">1H</option><option value="240">4H</option><option value="D">DAY</option><option value="W">WEEK</option></select>
+<select id="chart-range" aria-label="Chart history range" onchange="chartRange=this.value;loadChart()"><option value="6M" selected>6M</option><option value="12M">1Y</option><option value="ALL">All</option></select>
 </div>
 
 <div class="section" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting provider-backed candle check. Signal lights stay neutral until valid data confirms a technical watch condition. Technical snapshot only; not a trade recommendation.</div>
@@ -241,15 +236,11 @@ text-decoration:none;
     <div class="watch-controls">
       <select id="watch-group" aria-label="Watchlist market group" onchange="renderWatchlist()">
         <option value="liquid" selected>Liquid Leaders</option>
-        <option value="stocks">Stocks</option>
-        <option value="etfs">ETFs &amp; Metals</option>
-        <option value="crypto">Crypto</option>
-        <option value="forex">Forex</option>
-        <option value="futures">Futures</option>
-        <option value="macro">Macro</option>
-        <option value="all">All markets</option>
+        <option value="stocks">Tactical Master 76</option><option value="classroom">Classroom Stocks 76</option><option value="etfs">ETFs &amp; Sectors</option><option value="crypto">Crypto 35</option><option value="forex">Forex</option><option value="futures">Futures 30</option><option value="macro">Macro</option><option value="all">All markets</option>
       </select>
       <input id="watch-search" type="search" placeholder="Filter symbols…" aria-label="Filter watchlist" oninput="renderWatchlist()">
+      <input id="add-symbol-input" type="text" maxlength="18" placeholder="Add symbol…" aria-label="New symbol to add">
+      <button id="add-symbol-button" type="button" onclick="addCurrentSymbol()">+ Add</button><button id="reset-group-button" type="button" onclick="resetCurrentGroup()">Restore group</button>
       <button id="scan-button" type="button" onclick="scanWatchlist()">Scan this group</button>
       <button id="stop-scan-button" type="button" onclick="stopWatchlistScan()" disabled>Stop scan</button>
     </div>
@@ -278,7 +269,7 @@ text-decoration:none;
 <details class="section panel-collapse" id="heatmap-panel">
   <summary class="panel-summary"><span>Signal Coverage Heatmap</span><span class="panel-summary-meta" id="heatmap-summary">Provider snapshots only</span></summary>
   <div class="panel-body">
-    <p style="font-size:12px;color:#94a3b8;margin:0 0 8px">Compact view of the selected market group. Flashing lights mean the RSI/Stochastic thresholds were reached—not a prediction or an automatic entry.</p>
+    <p style="font-size:12px;color:#94a3b8;margin:0 0 8px">Compact view of the selected group. Hide a tile here without removing its symbol from the watchlist.</p><button type="button" onclick="restoreHeatmapGroup()">Restore heatmap tiles</button>
     <div id="heatmap" class="grid" aria-live="polite"></div>
   </div>
 </details>
@@ -340,29 +331,26 @@ text-decoration:none;
 
 let symbol="AAPL";
 let tf="5";
+let chartRange="6M";
 
-const watchlist=[
-"AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META","GOOGL",
-"BAC","C","AMD","PLTR","COIN","SHOP","TSM",
-"BTCUSD","ETHUSD","SOLUSD","XRPUSD",
-"EURUSD","GBPUSD","USDJPY",
-"ES1!","NQ1!","DXY","GLD","SLV"
-];
+let watchlist=[];
+const DEFAULT_WATCH_GROUPS={liquid:["SPY","QQQ","AAPL","MSFT","NVDA","AMZN","META","GOOGL","TSLA","AMD","AVGO","NFLX","PLTR","COIN","BAC","JPM","TSM","GLD","SLV","BTCUSD"],stocks:["AAPL","AMKR","AMZN","APH","ASX","AVGO","AXP","BAC","BK","C","CAT","CIEN","CLS","COHR","CRDO","CSCO","DAL","DIA","FOXA","FSLR","GE","GLD","GM","GOOGL","GS","GTX","HWM","IBM","INTC","IWM","JCI","JNJ","LITE","LLY","LRCX","M","MA","META","MS","MSFT","MU","NFLX","NVDA","NXT","PLTR","QQQ","REAL","RKLB","ROKU","ROST","RTX","SLV","SNDK","SOFI","SPY","STX","TER","TJX","TSLA","TSM","UUP","VIX","W","WBD","WDC","WMT","XLB","XLC","XLE","XLF","XLI","XLK","XLP","XLU","XLV","XLY"],classroom:["AAPL","NVDA","TSLA","AMD","SPY","MSFT","AMZN","GOOGL","GOOG","META","NFLX","AVGO","ORCL","CRM","ADBE","QCOM","INTC","MU","ARM","SMCI","PLTR","COIN","HOOD","MSTR","JPM","BAC","WFC","GS","MS","V","MA","AXP","COST","WMT","TGT","HD","LOW","NKE","DIS","UBER","ABNB","SHOP","SNOW","PANW","CRWD","NET","DDOG","IBM","CSCO","NOW","PYPL","SQ","SOFI","XOM","CVX","LLY","JNJ","PFE","MRNA","UNH","ABBV","TMO","CAT","DE","BA","GE","F","GM","RIVN","LCID","IWM","QQQ","DIA","VTI","GLD","TLT"],etfs:["SPY","QQQ","IWM","DIA","VTI","GLD","SLV","TLT","XLF","XLK","XLE","XLI","XLY","XLV","XLP","XLU","XLB","XLC"],crypto:["BTC-USD","ETH-USD","SOL-USD","XRP-USD","LINK-USD","HYPE-USD","BNB-USD","ADA-USD","DOGE-USD","AVAX-USD","DOT-USD","LTC-USD","BCH-USD","SUI-USD","TON-USD","TRX-USD","XLM-USD","HBAR-USD","SHIB-USD","PEPE-USD","UNI-USD","AAVE-USD","NEAR-USD","APT-USD","ARB-USD","OP-USD","ICP-USD","FIL-USD","ATOM-USD","ETC-USD","XMR-USD","INJ-USD","RENDER-USD","FET-USD","TAO-USD"],forex:["EURUSD","GBPUSD","USDJPY"],futures:["ES1!","NQ1!","YM1!","RTY1!","MES1!","MNQ1!","MYM1!","M2K1!","CL1!","NG1!","GC1!","SI1!","HG1!","ZN1!","ZB1!","ZF1!","ZT1!","6E1!","6B1!","6J1!","6A1!","6C1!","6S1!","ZC1!","ZS1!","ZW1!","ZM1!","ZL1!","KC1!","DX1!"],macro:["DXY","VIX","UUP"]};
+const WATCH_GROUP_LABELS={liquid:"Liquid Leaders",stocks:"Tactical Master 76",classroom:"Classroom Stocks 76",etfs:"ETFs & Sectors",crypto:"Crypto 35",forex:"Forex",futures:"Futures 30",macro:"Macro",all:"All markets"};
+const WATCH_PREF_KEY="rolyfe-terminal-watchlists-v4",HEATMAP_PREF_KEY="rolyfe-terminal-heatmap-v2";
+function readWatchPrefs(){try{const p=JSON.parse(localStorage.getItem(WATCH_PREF_KEY)||"{}");return{removed:p.removed||{},custom:p.custom||{}}}catch(e){return{removed:{},custom:{}}}}
+let watchPrefs=readWatchPrefs();function persistWatchPrefs(){try{localStorage.setItem(WATCH_PREF_KEY,JSON.stringify(watchPrefs))}catch(e){}}
+function readHeatmapPrefs(){try{return JSON.parse(localStorage.getItem(HEATMAP_PREF_KEY)||"{}")}catch(e){return{}}}
+let heatmapHidden=readHeatmapPrefs();function persistHeatmapPrefs(){try{localStorage.setItem(HEATMAP_PREF_KEY,JSON.stringify(heatmapHidden))}catch(e){}}
+function compileWatchGroups(){const result={};Object.keys(DEFAULT_WATCH_GROUPS).forEach(g=>{const removed=new Set(watchPrefs.removed[g]||[]);result[g]=Array.from(new Set([...DEFAULT_WATCH_GROUPS[g].filter(s=>!removed.has(s)),...(watchPrefs.custom[g]||[])]))});result.all=Array.from(new Set(Object.keys(result).filter(k=>k!=="all").flatMap(k=>result[k])));return result}
+let WATCH_GROUPS=compileWatchGroups();
+function refreshMasterWatchlist(){WATCH_GROUPS=compileWatchGroups();watchlist=Array.from(new Set(Object.keys(WATCH_GROUPS).filter(k=>k!=="all").flatMap(k=>WATCH_GROUPS[k])));const sel=document.getElementById("symbol-select");if(sel){const current=symbol;sel.innerHTML="";watchlist.forEach(s=>{const o=document.createElement("option");o.value=s;o.text=s;sel.appendChild(o)});if(watchlist.includes(current))sel.value=current;else{symbol=watchlist[0]||"AAPL";sel.value=symbol}}}
+refreshMasterWatchlist();
 
 let signals={};
 let scanInProgress=false;
 let stopScanRequested=false;
 
-const WATCH_GROUPS={
-  liquid:["SPY","QQQ","AAPL","MSFT","NVDA","AMZN","META","GOOGL","TSLA","AMD","AVGO","NFLX","PLTR","COIN","BAC","JPM","TSM","GLD","SLV","BTCUSD"],
-  stocks:["AAPL","TSLA","NVDA","MSFT","AMZN","META","GOOGL","BAC","C","AMD","PLTR","COIN","SHOP","TSM"],
-  etfs:["SPY","QQQ","GLD","SLV"],
-  crypto:["BTCUSD","ETHUSD","SOLUSD","XRPUSD"],
-  forex:["EURUSD","GBPUSD","USDJPY"],
-  futures:["ES1!","NQ1!"],
-  macro:["DXY"]
-};
-const WATCH_GROUP_LABELS={liquid:"Liquid Leaders",stocks:"Stocks",etfs:"ETFs & Metals",crypto:"Crypto",forex:"Forex",futures:"Futures",macro:"Macro",all:"All markets"};
+/* Editable watch groups and saved preferences are initialized above. */
 let activeScanSymbols=[];
 
 window.onload=()=>{
@@ -411,8 +399,9 @@ function loadChart(){
   try{
     new TradingView.widget({
       container_id:"chart",
-      symbol:symbol,
+      symbol:chartSymbol(symbol),
       interval:tf,
+      range:chartRange==="ALL"?"all":chartRange,
       theme:"dark",
       allow_symbol_change:true,
       autosize:true,
@@ -434,8 +423,9 @@ function loadChart2(sym){
   try{
     new TradingView.widget({
       container_id:"chart2",
-      symbol:sym,
-      interval:"15",
+      symbol:chartSymbol(sym),
+      interval:tf,
+      range:chartRange==="ALL"?"all":chartRange,
       theme:"dark",
       autosize:true,
       studies:["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"]
@@ -450,17 +440,13 @@ const MARKET_API="https://ykmdyfbklvuoseqdjnxy.supabase.co/functions/v1/market-d
 const MARKET_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbWR5ZmJrbHZ1b3NlcWRqbnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3ODk5OTQsImV4cCI6MjEwODM2NTk5NH0._YEZj2GSnPcLGXmwgj98V_JzXdJIhTmOFoAH9BSia2I";
 const analysisCache={};
 const CACHE_MS=5*60*1000;
-function selectedMarketInterval(){
-  return ({"5":"5m","15":"15m","60":"1h","240":"4h","D":"1d"})[tf] || "15m";
-}
+function selectedMarketInterval(){return ({"1":"1m","5":"5m","10":"10m","15":"15m","60":"1h","240":"4h","D":"1d","W":"1w"})[tf]||"5m";}
 function analysisKey(sym, interval=selectedMarketInterval()){
   return sym+"|"+interval;
 }
 function buildSignal(sym){ return signals[analysisKey(sym)] || "WAIT"; }
-function tickerbotSymbol(sym){
-  if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym)) return "X:"+sym;
-  return sym;
-}
+function tickerbotSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "X:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);return m?"X:"+m[1]+"USD":sym}
+function chartSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "COINBASE:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);if(m)return "COINBASE:"+m[1]+"USD";const map={"ES1!":"CME_MINI:ES1!","NQ1!":"CME_MINI:NQ1!","YM1!":"CBOT_MINI:YM1!","RTY1!":"CME_MINI:RTY1!","MES1!":"CME_MINI:MES1!","MNQ1!":"CME_MINI:MNQ1!","MYM1!":"CBOT_MINI:MYM1!","M2K1!":"CME_MINI:M2K1!"};return map[sym]||sym}
 function rsi14(closes){
   if(closes.length<15) return null;
   let gain=0,loss=0;

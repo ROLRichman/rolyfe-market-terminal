@@ -444,7 +444,7 @@ function selectedMarketInterval(){
 function analysisKey(sym, interval=selectedMarketInterval()){
   return sym+"|"+interval;
 }
-function buildSignal(sym){ return signals[sym] || "WAIT"; }
+function buildSignal(sym){ return signals[analysisKey(sym)] || "WAIT"; }
 function tickerbotSymbol(sym){
   if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym)) return "X:"+sym;
   return sym;
@@ -599,7 +599,7 @@ function showAnalysisStatus(result){
   };
   const signed=n=>!Number.isFinite(n)?"N/A":(n>0?"+":"")+n.toFixed(2)+"%";
   const action=result.action||"WAIT";
-  if(status)status.textContent="PROVIDER RESPONSE · "+sym+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · Close "+money(result.close)+" · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+ageText+" · "+action+". Provider coverage: "+result.coverage+". This technical snapshot is not a trade recommendation.";
+  if(status)status.textContent="PROVIDER RESPONSE · "+sym+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · Close "+formatValue(result.close,sym)+" · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+ageText+" · "+action+". Provider coverage: "+result.coverage+". This technical snapshot is not a trade recommendation.";
   const label=document.getElementById("metric-symbol");if(label)label.textContent=sym+" · "+result.interval+" · "+result.bars+" candles";
   const actionEl=document.getElementById("metric-action"),pill=document.getElementById("metric-signal-pill"),led=document.getElementById("metric-led");
   if(actionEl)actionEl.textContent=action==="WAIT"?"WAIT":action+" WATCH";

@@ -99,10 +99,26 @@ gap:6px;
 }
 .cell{
 background:#111;
-padding:6px;
+padding:8px 6px;
 border-radius:6px;
 text-align:center;
 cursor:pointer;
+min-height:42px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+gap:3px;
+white-space:pre-line;
+}
+.cell strong{display:block;font-size:12px;letter-spacing:.2px}
+.cell small{display:block;opacity:.86;font-size:10px;line-height:1.35}
+.cell.wait{border:1px solid #334155;color:#cbd5e1}
+.cell.buy{border:1px solid #00ff88;color:#b7ffe0}
+.cell.sell{border:1px solid #ff3b3b;color:#ffc5c5}
+@media(max-width:650px){
+  #app{padding:8px}
+  .chart-inner{min-width:740px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
 }
 
 /* ALERT */
@@ -140,34 +156,25 @@ text-decoration:none;
 
 <!-- TOP BAR -->
 <div class="topbar">
-<select id="symbol-select" onchange="symbol=this.value;loadChart()"></select>
-
-<select id="mode" onchange="analyzeSymbol(symbol);renderWatchlist()">
+<select id="symbol-select" onchange="symbol=this.value;loadChart()" aria-label="Market symbol"></select>
+<select id="mode" onchange="analyzeSymbol(symbol);renderWatchlist()" aria-label="Signal mode">
 <option value="live">LIVE</option>
 <option value="sniper">SNIPER</option>
 </select>
-
-<select onchange="tf=this.value;loadChart()">
-<option value="5">5m</option>
+<select id="timeframe-select" onchange="tf=this.value;loadChart()" aria-label="Chart timeframe">
+<option value="5" selected>5m</option>
 <option value="15">15m</option>
 <option value="60">1H</option>
 <option value="D">DAY</option>
 </select>
 </div>
 
-<div class="section" id="data-status" role="status"><b>DATA INTEGRITY:</b> Checking provider-backed candles for the selected symbol. Signals remain WAIT until valid OHLCV bars are received. Technical snapshot only; not a trade recommendation.</div>
+<div class="section" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting a provider-backed candle check. Signals remain WAIT until valid OHLCV bars are received. Technical snapshot only; not a trade recommendation.</div>
 
 <!-- WATCHLIST -->
 <div class="section">
 <h3>Market List</h3>
 <div id="watch" class="list"></div>
-</div>
-
-<!-- VIDEO -->
-<div class="section">
-<iframe width="100%" height="300"
-src="https://www.youtube.com/embed/S7vkiIX6yG4"
-frameborder="0" allowfullscreen></iframe>
 </div>
 
 <!-- MAIN CHART -->
@@ -187,8 +194,9 @@ frameborder="0" allowfullscreen></iframe>
 
 <!-- HEATMAP -->
 <div class="section">
-<h3>Heatmap</h3>
-<div id="heatmap" class="grid"></div>
+<h3>Signal Coverage Heatmap</h3>
+<p style="font-size:12px;color:#94a3b8;margin:0 0 8px">Indicator snapshots for symbols checked at the selected timeframe. Unloaded symbols stay neutral until analyzed.</p>
+<div id="heatmap" class="grid" aria-live="polite"></div>
 </div>
 
 <!-- SECOND CHART -->
@@ -244,7 +252,7 @@ frameborder="0" allowfullscreen></iframe>
 <script>
 
 let symbol="AAPL";
-let tf="15";
+let tf="5";
 
 const watchlist=[
 "AAPL","TSLA","NVDA","SPY","QQQ","MSFT","AMZN","META","GOOGL",
@@ -257,52 +265,77 @@ const watchlist=[
 let signals={};
 
 window.onload=()=>{
-let sel=document.getElementById("symbol-select");
-watchlist.forEach(s=>{
-let o=document.createElement("option");
-o.value=s;o.text=s;
-sel.appendChild(o);
-});
-
-loadChart();
-loadChart2("AAPL");
-loop();
+  const sel=document.getElementById("symbol-select");
+  watchlist.forEach(s=>{
+    const o=document.createElement("option");
+    o.value=s;
+    o.text=s;
+    sel.appendChild(o);
+  });
+  sel.value=symbol;
+  tf=document.getElementById("timeframe-select")?.value || "5";
+  renderWatchlist();
+  renderHeatmap();
+  loadChart();
+  loadChart2("AAPL");
+  loop();
 };
 
 /* CHARTS */
 function loadChart(){
-document.getElementById("chart").innerHTML="";
-analyzeSymbol(symbol);
-new TradingView.widget({
-container_id:"chart",
-symbol:symbol,
-interval:tf,
-theme:"dark",
-allow_symbol_change:true,
-studies:[
-"RSI@tv-basicstudies",
-"MACD@tv-basicstudies",
-"Stochastic@tv-basicstudies",
-"MASimple@tv-basicstudies"
-]
-});
+  const chart=document.getElementById("chart");
+  if(chart) chart.innerHTML="";
+  renderWatchlist();
+  renderHeatmap();
+  analyzeSymbol(symbol);
+  if(typeof TradingView==="undefined"){
+    if(chart) chart.textContent="Chart provider unavailable. The signal/data panels can still report provider status.";
+    return;
+  }
+  try{
+    new TradingView.widget({
+      container_id:"chart",
+      symbol:symbol,
+      interval:tf,
+      theme:"dark",
+      allow_symbol_change:true,
+      studies:[
+        "RSI@tv-basicstudies",
+        "MACD@tv-basicstudies",
+        "Stochastic@tv-basicstudies",
+        "MASimple@tv-basicstudies"
+      ]
+    });
+  }catch(error){
+    if(chart) chart.textContent="Chart could not be loaded from the chart provider. Refresh or use the research links below.";
+  }
 }
 
 function loadChart2(sym){
-document.getElementById("chart2").innerHTML="";
-new TradingView.widget({
-container_id:"chart2",
-symbol:sym,
-interval:"15",
-theme:"dark",
-studies:[
-"RSI@tv-basicstudies",
-"Stochastic@tv-basicstudies",
-"MASimple@tv-basicstudies",
-"MASimple@tv-basicstudies",
-"MASimple@tv-basicstudies"
-]
-});
+  const chart=document.getElementById("chart2");
+  if(!chart) return;
+  chart.innerHTML="";
+  if(typeof TradingView==="undefined"){
+    chart.textContent="Chart provider unavailable.";
+    return;
+  }
+  try{
+    new TradingView.widget({
+      container_id:"chart2",
+      symbol:sym,
+      interval:"15",
+      theme:"dark",
+      studies:[
+        "RSI@tv-basicstudies",
+        "Stochastic@tv-basicstudies",
+        "MASimple@tv-basicstudies",
+        "MASimple@tv-basicstudies",
+        "MASimple@tv-basicstudies"
+      ]
+    });
+  }catch(error){
+    chart.textContent="Multi-chart could not be loaded from the chart provider.";
+  }
 }
 
 /* VERIFIED SIGNAL SNAPSHOT — only calculate from provider-returned OHLCV bars */
@@ -310,6 +343,12 @@ const MARKET_API="https://ykmdyfbklvuoseqdjnxy.supabase.co/functions/v1/market-d
 const MARKET_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbWR5ZmJrbHZ1b3NlcWRqbnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3ODk5OTQsImV4cCI6MjEwODM2NTk5NH0._YEZj2GSnPcLGXmwgj98V_JzXdJIhTmOFoAH9BSia2I";
 const analysisCache={};
 const CACHE_MS=5*60*1000;
+function selectedMarketInterval(){
+  return ({"5":"5m","15":"15m","60":"1h","D":"1d"})[tf] || "15m";
+}
+function analysisKey(sym, interval=selectedMarketInterval()){
+  return sym+"|"+interval;
+}
 function buildSignal(sym){ return signals[sym] || "WAIT"; }
 function tickerbotSymbol(sym){
   if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym)) return "X:"+sym;
@@ -337,7 +376,9 @@ function stochastic14(bars){
 }
 async function analyzeSymbol(sym){
   const status=document.getElementById("data-status");
-  const cached=analysisCache[sym];
+  const interval=selectedMarketInterval();
+  const key=analysisKey(sym,interval);
+  const cached=analysisCache[key];
   if(cached && Date.now()-cached.time<CACHE_MS){
     const modeNow=document.getElementById("mode").value;
     cached.action="WAIT";
@@ -353,11 +394,19 @@ async function analyzeSymbol(sym){
     renderWatchlist();
     return;
   }
-  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting provider OHLCV candles for "+sym+"…";
+  delete signals[sym];
+  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting "+interval+" provider OHLCV candles for "+sym+" (12-second timeout)…";
   try{
-    const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval=15m&limit=100";
-    const response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store"});
-    const data=await response.json();
+    const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval="+encodeURIComponent(interval)+"&limit=100";
+    const controller=new AbortController();
+    const timeoutId=setTimeout(()=>controller.abort(),12000);
+    let response, data;
+    try{
+      response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store",signal:controller.signal});
+      data=await response.json();
+    }finally{
+      clearTimeout(timeoutId);
+    }
     if(!response.ok) throw new Error(data.error||("HTTP "+response.status));
     if(!Array.isArray(data.bars)||data.bars.length<15) throw new Error("Not enough provider candles to calculate RSI/Stochastic.");
     const bars=data.bars.map(b=>({t:Number(b.t),h:Number(b.h),l:Number(b.l),c:Number(b.c)}))
@@ -375,17 +424,18 @@ async function analyzeSymbol(sym){
       else if(rsi>70&&stoch>80) action="SELL";
     }
     const last=bars[bars.length-1];
-    const result={action,rsi,stoch,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:last.t,coverage:data.coverage||"not supplied",interval:data.interval||"15m"};
+    const result={action,rsi,stoch,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:last.t,coverage:data.coverage||"not supplied",interval:data.interval||interval};
     const previous=signals[sym];
-    analysisCache[sym]=result;
+    analysisCache[key]=result;
     signals[sym]=action;
     if(sym===symbol) showAnalysisStatus(result);
     if(action!=="WAIT"&&previous!==action) fireAlert(sym,action);
     renderWatchlist();
   }catch(error){
     delete signals[sym];
-    delete analysisCache[sym];
-    if(sym===symbol&&status) status.textContent="DATA UNAVAILABLE for "+sym+": "+error.message+" Signals are disabled until valid candles are available.";
+    delete analysisCache[key];
+    const reason=error?.name==="AbortError"?"provider request timed out after 12 seconds":(error?.message||"unknown request error");
+    if(sym===symbol&&status) status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";
     renderWatchlist();
   }
 }
@@ -394,7 +444,7 @@ function showAnalysisStatus(result){
   if(!status)return;
   const barTime=Number(result.lastBarTime);
   const barDate=Number.isFinite(barTime)?new Date(barTime>1e12?barTime:barTime*1000).toLocaleString():"provider time unavailable";
-  status.textContent="PROVIDER RESPONSE · "+symbol+" · "+result.provider+" · 15m candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
+  status.textContent="PROVIDER RESPONSE · "+symbol+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
 }
 
 /* ALERT */
@@ -410,28 +460,48 @@ setTimeout(()=>d.remove(),4000);
 
 /* WATCHLIST */
 function renderWatchlist(){
-let w=document.getElementById("watch");
-w.innerHTML="";
+  const w=document.getElementById("watch");
+  if(!w) return;
+  w.innerHTML="";
+  const interval=selectedMarketInterval();
+  watchlist.forEach(s=>{
+    const cached=analysisCache[analysisKey(s,interval)];
+    const act=cached?cached.action:"WAIT";
+    const div=document.createElement("div");
+    div.className="item "+(cached&&act==="BUY"?"buy":cached&&act==="SELL"?"sell":"");
+    div.textContent=s+" "+(cached?act:"WAIT · LOAD DATA");
+    div.title=cached?"Tickerbot "+interval+" snapshot; click to view chart":"Data not loaded for this symbol/timeframe; click to request it";
+    div.onclick=()=>{symbol=s;document.getElementById("symbol-select").value=s;loadChart();};
+    w.appendChild(div);
+  });
+  renderHeatmap();
+}
 
-watchlist.forEach(s=>{
-let act=buildSignal(s);
-const cached=analysisCache[s];
-
-if(document.getElementById("mode").value==="sniper" && (!cached || act==="WAIT")) return;
-
-let div=document.createElement("div");
-div.className="item "+(act==="BUY"?"buy":act==="SELL"?"sell":"");
-div.innerText=s+" "+(cached?act:"WAIT · CHECK DATA");
-div.onclick=()=>{symbol=s;document.getElementById("symbol-select").value=s;loadChart();};
-w.appendChild(div);
-});
+function renderHeatmap(){
+  const grid=document.getElementById("heatmap");
+  if(!grid) return;
+  grid.innerHTML="";
+  const interval=selectedMarketInterval();
+  watchlist.forEach(s=>{
+    const cached=analysisCache[analysisKey(s,interval)];
+    const act=cached?cached.action:"WAIT";
+    const cell=document.createElement("div");
+    cell.className="cell "+(cached&&act==="BUY"?"buy":cached&&act==="SELL"?"sell":"wait");
+    const title=document.createElement("strong");
+    title.textContent=s;
+    const detail=document.createElement("small");
+    detail.textContent=cached?(act+" · RSI "+cached.rsi.toFixed(1)+" · STO "+cached.stoch.toFixed(1)):"WAIT · LOAD DATA";
+    cell.append(title,detail);
+    cell.title=cached?"Provider-backed indicator snapshot; not a price-performance heatmap":"Click to load provider data for "+s+" at "+interval;
+    cell.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;loadChart();};
+    grid.appendChild(cell);
+  });
 }
 
 /* OPTIONS */
 function toggleOptions(id){
 let o=document.getElementById(id);
 o.innerHTML="<b>OPTIONS CHAIN NOT CONNECTED</b><p>No live contracts are being shown here. Strike, bid/ask, expiration, open interest and Greeks must come from a verified options-data provider. Do not use generated example contracts for trading decisions.</p><p>Next stage: connect a licensed chain, then calculate premium risk, breakeven and expiration payoff.</p>";
-}
 }
 
 /* CALCULATOR */
@@ -471,8 +541,9 @@ result.innerHTML="Units: "+qty+"<br>Risk budget: $"+riskAmt.toFixed(2)+"<br>Esti
 
 /* LOOP */
 function loop(){
-renderWatchlist();
-setTimeout(loop,10000);
+  renderWatchlist();
+  renderHeatmap();
+  setTimeout(loop,10000);
 }
 
 </script>

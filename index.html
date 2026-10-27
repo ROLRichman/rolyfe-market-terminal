@@ -216,7 +216,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 #ai-panel{position:fixed;right:14px;bottom:92px;z-index:1800;width:min(360px,calc(100vw - 28px));max-height:75vh;overflow:auto;background:#07131ff7;border:1px solid #2b9b84;border-radius:16px;box-shadow:0 16px 50px #000c;padding:14px;display:none}#ai-panel.open{display:block}.ai-panel-head{display:flex;gap:10px;align-items:center}.ai-avatar{width:56px;height:56px;flex:0 0 56px;border-radius:14px;background:radial-gradient(circle at 30% 20%,#174f61,#061020);border:1px solid #287b93;display:flex;align-items:center;justify-content:center}.ai-avatar svg{width:50px;height:50px}#ai-floating-question{width:100%;box-sizing:border-box;min-height:78px;margin-top:10px;background:#050d18;color:#eef6ff;border:1px solid #294258;border-radius:10px;padding:10px;font-size:12px}.ai-hint{font-size:10px;line-height:1.5;color:#91a6bf}
 @media(max-width:650px){.utility-bar{padding:7px}.utility-bar select,.utility-bar input{max-width:none;flex:1 1 90px}.utility-clock{flex-basis:125px}.watch-controls{grid-template-columns:1fr 1fr}.watch-controls #add-symbol-input{grid-column:span 2}.trade-ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.item-wrap .item{min-height:40px}#ai-fab{right:10px;bottom:10px;width:58px;height:58px}#ai-panel{right:8px;bottom:78px}}
 
-</style>
+.data-status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.data-status-copy{flex:1;min-width:220px}.data-status-row .secondary-button{flex:0 0 auto;white-space:nowrap}@media(max-width:560px){.data-status-row .secondary-button{width:100%}}</style>
 </head>
 
 <body>
@@ -245,7 +245,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <select id="chart-range" aria-label="Chart history range" onchange="chartRange=this.value;loadChart()"><option value="6M" selected>6M</option><option value="12M">1Y</option><option value="ALL">All</option></select>
 </div>
 
-<div class="section" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting provider-backed candle check. Signal lights stay neutral until valid data confirms a technical watch condition. Technical snapshot only; not a trade recommendation.</div>
+<div class="section data-status-row"><div class="data-status-copy" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting provider-backed candle check. Signal lights stay neutral until valid data confirms a technical watch condition. Technical snapshot only; not a trade recommendation.</div><button type="button" class="secondary-button" onclick="retryCurrentData()">↻ Retry data</button></div>
 <div class="signal-strip" id="signal-strip" aria-live="polite">
   <div class="signal-strip-head"><strong class="signal-symbol" id="metric-symbol">AAPL · 5m</strong><span class="signal-pill" id="metric-signal-pill"><i class="signal-led wait" id="metric-led"></i><span id="metric-action">CHECKING DATA</span></span></div>
   <div class="signal-metrics">
@@ -561,6 +561,7 @@ function determineSignal(rsi,stoch,mode){
   }
   return"WAIT";
 }
+function retryCurrentData(){const key=analysisKey(symbol,selectedMarketInterval());delete analysisCache[key];delete signals[key];setWatchStatus("Retrying provider candles for "+symbol+" · "+selectedMarketInterval()+"…");loadChart();}
 async function analyzeSymbol(sym,options={}){
   const interval=selectedMarketInterval(),key=analysisKey(sym,interval),status=document.getElementById("data-status");
   const updateMain=options.updateMainStatus!==false&&sym===symbol;
@@ -580,7 +581,7 @@ async function analyzeSymbol(sym,options={}){
     const controller=new AbortController(),timeoutId=setTimeout(()=>controller.abort(),25000);
     let response,data;
     try{
-      response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store",signal:controller.signal});
+      response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON},cache:"no-store",signal:controller.signal});
       data=await response.json();
     }finally{clearTimeout(timeoutId);}
     if(!response.ok)throw new Error(data.error||("HTTP "+response.status));

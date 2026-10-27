@@ -142,7 +142,7 @@ text-decoration:none;
 <div class="topbar">
 <select id="symbol-select" onchange="symbol=this.value;loadChart()"></select>
 
-<select id="mode" onchange="renderWatchlist()">
+<select id="mode" onchange="analyzeSymbol(symbol);renderWatchlist()">
 <option value="live">LIVE</option>
 <option value="sniper">SNIPER</option>
 </select>
@@ -339,6 +339,15 @@ async function analyzeSymbol(sym){
   const status=document.getElementById("data-status");
   const cached=analysisCache[sym];
   if(cached && Date.now()-cached.time<CACHE_MS){
+    const modeNow=document.getElementById("mode").value;
+    cached.action="WAIT";
+    if(modeNow==="sniper"){
+      if(cached.rsi<25&&cached.stoch<20) cached.action="BUY";
+      else if(cached.rsi>75&&cached.stoch>80) cached.action="SELL";
+    }else{
+      if(cached.rsi<30&&cached.stoch<20) cached.action="BUY";
+      else if(cached.rsi>70&&cached.stoch>80) cached.action="SELL";
+    }
     signals[sym]=cached.action;
     if(sym===symbol) showAnalysisStatus(cached);
     renderWatchlist();

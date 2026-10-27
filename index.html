@@ -140,9 +140,9 @@ text-decoration:none;
 
 <!-- TOP BAR -->
 <div class="topbar">
-<select id="symbol-select"></select>
+<select id="symbol-select" onchange="symbol=this.value;loadChart()"></select>
 
-<select id="mode" onchange="renderWatchlist()">
+<select id="mode" onchange="analyzeSymbol(symbol);renderWatchlist()">
 <option value="live">LIVE</option>
 <option value="sniper">SNIPER</option>
 </select>
@@ -154,6 +154,8 @@ text-decoration:none;
 <option value="D">DAY</option>
 </select>
 </div>
+
+<div class="section" id="data-status" role="status"><b>DATA INTEGRITY:</b> Checking provider-backed candles for the selected symbol. Signals remain WAIT until valid OHLCV bars are received. Technical snapshot only; not a trade recommendation.</div>
 
 <!-- WATCHLIST -->
 <div class="section">
@@ -270,6 +272,7 @@ loop();
 /* CHARTS */
 function loadChart(){
 document.getElementById("chart").innerHTML="";
+analyzeSymbol(symbol);
 new TradingView.widget({
 container_id:"chart",
 symbol:symbol,
@@ -302,27 +305,96 @@ studies:[
 });
 }
 
-/* SIGNAL ENGINE */
-function buildSignal(sym){
-let rsi=Math.random()*100;
-let stoch=Math.random()*100;
-let mode=document.getElementById("mode").value;
-
-let action="WAIT";
-
-if(mode==="sniper"){
-if(rsi<25 && stoch<20) action="BUY";
-if(rsi>75 && stoch>80) action="SELL";
-}else{
-if(rsi<30 && stoch<20) action="BUY";
-if(rsi>70 && stoch>80) action="SELL";
+/* VERIFIED SIGNAL SNAPSHOT — only calculate from provider-returned OHLCV bars */
+const MARKET_API="https://ykmdyfbklvuoseqdjnxy.supabase.co/functions/v1/market-data";
+const MARKET_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlrbWR5ZmJrbHZ1b3NlcWRqbnh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3ODk5OTQsImV4cCI6MjEwODM2NTk5NH0._YEZj2GSnPcLGXmwgj98V_JzXdJIhTmOFoAH9BSia2I";
+const analysisCache={};
+const CACHE_MS=5*60*1000;
+function buildSignal(sym){ return signals[sym] || "WAIT"; }
+function tickerbotSymbol(sym){
+  if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym)) return "X:"+sym;
+  return sym;
 }
-
-signals[sym]=action;
-
-if(action!=="WAIT"){
-fireAlert(sym,action);
+function rsi14(closes){
+  if(closes.length<15) return null;
+  let gains=0,losses=0;
+  for(let i=closes.length-14;i<closes.length;i++){
+    const change=closes[i]-closes[i-1];
+    if(change>0) gains+=change; else losses-=change;
+  }
+  const avgGain=gains/14,avgLoss=losses/14;
+  if(avgLoss===0) return avgGain===0?50:100;
+  return 100-(100/(1+avgGain/avgLoss));
 }
+function stochastic14(bars){
+  if(bars.length<14) return null;
+  const last=bars.slice(-14);
+  const highest=Math.max(...last.map(b=>b.h));
+  const lowest=Math.min(...last.map(b=>b.l));
+  if(!Number.isFinite(highest)||!Number.isFinite(lowest)) return null;
+  if(highest===lowest) return 50;
+  return ((Number(last[last.length-1].c)-lowest)/(highest-lowest))*100;
+}
+async function analyzeSymbol(sym){
+  const status=document.getElementById("data-status");
+  const cached=analysisCache[sym];
+  if(cached && Date.now()-cached.time<CACHE_MS){
+    const modeNow=document.getElementById("mode").value;
+    cached.action="WAIT";
+    if(modeNow==="sniper"){
+      if(cached.rsi<25&&cached.stoch<20) cached.action="BUY";
+      else if(cached.rsi>75&&cached.stoch>80) cached.action="SELL";
+    }else{
+      if(cached.rsi<30&&cached.stoch<20) cached.action="BUY";
+      else if(cached.rsi>70&&cached.stoch>80) cached.action="SELL";
+    }
+    signals[sym]=cached.action;
+    if(sym===symbol) showAnalysisStatus(cached);
+    renderWatchlist();
+    return;
+  }
+  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting provider OHLCV candles for "+sym+"…";
+  try{
+    const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval=15m&limit=100";
+    const response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store"});
+    const data=await response.json();
+    if(!response.ok) throw new Error(data.error||("HTTP "+response.status));
+    if(!Array.isArray(data.bars)||data.bars.length<15) throw new Error("Not enough provider candles to calculate RSI/Stochastic.");
+    const bars=data.bars.map(b=>({t:Number(b.t),h:Number(b.h),l:Number(b.l),c:Number(b.c)}))
+      .filter(b=>Number.isFinite(b.t)&&Number.isFinite(b.h)&&Number.isFinite(b.l)&&Number.isFinite(b.c));
+    if(bars.length<15) throw new Error("Provider returned too few valid OHLCV bars.");
+    const closes=bars.map(b=>b.c), rsi=rsi14(closes), stoch=stochastic14(bars);
+    if(!Number.isFinite(rsi)||!Number.isFinite(stoch)) throw new Error("Indicator calculation unavailable for this data.");
+    const mode=document.getElementById("mode").value;
+    let action="WAIT";
+    if(mode==="sniper"){
+      if(rsi<25&&stoch<20) action="BUY";
+      else if(rsi>75&&stoch>80) action="SELL";
+    }else{
+      if(rsi<30&&stoch<20) action="BUY";
+      else if(rsi>70&&stoch>80) action="SELL";
+    }
+    const last=bars[bars.length-1];
+    const result={action,rsi,stoch,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:last.t,coverage:data.coverage||"not supplied",interval:data.interval||"15m"};
+    const previous=signals[sym];
+    analysisCache[sym]=result;
+    signals[sym]=action;
+    if(sym===symbol) showAnalysisStatus(result);
+    if(action!=="WAIT"&&previous!==action) fireAlert(sym,action);
+    renderWatchlist();
+  }catch(error){
+    delete signals[sym];
+    delete analysisCache[sym];
+    if(sym===symbol&&status) status.textContent="DATA UNAVAILABLE for "+sym+": "+error.message+" Signals are disabled until valid candles are available.";
+    renderWatchlist();
+  }
+}
+function showAnalysisStatus(result){
+  const status=document.getElementById("data-status");
+  if(!status)return;
+  const barTime=Number(result.lastBarTime);
+  const barDate=Number.isFinite(barTime)?new Date(barTime>1e12?barTime:barTime*1000).toLocaleString():"provider time unavailable";
+  status.textContent="PROVIDER RESPONSE · "+symbol+" · "+result.provider+" · 15m candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
 }
 
 /* ALERT */
@@ -342,15 +414,15 @@ let w=document.getElementById("watch");
 w.innerHTML="";
 
 watchlist.forEach(s=>{
-buildSignal(s);
-let act=signals[s];
+let act=buildSignal(s);
+const cached=analysisCache[s];
 
-if(document.getElementById("mode").value==="sniper" && act==="WAIT") return;
+if(document.getElementById("mode").value==="sniper" && (!cached || act==="WAIT")) return;
 
 let div=document.createElement("div");
 div.className="item "+(act==="BUY"?"buy":act==="SELL"?"sell":"");
-div.innerText=s+" "+act;
-div.onclick=()=>{symbol=s;loadChart();};
+div.innerText=s+" "+(cached?act:"WAIT · CHECK DATA");
+div.onclick=()=>{symbol=s;document.getElementById("symbol-select").value=s;loadChart();};
 w.appendChild(div);
 });
 }
@@ -358,12 +430,7 @@ w.appendChild(div);
 /* OPTIONS */
 function toggleOptions(id){
 let o=document.getElementById(id);
-o.innerHTML="";
-for(let i=0;i<6;i++){
-let div=document.createElement("div");
-div.className="option-box";
-div.innerText=`${symbol} ${100+i*5}C Δ0.${i+3} IV:${20+i}%`;
-o.appendChild(div);
+o.innerHTML="<b>OPTIONS CHAIN NOT CONNECTED</b><p>No live contracts are being shown here. Strike, bid/ask, expiration, open interest and Greeks must come from a verified options-data provider. Do not use generated example contracts for trading decisions.</p><p>Next stage: connect a licensed chain, then calculate premium risk, breakeven and expiration payoff.</p>";
 }
 }
 
@@ -371,29 +438,35 @@ o.appendChild(div);
 function toggleCalc(id){
 let c=document.getElementById(id);
 c.innerHTML=`
-Balance <input id="bal" value="500">
-Risk % <input id="risk" value="5">
-Entry <input id="entry" value="1.5">
-Stop <input id="stop" value="1.2">
+<label>Account balance $ <input id="${id}_bal" type="number" min="0" step="0.01" value="500"></label>
+<label>Risk % <input id="${id}_risk" type="number" min="0.1" max="100" step="0.1" value="1"></label>
+<label>Side <select id="${id}_side"><option value="long">Long</option><option value="short">Short</option></select></label>
+<label>Entry <input id="${id}_entry" type="number" min="0.01" step="0.01" value="1.5"></label>
+<label>Stop <input id="${id}_stop" type="number" min="0.01" step="0.01" value="1.2"></label>
 <button onclick="runCalc('${id}')">CALCULATE</button>
-<div id="res_${id}"></div>
+<div id="res_${id}" role="status"></div>
+<p>Underlying-unit sizing only. This is not option-contract sizing and excludes fees, slippage and gaps.</p>
 `;
 }
 
 function runCalc(id){
-let B=+bal.value||0;
-let R=+risk.value/100||0;
-let E=+entry.value||0;
-let S=+stop.value||0;
-let riskAmt=B*R;
-let diff=Math.abs(E-S)||1;
-let qty=Math.floor(riskAmt/diff);
-
-document.getElementById("res_"+id).innerHTML=
-`Qty:${qty}<br>Risk:$${riskAmt.toFixed(2)}<br>
-T1:${(E+diff).toFixed(2)}<br>
-T2:${(E+2*diff).toFixed(2)}<br>
-T3:${(E+3*diff).toFixed(2)}`;
+const B=Number(document.getElementById(id+"_bal").value);
+const R=Number(document.getElementById(id+"_risk").value)/100;
+const E=Number(document.getElementById(id+"_entry").value);
+const S=Number(document.getElementById(id+"_stop").value);
+const side=document.getElementById(id+"_side").value;
+const result=document.getElementById("res_"+id);
+if(!Number.isFinite(B)||!Number.isFinite(R)||!Number.isFinite(E)||!Number.isFinite(S)||B<=0||R<=0||R>1||E<=0||S<=0){
+ result.textContent="Enter valid positive values. Risk must be greater than 0% and no more than 100%.";
+ return;
+}
+if((side==="long"&&S>=E)||(side==="short"&&S<=E)){
+ result.textContent="Invalid stop: a long trade needs its stop below entry; a short trade needs its stop above entry.";
+ return;
+}
+const riskAmt=B*R, diff=Math.abs(E-S), qty=Math.floor(riskAmt/diff);
+const direction=side==="long"?1:-1;
+result.innerHTML="Units: "+qty+"<br>Risk budget: $"+riskAmt.toFixed(2)+"<br>Estimated stop risk at this size: $"+(qty*diff).toFixed(2)+"<br>Risk per unit: $"+diff.toFixed(2)+"<br>T1: $"+(E+direction*diff).toFixed(2)+"<br>T2: $"+(E+direction*2*diff).toFixed(2)+"<br>T3: $"+(E+direction*3*diff).toFixed(2);
 }
 
 /* LOOP */

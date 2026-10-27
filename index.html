@@ -32,27 +32,83 @@ border-bottom:1px solid #111;
 
 /* INPUTS */
 select,input{
-padding:8px;
-border-radius:6px;
-border:none;
-background:#111;
-color:#fff;
+padding:9px 10px;
+border-radius:8px;
+border:1px solid #26354a;
+background:#0b1220;
+color:#eef6ff;
+min-width:0;
 }
-
-/* BUTTON GLOW */
+select:focus-visible,input:focus-visible,button:focus-visible,.panel-summary:focus-visible{
+outline:2px solid #54e6a4;
+outline-offset:2px;
+}
 button{
-background:#00ff88;
-color:#000;
-font-weight:bold;
-border:none;
-border-radius:6px;
-padding:8px;
+background:#00d984;
+color:#04120b;
+font-weight:700;
+border:1px solid #00e991;
+border-radius:8px;
+padding:9px 12px;
 cursor:pointer;
-animation:glow 2s infinite alternate;
+animation:none;
+transition:filter .15s ease,transform .15s ease,border-color .15s ease;
 }
-@keyframes glow{
-0%{box-shadow:0 0 5px #00ff88;}
-100%{box-shadow:0 0 15px #00ff88;}
+button:hover{filter:brightness(1.08)}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:not-allowed;filter:none;transform:none}
+.terminal-subtitle{margin:0 0 5px;text-align:center;color:#87f5c0;font-size:11px;font-weight:800;letter-spacing:1.1px}
+.terminal-note{max-width:900px;margin:0 auto 12px;text-align:center;color:#99a9bf;font-size:12px;line-height:1.5}
+.panel-collapse{border:1px solid #1a2c3d;overflow:hidden}
+.panel-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;font-weight:800;font-size:16px}
+.panel-summary::-webkit-details-marker{display:none}
+.panel-summary:after{content:"＋";color:#5de7a8;font-size:18px}
+details[open]>.panel-summary:after{content:"−"}
+.panel-summary-meta{color:#8da4bd;font-size:11px;font-weight:600;text-align:right}
+.panel-body{padding-top:12px}
+.watch-controls{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(120px,1fr) auto auto;gap:7px;align-items:center}
+.watch-controls select,.watch-controls input{width:100%;box-sizing:border-box}
+.scan-status{margin:9px 0;padding:8px 10px;border:1px solid #1c3545;border-radius:8px;color:#a9bbcf;font-size:12px;line-height:1.45;background:#07121e}
+.scan-status.active{border-color:#197a58;color:#a9f8d0}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:7px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;box-sizing:border-box;padding:9px 10px;background:#0b1420;color:#e3edf8;border:1px solid #243449;border-radius:9px;font-size:12px;text-align:left;cursor:pointer;font-weight:650;animation:none}
+.item.selected{border-color:#27c984;box-shadow:inset 0 0 0 1px #27c984;background:#0c211b}
+.item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-state{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:800;white-space:nowrap;color:#9cafc2}
+.item-state.buy{color:#95ffd0}
+.item-state.sell{color:#ffb7c0}
+.signal-led{display:inline-block;width:8px;height:8px;min-width:8px;border-radius:50%;background:#718096;vertical-align:middle}
+.signal-led.buy{background:#00f59a;box-shadow:0 0 5px #00f59a;animation:buyPulse 1.7s ease-in-out infinite}
+.signal-led.sell{background:#ff405b;box-shadow:0 0 5px #ff405b;animation:sellPulse 1.7s ease-in-out infinite}
+.signal-led.wait{background:#69788a;box-shadow:none;animation:none}
+@keyframes buyPulse{0%,100%{opacity:.45;box-shadow:0 0 2px #00f59a}50%{opacity:1;box-shadow:0 0 11px #00f59a,0 0 20px #00f59a}}
+@keyframes sellPulse{0%,100%{opacity:.48;box-shadow:0 0 2px #ff405b}50%{opacity:1;box-shadow:0 0 11px #ff405b,0 0 20px #ff405b}}
+.signal-strip{padding:11px;background:linear-gradient(110deg,#07131f,#0b1d1b);border:1px solid #20364a;border-radius:12px;margin-top:12px}
+.signal-strip-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.signal-symbol{font-size:13px;font-weight:800;color:#dceafa}
+.signal-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid #304052;background:#101a27;color:#cbd6e4;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.4px}
+.signal-pill.buy{border-color:#159b68;color:#9bffcf}
+.signal-pill.sell{border-color:#cb3851;color:#ffc4cb}
+.signal-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.metric{min-width:0;border:1px solid #1e2b3c;border-radius:8px;padding:9px;background:#080f19}
+.metric-label{display:block;color:#8195ae;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.metric-value{display:block;margin-top:5px;color:#e8f3ff;font-size:14px;font-weight:800;overflow-wrap:anywhere}
+.metric-note{display:block;margin-top:4px;color:#8fa2b8;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+.metric-value.positive{color:#86f8bc}.metric-value.negative{color:#ff9fac}
+@media(max-width:650px){
+  #app{padding:8px}
+  .topbar{position:sticky;padding:8px}
+  .topbar select{flex:1 1 calc(33.33% - 8px);font-size:12px}
+  .chart-inner{min-width:740px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(86px,1fr))}
+  .watch-controls{grid-template-columns:1fr 1fr}
+  .watch-controls button{width:100%;font-size:11px;padding:9px 6px}
+  .list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .signal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel-summary{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition:none!important}
 }
 
 /* SECTIONS */
@@ -98,23 +154,15 @@ grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
 gap:6px;
 }
 .cell{
-background:#111;
-padding:8px 6px;
-border-radius:6px;
-text-align:center;
-cursor:pointer;
-min-height:42px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-gap:3px;
-white-space:pre-line;
+background:#0b1420;color:#e3edf8;padding:9px 6px;border-radius:8px;
+text-align:center;cursor:pointer;min-height:44px;display:flex;flex-direction:column;
+justify-content:center;gap:4px;white-space:pre-line;border:1px solid #29374a;animation:none;
 }
 .cell strong{display:block;font-size:12px;letter-spacing:.2px}
 .cell small{display:block;opacity:.86;font-size:10px;line-height:1.35}
-.cell.wait{border:1px solid #334155;color:#cbd5e1}
-.cell.buy{border:1px solid #00ff88;color:#b7ffe0}
-.cell.sell{border:1px solid #ff3b3b;color:#ffc5c5}
+.cell.wait{border-color:#334155;color:#cbd5e1}
+.cell.buy{border-color:#00ff88;color:#b7ffe0;box-shadow:inset 0 0 0 1px #00ff8844}
+.cell.sell{border-color:#ff3b3b;color:#ffc5c5;box-shadow:inset 0 0 0 1px #ff3b3b44}
 @media(max-width:650px){
   #app{padding:8px}
   .chart-inner{min-width:740px}
@@ -123,13 +171,12 @@ white-space:pre-line;
 
 /* ALERT */
 .alert{
-position:fixed;
-right:10px;
-padding:10px;
-background:#000;
-border-radius:8px;
-z-index:999;
+position:fixed;right:10px;top:70px;display:flex;align-items:center;gap:8px;
+padding:11px 14px;background:#030812;border:1px solid #234258;border-radius:10px;
+z-index:1100;color:#f3f7ff;font-size:12px;font-weight:900;box-shadow:0 8px 30px #0008;
 }
+.alert.buy{border-color:#148a5f}
+.alert.sell{border-color:#c93850}
 
 /* OPTIONS */
 .option-box{
@@ -153,29 +200,62 @@ text-decoration:none;
 <div id="app">
 
 <h2>🔥 RO’LYFE TERMINAL — LEVEL 3 MONEY MACHINE</h2>
+<p class="terminal-subtitle">STOCK-FIRST MARKET INTELLIGENCE · MULTI-ASSET WATCHLIST · RISK BEFORE EXECUTION</p>
+<p class="terminal-note">Provider-backed candle data and indicators. Quote timing, supported symbols and freshness depend on provider coverage and the market session.</p>
 
 <!-- TOP BAR -->
 <div class="topbar">
 <select id="symbol-select" onchange="symbol=this.value;loadChart()" aria-label="Market symbol"></select>
-<select id="mode" onchange="analyzeSymbol(symbol);renderWatchlist()" aria-label="Signal mode">
-<option value="live">LIVE</option>
+<select id="mode" onchange="updateSignalMode()" aria-label="Signal mode">
+<option value="live">STANDARD</option>
 <option value="sniper">SNIPER</option>
 </select>
 <select id="timeframe-select" onchange="tf=this.value;loadChart()" aria-label="Chart timeframe">
 <option value="5" selected>5m</option>
 <option value="15">15m</option>
 <option value="60">1H</option>
+<option value="240">4H</option>
 <option value="D">DAY</option>
 </select>
 </div>
 
-<div class="section" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting a provider-backed candle check. Signals remain WAIT until valid OHLCV bars are received. Technical snapshot only; not a trade recommendation.</div>
-
-<!-- WATCHLIST -->
-<div class="section">
-<h3>Market List</h3>
-<div id="watch" class="list"></div>
+<div class="section" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting provider-backed candle check. Signal lights stay neutral until valid data confirms a technical watch condition. Technical snapshot only; not a trade recommendation.</div>
+<div class="signal-strip" id="signal-strip" aria-live="polite">
+  <div class="signal-strip-head"><strong class="signal-symbol" id="metric-symbol">AAPL · 5m</strong><span class="signal-pill" id="metric-signal-pill"><i class="signal-led wait" id="metric-led"></i><span id="metric-action">CHECKING DATA</span></span></div>
+  <div class="signal-metrics">
+    <div class="metric"><span class="metric-label">Last Bar Close</span><strong class="metric-value" id="metric-price">—</strong><small class="metric-note" id="metric-change">Waiting for provider data</small></div>
+    <div class="metric"><span class="metric-label">Trend Context</span><strong class="metric-value" id="metric-trend">—</strong><small class="metric-note" id="metric-emas">EMA 20 / 50 / 200</small></div>
+    <div class="metric"><span class="metric-label">MACD</span><strong class="metric-value" id="metric-macd">—</strong><small class="metric-note" id="metric-macd-note">Histogram</small></div>
+    <div class="metric"><span class="metric-label">RSI (14)</span><strong class="metric-value" id="metric-rsi">—</strong><small class="metric-note">Wilder smoothing</small></div>
+    <div class="metric"><span class="metric-label">Stochastic %K</span><strong class="metric-value" id="metric-stoch">—</strong><small class="metric-note">14-bar range</small></div>
+    <div class="metric"><span class="metric-label">CCI (20)</span><strong class="metric-value" id="metric-cci">—</strong><small class="metric-note">Typical-price deviation</small></div>
+    <div class="metric"><span class="metric-label">Volume vs Avg</span><strong class="metric-value" id="metric-volume">—</strong><small class="metric-note" id="metric-volume-note">20-bar reference</small></div>
+    <div class="metric"><span class="metric-label">Last Bar Time</span><strong class="metric-value" id="metric-lastbar">—</strong><small class="metric-note" id="metric-barage">Provider timestamp</small></div>
+  </div>
 </div>
+
+<!-- COMPACT GROUPED WATCHLIST -->
+<details class="section panel-collapse" id="watchlist-panel">
+  <summary class="panel-summary"><span>Market List</span><span class="panel-summary-meta" id="watch-summary">0 / 28 scanned · Stocks</span></summary>
+  <div class="panel-body">
+    <div class="watch-controls">
+      <select id="watch-group" aria-label="Watchlist market group" onchange="renderWatchlist()">
+        <option value="stocks" selected>Stocks</option>
+        <option value="etfs">ETFs &amp; Metals</option>
+        <option value="crypto">Crypto</option>
+        <option value="forex">Forex</option>
+        <option value="futures">Futures</option>
+        <option value="macro">Macro</option>
+        <option value="all">All markets</option>
+      </select>
+      <input id="watch-search" type="search" placeholder="Filter symbols…" aria-label="Filter watchlist" oninput="renderWatchlist()">
+      <button id="scan-button" type="button" onclick="scanWatchlist()">Scan this group</button>
+      <button id="stop-scan-button" type="button" onclick="stopWatchlistScan()" disabled>Stop scan</button>
+    </div>
+    <div class="scan-status" id="scan-status" role="status" aria-live="polite">Select a market group or symbol. Scan runs only when you start it, to avoid unnecessary provider requests.</div>
+    <div id="watch" class="list"></div>
+  </div>
+</details>
 
 <!-- MAIN CHART -->
 <div class="section">
@@ -192,12 +272,14 @@ text-decoration:none;
 <div id="calc" class="option-box"></div>
 </div>
 
-<!-- HEATMAP -->
-<div class="section">
-<h3>Signal Coverage Heatmap</h3>
-<p style="font-size:12px;color:#94a3b8;margin:0 0 8px">Indicator snapshots for symbols checked at the selected timeframe. Unloaded symbols stay neutral until analyzed.</p>
-<div id="heatmap" class="grid" aria-live="polite"></div>
-</div>
+<!-- SIGNAL COVERAGE -->
+<details class="section panel-collapse" id="heatmap-panel">
+  <summary class="panel-summary"><span>Signal Coverage Heatmap</span><span class="panel-summary-meta" id="heatmap-summary">Provider snapshots only</span></summary>
+  <div class="panel-body">
+    <p style="font-size:12px;color:#94a3b8;margin:0 0 8px">Compact view of the selected market group. Flashing lights mean the RSI/Stochastic thresholds were reached—not a prediction or an automatic entry.</p>
+    <div id="heatmap" class="grid" aria-live="polite"></div>
+  </div>
+</details>
 
 <!-- SECOND CHART -->
 <div class="section">
@@ -263,19 +345,32 @@ const watchlist=[
 ];
 
 let signals={};
+let scanInProgress=false;
+let stopScanRequested=false;
+
+const WATCH_GROUPS={
+  stocks:["AAPL","TSLA","NVDA","MSFT","AMZN","META","GOOGL","BAC","C","AMD","PLTR","COIN","SHOP","TSM"],
+  etfs:["SPY","QQQ","GLD","SLV"],
+  crypto:["BTCUSD","ETHUSD","SOLUSD","XRPUSD"],
+  forex:["EURUSD","GBPUSD","USDJPY"],
+  futures:["ES1!","NQ1!"],
+  macro:["DXY"]
+};
+const WATCH_GROUP_LABELS={stocks:"Stocks",etfs:"ETFs & Metals",crypto:"Crypto",forex:"Forex",futures:"Futures",macro:"Macro",all:"All markets"};
+let activeScanSymbols=[];
 
 window.onload=()=>{
   const sel=document.getElementById("symbol-select");
   watchlist.forEach(s=>{
     const o=document.createElement("option");
-    o.value=s;
-    o.text=s;
-    sel.appendChild(o);
+    o.value=s;o.text=s;sel.appendChild(o);
   });
   sel.value=symbol;
   tf=document.getElementById("timeframe-select")?.value || "5";
+  document.getElementById("watch-group").value="stocks";
   renderWatchlist();
   renderHeatmap();
+  setDataPending(symbol,selectedMarketInterval());
   loadChart();
   loadChart2("AAPL");
   loop();
@@ -344,158 +439,296 @@ const MARKET_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 const analysisCache={};
 const CACHE_MS=5*60*1000;
 function selectedMarketInterval(){
-  return ({"5":"5m","15":"15m","60":"1h","D":"1d"})[tf] || "15m";
+  return ({"5":"5m","15":"15m","60":"1h","240":"4h","D":"1d"})[tf] || "15m";
 }
 function analysisKey(sym, interval=selectedMarketInterval()){
   return sym+"|"+interval;
 }
-function buildSignal(sym){ return signals[sym] || "WAIT"; }
+function buildSignal(sym){ return signals[analysisKey(sym)] || "WAIT"; }
 function tickerbotSymbol(sym){
   if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym)) return "X:"+sym;
   return sym;
 }
 function rsi14(closes){
   if(closes.length<15) return null;
-  let gains=0,losses=0;
-  for(let i=closes.length-14;i<closes.length;i++){
+  let gain=0,loss=0;
+  for(let i=1;i<=14;i++){const change=closes[i]-closes[i-1];if(change>0)gain+=change;else loss-=change;}
+  let avgGain=gain/14,avgLoss=loss/14;
+  for(let i=15;i<closes.length;i++){
     const change=closes[i]-closes[i-1];
-    if(change>0) gains+=change; else losses-=change;
+    avgGain=(avgGain*13+Math.max(change,0))/14;
+    avgLoss=(avgLoss*13+Math.max(-change,0))/14;
   }
-  const avgGain=gains/14,avgLoss=losses/14;
-  if(avgLoss===0) return avgGain===0?50:100;
+  if(avgLoss===0)return avgGain===0?50:100;
   return 100-(100/(1+avgGain/avgLoss));
 }
-function stochastic14(bars){
-  if(bars.length<14) return null;
-  const last=bars.slice(-14);
-  const highest=Math.max(...last.map(b=>b.h));
-  const lowest=Math.min(...last.map(b=>b.l));
-  if(!Number.isFinite(highest)||!Number.isFinite(lowest)) return null;
-  if(highest===lowest) return 50;
-  return ((Number(last[last.length-1].c)-lowest)/(highest-lowest))*100;
+function emaSeries(values,period){
+  const out=Array(values.length).fill(null);
+  if(values.length<period)return out;
+  let sum=0;
+  for(let i=0;i<period;i++)sum+=values[i];
+  let ema=sum/period;out[period-1]=ema;
+  const k=2/(period+1);
+  for(let i=period;i<values.length;i++){ema=values[i]*k+ema*(1-k);out[i]=ema;}
+  return out;
 }
-async function analyzeSymbol(sym){
-  const status=document.getElementById("data-status");
-  const interval=selectedMarketInterval();
-  const key=analysisKey(sym,interval);
-  const cached=analysisCache[key];
-  if(cached && Date.now()-cached.time<CACHE_MS){
-    const modeNow=document.getElementById("mode").value;
-    cached.action="WAIT";
-    if(modeNow==="sniper"){
-      if(cached.rsi<25&&cached.stoch<20) cached.action="BUY";
-      else if(cached.rsi>75&&cached.stoch>80) cached.action="SELL";
-    }else{
-      if(cached.rsi<30&&cached.stoch<20) cached.action="BUY";
-      else if(cached.rsi>70&&cached.stoch>80) cached.action="SELL";
-    }
-    signals[sym]=cached.action;
-    if(sym===symbol) showAnalysisStatus(cached);
-    renderWatchlist();
-    return;
+function macdSnapshot(closes){
+  const e12=emaSeries(closes,12),e26=emaSeries(closes,26),line=[];
+  for(let i=0;i<closes.length;i++)if(e12[i]!==null&&e26[i]!==null)line.push(e12[i]-e26[i]);
+  if(line.length<9)return{line:null,signal:null,histogram:null};
+  const signals=emaSeries(line,9),last=line.length-1;
+  return{line:line[last],signal:signals[last],histogram:line[last]-signals[last]};
+}
+function cci20(bars){
+  if(bars.length<20)return null;
+  const p=bars.slice(-20).map(b=>(b.h+b.l+b.c)/3);
+  const mean=p.reduce((a,b)=>a+b,0)/p.length;
+  const deviation=p.reduce((a,b)=>a+Math.abs(b-mean),0)/p.length;
+  return deviation===0?0:(p[p.length-1]-mean)/(0.015*deviation);
+}
+function stochastic14(bars){
+  if(bars.length<14)return null;
+  const last=bars.slice(-14),highest=Math.max(...last.map(b=>b.h)),lowest=Math.min(...last.map(b=>b.l));
+  if(!Number.isFinite(highest)||!Number.isFinite(lowest))return null;
+  if(highest===lowest)return 50;
+  return ((last[last.length-1].c-lowest)/(highest-lowest))*100;
+}
+function calculateSnapshot(bars){
+  const closes=bars.map(b=>b.c),volumes=bars.map(b=>b.v);
+  const last=bars[bars.length-1],prev=bars[bars.length-2];
+  const ema20=emaSeries(closes,20).at(-1),ema50=emaSeries(closes,50).at(-1),ema200=emaSeries(closes,200).at(-1);
+  const macd=macdSnapshot(closes),cci=cci20(bars);
+  const volumeBase=volumes.length>=21&&volumes.slice(-21,-1).every(Number.isFinite)?volumes.slice(-21,-1).reduce((a,b)=>a+b,0)/20:null;
+  const volumeRatio=volumeBase>0&&Number.isFinite(last.v)?last.v/volumeBase:null;
+  return{
+    close:last.c,previousClose:prev?prev.c:null,change:prev?last.c-prev.c:null,
+    changePercent:prev&&prev.c!==0?((last.c-prev.c)/prev.c)*100:null,
+    ema20,ema50,ema200,
+    trend:ema50===null?"EMA50 NOT READY":last.c>=ema50?"ABOVE EMA50":"BELOW EMA50",
+    rsi:rsi14(closes),stoch:stochastic14(bars),macd,cci,volumeRatio,
+    barTime:last.t
+  };
+}
+function determineSignal(rsi,stoch,mode){
+  if(!Number.isFinite(rsi)||!Number.isFinite(stoch))return"WAIT";
+  if(mode==="sniper"){
+    if(rsi<25&&stoch<20)return"BUY";
+    if(rsi>75&&stoch>80)return"SELL";
+  }else{
+    if(rsi<30&&stoch<20)return"BUY";
+    if(rsi>70&&stoch>80)return"SELL";
   }
-  delete signals[sym];
-  if(sym===symbol && status) status.textContent="DATA CHECK: Requesting "+interval+" provider OHLCV candles for "+sym+" (25-second timeout)…";
+  return"WAIT";
+}
+async function analyzeSymbol(sym,options={}){
+  const interval=selectedMarketInterval(),key=analysisKey(sym,interval),status=document.getElementById("data-status");
+  const updateMain=options.updateMainStatus!==false&&sym===symbol;
+  const cached=analysisCache[key];
+  if(cached&&Date.now()-cached.time<CACHE_MS){
+    cached.action=determineSignal(cached.rsi,cached.stoch,document.getElementById("mode").value);
+    signals[key]=cached.action;
+    if(updateMain)showAnalysisStatus(cached);
+    renderWatchlist();
+    return cached;
+  }
+  const previousAction=cached?.action||signals[key]||null;
+  delete signals[key];
+  if(updateMain){setDataPending(sym,interval);status.textContent="DATA CHECK: Requesting "+interval+" provider OHLCV candles for "+sym+" (25-second timeout)…";}
   try{
-    const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval="+encodeURIComponent(interval)+"&limit=100";
-    const controller=new AbortController();
-    const timeoutId=setTimeout(()=>controller.abort(),25000);
-    let response, data;
+    const url=MARKET_API+"?provider=tickerbot&symbol="+encodeURIComponent(tickerbotSymbol(sym))+"&interval="+encodeURIComponent(interval)+"&limit=300";
+    const controller=new AbortController(),timeoutId=setTimeout(()=>controller.abort(),25000);
+    let response,data;
     try{
       response=await fetch(url,{headers:{apikey:MARKET_ANON,Authorization:"Bearer "+MARKET_ANON,Accept:"application/json"},cache:"no-store",signal:controller.signal});
       data=await response.json();
-    }finally{
-      clearTimeout(timeoutId);
-    }
-    if(!response.ok) throw new Error(data.error||("HTTP "+response.status));
-    if(!Array.isArray(data.bars)||data.bars.length<15) throw new Error("Not enough provider candles to calculate RSI/Stochastic.");
-    const bars=data.bars.map(b=>({t:Number(b.t),h:Number(b.h),l:Number(b.l),c:Number(b.c)}))
-      .filter(b=>Number.isFinite(b.t)&&Number.isFinite(b.h)&&Number.isFinite(b.l)&&Number.isFinite(b.c));
-    if(bars.length<15) throw new Error("Provider returned too few valid OHLCV bars.");
-    const closes=bars.map(b=>b.c), rsi=rsi14(closes), stoch=stochastic14(bars);
-    if(!Number.isFinite(rsi)||!Number.isFinite(stoch)) throw new Error("Indicator calculation unavailable for this data.");
-    const mode=document.getElementById("mode").value;
-    let action="WAIT";
-    if(mode==="sniper"){
-      if(rsi<25&&stoch<20) action="BUY";
-      else if(rsi>75&&stoch>80) action="SELL";
-    }else{
-      if(rsi<30&&stoch<20) action="BUY";
-      else if(rsi>70&&stoch>80) action="SELL";
-    }
-    const last=bars[bars.length-1];
-    const result={action,rsi,stoch,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:last.t,coverage:data.coverage||"not supplied",interval:data.interval||interval};
-    const previous=signals[sym];
-    analysisCache[key]=result;
-    signals[sym]=action;
-    if(sym===symbol) showAnalysisStatus(result);
-    if(action!=="WAIT"&&previous!==action) fireAlert(sym,action);
+    }finally{clearTimeout(timeoutId);}
+    if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+    if(!Array.isArray(data.bars)||data.bars.length<15)throw new Error("Not enough provider candles to calculate indicators.");
+    const bars=data.bars.map(b=>({t:Number(b.t),o:Number(b.o),h:Number(b.h),l:Number(b.l),c:Number(b.c),v:Number.isFinite(Number(b.v))?Number(b.v):null}))
+      .filter(b=>Number.isFinite(b.t)&&Number.isFinite(b.o)&&Number.isFinite(b.h)&&Number.isFinite(b.l)&&Number.isFinite(b.c)&&b.o>0&&b.c>0&&b.h>=b.l&&b.h>=Math.max(b.o,b.c)&&b.l<=Math.min(b.o,b.c));
+    if(bars.length<15)throw new Error("Provider returned too few valid OHLC bars after validation.");
+    const snap=calculateSnapshot(bars);
+    if(!Number.isFinite(snap.rsi)||!Number.isFinite(snap.stoch))throw new Error("Indicator calculation unavailable for this data.");
+    const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
+    const result={...snap,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
+    analysisCache[key]=result;signals[key]=action;
+    if(updateMain)showAnalysisStatus(result);
+    if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
     renderWatchlist();
+    return result;
   }catch(error){
-    delete signals[sym];
-    delete analysisCache[key];
+    delete signals[key];delete analysisCache[key];
     const reason=error?.name==="AbortError"?"provider request timed out after 25 seconds":(error?.message||"unknown request error");
-    if(sym===symbol&&status) status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";
+    if(updateMain){setDataUnavailable(sym,interval,reason);status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";}
     renderWatchlist();
+    return null;
   }
+}
+function setMetric(id,value,note){
+  const el=document.getElementById(id);if(el)el.textContent=value;
+  if(note){const noteId=id+"-note";const sub=document.getElementById(noteId);if(sub)sub.textContent=note;}
+}
+function setDataPending(sym,interval){
+  const label=document.getElementById("metric-symbol"),action=document.getElementById("metric-action"),pill=document.getElementById("metric-signal-pill"),led=document.getElementById("metric-led");
+  if(label)label.textContent=sym+" · "+interval;
+  if(action)action.textContent="CHECKING DATA";
+  if(pill)pill.className="signal-pill";
+  if(led)led.className="signal-led wait";
+  ["metric-price","metric-change","metric-trend","metric-emas","metric-macd","metric-macd-note","metric-rsi","metric-stoch","metric-cci","metric-volume","metric-volume-note","metric-lastbar","metric-barage"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="—";});
+}
+function setDataUnavailable(sym,interval,reason){
+  setDataPending(sym,interval);
+  const action=document.getElementById("metric-action");
+  if(action)action.textContent="DATA UNAVAILABLE";
+  const bar=document.getElementById("metric-barage");if(bar)bar.textContent=reason;
 }
 function showAnalysisStatus(result){
   const status=document.getElementById("data-status");
-  if(!status)return;
-  const barTime=Number(result.lastBarTime);
-  const barDate=Number.isFinite(barTime)?new Date(barTime>1e12?barTime:barTime*1000).toLocaleString():"provider time unavailable";
-  status.textContent="PROVIDER RESPONSE · "+symbol+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic(14) "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+result.action+". Provider coverage: "+result.coverage+". Technical snapshot only; verify session and freshness before decisions.";
+  const sym=result.symbol||symbol;
+  const rawTime=Number(result.lastBarTime);
+  const ts=Number.isFinite(rawTime)?(rawTime>1e12?rawTime:rawTime*1000):NaN;
+  const barDate=Number.isFinite(ts)?new Date(ts).toLocaleString():"provider time unavailable";
+  const age=Number.isFinite(ts)?Math.round((Date.now()-ts)/60000):null;
+  const ageText=age===null?"age unavailable":age<0?"device clock differs from bar time":age<60?age+" min old":Math.round(age/60)+" hr old";
+  const formatValue=(n,sym)=>{
+    if(!Number.isFinite(n))return"N/A";
+    const forex=["EURUSD","GBPUSD","USDJPY"].includes(sym);
+    const crypto=["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym);
+    const digits=forex?5:crypto?4:2;
+    return n.toLocaleString(undefined,{minimumFractionDigits:forex?4:2,maximumFractionDigits:digits});
+  };
+  const signed=n=>!Number.isFinite(n)?"N/A":(n>0?"+":"")+n.toFixed(2)+"%";
+  const action=result.action||"WAIT";
+  if(status)status.textContent="PROVIDER RESPONSE · "+sym+" · "+result.provider+" · "+result.interval+" candles ("+result.bars+") · Close "+formatValue(result.close,sym)+" · RSI(14) "+result.rsi.toFixed(1)+" · Stochastic "+result.stoch.toFixed(1)+" · Last bar "+barDate+" · "+ageText+" · "+action+". Provider coverage: "+result.coverage+". This technical snapshot is not a trade recommendation.";
+  const label=document.getElementById("metric-symbol");if(label)label.textContent=sym+" · "+result.interval+" · "+result.bars+" candles";
+  const actionEl=document.getElementById("metric-action"),pill=document.getElementById("metric-signal-pill"),led=document.getElementById("metric-led");
+  if(actionEl)actionEl.textContent=action==="WAIT"?"WAIT":action+" WATCH";
+  if(pill)pill.className="signal-pill "+(action==="BUY"?"buy":action==="SELL"?"sell":"");
+  if(led)led.className="signal-led "+(action==="BUY"?"buy":action==="SELL"?"sell":"wait");
+  const closeEl=document.getElementById("metric-price");if(closeEl)closeEl.textContent=formatValue(result.close,sym);
+  const changeEl=document.getElementById("metric-change");if(changeEl){changeEl.textContent=result.change===null?"Previous bar unavailable":((result.change>0?"+":"")+formatValue(result.change,sym)+" points · "+signed(result.changePercent));changeEl.className="metric-note "+(result.change>0?"positive":result.change<0?"negative":"");}
+  const trendEl=document.getElementById("metric-trend");if(trendEl){trendEl.textContent=result.trend;trendEl.className="metric-value "+(result.trend==="ABOVE EMA50"?"positive":result.trend==="BELOW EMA50"?"negative":"");}
+  const fmtPrice=n=>formatValue(n,sym);
+  const emaEl=document.getElementById("metric-emas");if(emaEl)emaEl.textContent="20 "+fmtPrice(result.ema20)+" · 50 "+fmtPrice(result.ema50)+" · 200 "+fmtPrice(result.ema200);
+  const macdEl=document.getElementById("metric-macd");if(macdEl){macdEl.textContent=Number.isFinite(result.macd?.histogram)?result.macd.histogram.toFixed(4):"N/A";macdEl.className="metric-value "+(result.macd?.histogram>0?"positive":result.macd?.histogram<0?"negative":"");}
+  const macdNote=document.getElementById("metric-macd-note");if(macdNote)macdNote.textContent=Number.isFinite(result.macd?.line)?"Line "+result.macd.line.toFixed(4)+" · Signal "+result.macd.signal.toFixed(4):"Not enough candles";
+  const rsiEl=document.getElementById("metric-rsi");if(rsiEl)rsiEl.textContent=result.rsi.toFixed(1);
+  const stochEl=document.getElementById("metric-stoch");if(stochEl)stochEl.textContent=result.stoch.toFixed(1);
+  const cciEl=document.getElementById("metric-cci");if(cciEl)cciEl.textContent=Number.isFinite(result.cci)?result.cci.toFixed(1):"N/A";
+  const volEl=document.getElementById("metric-volume");if(volEl)volEl.textContent=Number.isFinite(result.volumeRatio)?result.volumeRatio.toFixed(2)+"×":"N/A";
+  const volNote=document.getElementById("metric-volume-note");if(volNote)volNote.textContent=Number.isFinite(result.volumeRatio)?"Last bar vs prior 20-bar average":"Provider volume unavailable";
+  const lastBarEl=document.getElementById("metric-lastbar");if(lastBarEl)lastBarEl.textContent=Number.isFinite(age)?(age<0?"Future timestamp":age<60?age+" min":Math.round(age/60)+" hr"):"N/A";
+  const barAgeEl=document.getElementById("metric-barage");if(barAgeEl)barAgeEl.textContent=barDate+" · verify session freshness";
 }
 
 /* ALERT */
 function fireAlert(sym,act){
-let d=document.createElement("div");
-d.className="alert";
-d.style.top=(60+document.querySelectorAll(".alert").length*50)+"px";
-d.style.color=act==="BUY"?"#00ff88":"#ff3b3b";
-d.innerText=act+" "+sym;
-document.body.appendChild(d);
-setTimeout(()=>d.remove(),4000);
+  const d=document.createElement("div");
+  const existing=[...document.querySelectorAll(".alert")];
+  if(existing.length>=3)existing[0].remove();
+  d.className="alert "+(act==="BUY"?"buy":"sell");
+  d.style.top=(70+document.querySelectorAll(".alert").length*48)+"px";
+  d.setAttribute("role","status");
+  const led=document.createElement("i");led.className="signal-led "+(act==="BUY"?"buy":"sell");
+  const text=document.createElement("span");text.textContent=act+" WATCH · "+sym;
+  d.append(led,text);document.body.appendChild(d);
+  setTimeout(()=>d.remove(),4500);
 }
-
-/* WATCHLIST */
-function renderWatchlist(){
-  const w=document.getElementById("watch");
-  if(!w) return;
-  w.innerHTML="";
+function groupSymbols(){
+  const group=document.getElementById("watch-group")?.value||"stocks";
+  return group==="all"?watchlist.slice():(WATCH_GROUPS[group]||watchlist.slice());
+}
+function visibleSymbols(){
+  const q=(document.getElementById("watch-search")?.value||"").trim().toUpperCase();
+  return groupSymbols().filter(s=>!q||s.includes(q));
+}
+function coverageCount(symbols){
   const interval=selectedMarketInterval();
-  watchlist.forEach(s=>{
-    const cached=analysisCache[analysisKey(s,interval)];
-    const act=cached?cached.action:"WAIT";
-    const div=document.createElement("div");
-    div.className="item "+(cached&&act==="BUY"?"buy":cached&&act==="SELL"?"sell":"");
-    div.textContent=s+" "+(cached?act:"WAIT · LOAD DATA");
-    div.title=cached?"Tickerbot "+interval+" snapshot; click to view chart":"Data not loaded for this symbol/timeframe; click to request it";
-    div.onclick=()=>{symbol=s;document.getElementById("symbol-select").value=s;loadChart();};
-    w.appendChild(div);
-  });
+  return symbols.filter(s=>{const c=analysisCache[analysisKey(s,interval)];return c&&Date.now()-c.time<CACHE_MS;}).length;
+}
+function renderWatchlist(){
+  const w=document.getElementById("watch");if(!w)return;
+  const symbols=visibleSymbols(),interval=selectedMarketInterval(),group=document.getElementById("watch-group")?.value||"stocks";
+  w.innerHTML="";
+  for(const s of symbols){
+    const cached=analysisCache[analysisKey(s,interval)],fresh=cached&&Date.now()-cached.time<CACHE_MS,act=fresh?cached.action:"WAIT";
+    const button=document.createElement("button");button.type="button";
+    button.className="item "+(s===symbol?"selected":"");
+    button.title=fresh?"Provider-backed "+interval+" snapshot; tap to load this chart":"Tap to request "+interval+" candles for "+s;
+    const name=document.createElement("span");name.className="item-name";name.textContent=s;
+    const state=document.createElement("span");state.className="item-state "+(act==="BUY"?"buy":act==="SELL"?"sell":"");
+    const led=document.createElement("i");led.className="signal-led "+(act==="BUY"?"buy":act==="SELL"?"sell":"wait");
+    const label=document.createElement("span");label.textContent=fresh?(act==="WAIT"?"WAIT":act+" WATCH"):"LOAD DATA";
+    state.append(led,label);button.append(name,state);
+    button.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;loadChart();};
+    w.appendChild(button);
+  }
+  if(!symbols.length){const empty=document.createElement("p");empty.className="scan-status";empty.textContent="No symbols match this filter.";w.appendChild(empty);}
+  const groupSymbolsNow=groupSymbols(),shownCount=coverageCount(groupSymbolsNow);
+  const summary=document.getElementById("watch-summary");if(summary)summary.textContent=shownCount+" / "+groupSymbolsNow.length+" fresh · "+(WATCH_GROUP_LABELS[group]||group);
+  const scanStatus=document.getElementById("scan-status");
+  if(!scanInProgress&&scanStatus&&scanStatus.classList.contains("active"))scanStatus.classList.remove("active");
+  const scanButton=document.getElementById("scan-button"),stopButton=document.getElementById("stop-scan-button");
+  if(scanButton)scanButton.disabled=scanInProgress;
+  if(stopButton)stopButton.disabled=!scanInProgress;
+  if(scanButton)scanButton.textContent=scanInProgress?"Scan running…":"Scan this group";
+  ["watch-group","watch-search","timeframe-select"].forEach(id=>{const control=document.getElementById(id);if(control)control.disabled=scanInProgress;});
   renderHeatmap();
 }
-
 function renderHeatmap(){
-  const grid=document.getElementById("heatmap");
-  if(!grid) return;
-  grid.innerHTML="";
-  const interval=selectedMarketInterval();
-  watchlist.forEach(s=>{
-    const cached=analysisCache[analysisKey(s,interval)];
-    const act=cached?cached.action:"WAIT";
-    const cell=document.createElement("div");
-    cell.className="cell "+(cached&&act==="BUY"?"buy":cached&&act==="SELL"?"sell":"wait");
-    const title=document.createElement("strong");
-    title.textContent=s;
-    const detail=document.createElement("small");
-    detail.textContent=cached?(act+" · RSI "+cached.rsi.toFixed(1)+" · STO "+cached.stoch.toFixed(1)):"WAIT · LOAD DATA";
-    cell.append(title,detail);
-    cell.title=cached?"Provider-backed indicator snapshot; not a price-performance heatmap":"Click to load provider data for "+s+" at "+interval;
+  const grid=document.getElementById("heatmap");if(!grid)return;
+  const symbols=visibleSymbols(),interval=selectedMarketInterval();grid.innerHTML="";
+  let visibleSignals=0;
+  for(const s of symbols){
+    const cached=analysisCache[analysisKey(s,interval)],fresh=cached&&Date.now()-cached.time<CACHE_MS,act=fresh?cached.action:"WAIT";
+    if(fresh&&act!=="WAIT")visibleSignals++;
+    const cell=document.createElement("button");cell.type="button";
+    cell.className="cell "+(act==="BUY"&&fresh?"buy":act==="SELL"&&fresh?"sell":"wait");
+    const title=document.createElement("strong");title.textContent=s;
+    const detail=document.createElement("small");detail.textContent=fresh?(act+" · RSI "+cached.rsi.toFixed(1)+" · STO "+cached.stoch.toFixed(1)):"WAIT · LOAD DATA";
+    cell.append(title,detail);cell.title=fresh?"Provider-backed indicator snapshot; not a price-performance heatmap":"No fresh snapshot at "+interval+"; select symbol to load or start a group scan";
     cell.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;loadChart();};
     grid.appendChild(cell);
-  });
+  }
+  const label=document.getElementById("heatmap-summary");if(label)label.textContent=visibleSignals+" active threshold flags · "+symbols.length+" symbols";
+}
+function updateSignalMode(){
+  const mode=document.getElementById("mode").value;
+  Object.entries(analysisCache).forEach(([key,c])=>{c.action=determineSignal(c.rsi,c.stoch,mode);signals[key]=c.action;});
+  renderWatchlist();
+  const cached=analysisCache[analysisKey(symbol,selectedMarketInterval())];
+  if(cached)showAnalysisStatus(cached);
+  else analyzeSymbol(symbol);
+}
+async function scanWatchlist(){
+  if(scanInProgress)return;
+  activeScanSymbols=visibleSymbols();
+  if(!activeScanSymbols.length){const s=document.getElementById("scan-status");if(s)s.textContent="No symbols to scan in this group.";return;}
+  const groupLabel=WATCH_GROUP_LABELS[document.getElementById("watch-group")?.value||"stocks"]||"Current group";
+  const scanInterval=selectedMarketInterval();
+  scanInProgress=true;stopScanRequested=false;renderWatchlist();
+  const status=document.getElementById("scan-status");if(status){status.classList.add("active");status.textContent="Scan started · "+groupLabel+" · "+activeScanSymbols.length+" symbols · "+scanInterval+" candles. You can stop after the current provider request.";}
+  let checked=0,errors=0;
+  try{
+    for(const s of activeScanSymbols){
+      if(stopScanRequested)break;
+      if(status)status.textContent="Scanning "+(checked+1)+" / "+activeScanSymbols.length+" · "+s+" · "+scanInterval+" candles";
+      const result=await analyzeSymbol(s,{updateMainStatus:true});
+      checked++;if(!result)errors++;
+      if(stopScanRequested)break;
+      if(checked<activeScanSymbols.length)await new Promise(resolve=>setTimeout(resolve,800));
+    }
+  }finally{
+    scanInProgress=false;
+    const stopped=stopScanRequested&&checked<activeScanSymbols.length;
+    if(status){status.classList.remove("active");status.textContent=(stopped?"Scan stopped after current request. ":"Scan finished. ")+checked+" checked · "+errors+" unavailable · "+coverageCount(activeScanSymbols)+" fresh snapshots. Signals require valid provider bars.";}
+    renderWatchlist();
+  }
+}
+function stopWatchlistScan(){
+  if(!scanInProgress)return;
+  stopScanRequested=true;
+  const status=document.getElementById("scan-status");if(status)status.textContent="Stop requested · completing the current provider request before stopping.";
 }
 
 /* OPTIONS */
@@ -543,6 +776,7 @@ result.innerHTML="Units: "+qty+"<br>Risk budget: $"+riskAmt.toFixed(2)+"<br>Esti
 function loop(){
   renderWatchlist();
   renderHeatmap();
+  renderWatchlist();
   setTimeout(loop,10000);
 }
 

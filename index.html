@@ -399,22 +399,12 @@ let stopScanRequested=false;
 let activeScanSymbols=[];
 
 window.onload=()=>{
-  const sel=document.getElementById("symbol-select");
-  watchlist.forEach(s=>{
-    const o=document.createElement("option");
-    o.value=s;o.text=s;sel.appendChild(o);
-  });
-  sel.value=symbol;
-  tf=document.getElementById("timeframe-select")?.value || "5";
-  document.getElementById("watch-group").value="liquid";
-  renderWatchlist();
-  renderHeatmap();
-  renderIndicatorControls();
-  renderSignalSchool();
-  setDataPending(symbol,selectedMarketInterval());
-  loadChart();
-  loadChart2("AAPL");
-  loop();
+ refreshMasterWatchlist();const sel=document.getElementById("symbol-select");if(sel)sel.value=symbol;tf=document.getElementById("timeframe-select")?.value||"5";
+ const group=document.getElementById("watch-group");if(group)group.value="liquid";
+ try{setTerminalTheme(localStorage.getItem("rolyfe-terminal-theme")||"lyfe")}catch(e){setTerminalTheme("lyfe")}
+ renderTerminalClock();setInterval(renderTerminalClock,1000);renderWatchlist();renderHeatmap();renderIndicatorControls();renderSignalSchool();renderFAQ();renderSavedPlans();
+ setDataPending(symbol,selectedMarketInterval());loadChart();loadChart2("AAPL");loop();setInterval(showNextScannerToast,60000);
+ window.addEventListener("keydown",e=>{if(e.key==="Escape"){closeSideMenu();toggleAIPanel(false);dismissScannerToast()}});
 };
 
 
@@ -690,50 +680,34 @@ function coverageCount(symbols){
   return symbols.filter(s=>{const c=analysisCache[analysisKey(s,interval)];return c&&Date.now()-c.time<CACHE_MS;}).length;
 }
 function renderWatchlist(){
-  const w=document.getElementById("watch");if(!w)return;
-  const symbols=visibleSymbols(),interval=selectedMarketInterval(),group=document.getElementById("watch-group")?.value||"stocks";
-  w.innerHTML="";
-  for(const s of symbols){
-    const cached=analysisCache[analysisKey(s,interval)],fresh=cached&&Date.now()-cached.time<CACHE_MS,act=fresh?cached.action:"WAIT";
-    const button=document.createElement("button");button.type="button";
-    button.className="item "+(s===symbol?"selected":"");
-    button.title=fresh?"Provider-backed "+interval+" snapshot; tap to load this chart":"Tap to request "+interval+" candles for "+s;
-    const name=document.createElement("span");name.className="item-name";name.textContent=s;
-    const state=document.createElement("span");state.className="item-state "+(act==="BUY"?"buy":act==="SELL"?"sell":"");
-    const led=document.createElement("i");led.className="signal-led "+(act==="BUY"?"buy":act==="SELL"?"sell":"wait");
-    const label=document.createElement("span");label.textContent=fresh?(act==="WAIT"?"WAIT":act+" WATCH"):"LOAD DATA";
-    state.append(led,label);button.append(name,state);
-    button.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;loadChart();};
-    w.appendChild(button);
-  }
-  if(!symbols.length){const empty=document.createElement("p");empty.className="scan-status";empty.textContent="No symbols match this filter.";w.appendChild(empty);}
-  const groupSymbolsNow=groupSymbols(),shownCount=coverageCount(groupSymbolsNow);
-  const summary=document.getElementById("watch-summary");if(summary)summary.textContent=shownCount+" / "+groupSymbolsNow.length+" fresh · "+(WATCH_GROUP_LABELS[group]||group);
-  const scanStatus=document.getElementById("scan-status");
-  if(!scanInProgress&&scanStatus&&scanStatus.classList.contains("active"))scanStatus.classList.remove("active");
-  const scanButton=document.getElementById("scan-button"),stopButton=document.getElementById("stop-scan-button");
-  if(scanButton)scanButton.disabled=scanInProgress;
-  if(stopButton)stopButton.disabled=!scanInProgress;
-  if(scanButton)scanButton.textContent=scanInProgress?"Scan running…":"Scan this group";
-  ["watch-group","watch-search","timeframe-select"].forEach(id=>{const control=document.getElementById(id);if(control)control.disabled=scanInProgress;});
-  renderHeatmap();
+ const root=document.getElementById("watch");if(!root)return;
+ const symbols=visibleSymbols(),interval=selectedMarketInterval(),group=document.getElementById("watch-group")?.value||"liquid";root.innerHTML="";
+ symbols.forEach(s=>{const wrap=document.createElement("div");wrap.className="item-wrap";
+  const c=analysisCache[analysisKey(s,interval)],fresh=c&&Date.now()-c.time<CACHE_MS,act=fresh?c.action:"WAIT";
+  const b=document.createElement("button");b.type="button";b.className="item "+(s===symbol?"selected":"");b.title=fresh?"Provider-backed "+interval+" snapshot":"Tap to request "+interval+" candles";
+  const name=document.createElement("span");name.className="item-name";name.textContent=s;
+  const state=document.createElement("span");state.className="item-state "+(act==="BUY"?"buy":act==="SELL"?"sell":"");
+  const led=document.createElement("i");led.className="signal-led "+(act==="BUY"?"buy":act==="SELL"?"sell":"wait");
+  const label=document.createElement("span");label.textContent=fresh?(act==="WAIT"?"WAIT":act+" WATCH"):"LOAD DATA";state.append(led,label);b.append(name,state);
+  b.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;const t=document.getElementById("ticket-symbol");if(t)t.value=s;loadChart()};
+  const x=document.createElement("button");x.type="button";x.className="item-remove";x.textContent="×";x.title="Remove from this watchlist";x.onclick=e=>{e.preventDefault();e.stopPropagation();removeCurrentSymbol(s)};wrap.append(b,x);root.append(wrap);
+ });
+ if(!symbols.length){const p=document.createElement("p");p.className="scan-status";p.textContent="No symbols match this filter. Add a symbol or restore the group.";root.append(p)}
+ const list=groupSymbols(),n=coverageCount(list),summary=document.getElementById("watch-summary");if(summary)summary.textContent=n+" / "+list.length+" fresh · "+(WATCH_GROUP_LABELS[group]||group);
+ const scanStatus=document.getElementById("scan-status");if(!scanInProgress&&scanStatus&&scanStatus.classList.contains("active"))scanStatus.classList.remove("active");
+ const scan=document.getElementById("scan-button"),stop=document.getElementById("stop-scan-button");if(scan)scan.disabled=scanInProgress;if(stop)stop.disabled=!scanInProgress;if(scan)scan.textContent=scanInProgress?"Scan running…":"Scan this group";
+ ["watch-group","watch-search","timeframe-select","add-symbol-input","add-symbol-button","reset-group-button"].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=scanInProgress});
+ renderHeatmap();if(typeof renderSignalSchool==="function")renderSignalSchool();
 }
 function renderHeatmap(){
-  const grid=document.getElementById("heatmap");if(!grid)return;
-  const symbols=visibleSymbols(),interval=selectedMarketInterval();grid.innerHTML="";
-  let visibleSignals=0;
-  for(const s of symbols){
-    const cached=analysisCache[analysisKey(s,interval)],fresh=cached&&Date.now()-cached.time<CACHE_MS,act=fresh?cached.action:"WAIT";
-    if(fresh&&act!=="WAIT")visibleSignals++;
-    const cell=document.createElement("button");cell.type="button";
-    cell.className="cell "+(act==="BUY"&&fresh?"buy":act==="SELL"&&fresh?"sell":"wait");
-    const title=document.createElement("strong");title.textContent=s;
-    const detail=document.createElement("small");detail.textContent=fresh?(act+" · RSI "+cached.rsi.toFixed(1)+" · STO "+cached.stoch.toFixed(1)):"WAIT · LOAD DATA";
-    cell.append(title,detail);cell.title=fresh?"Provider-backed indicator snapshot; not a price-performance heatmap":"No fresh snapshot at "+interval+"; select symbol to load or start a group scan";
-    cell.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;loadChart();};
-    grid.appendChild(cell);
-  }
-  const label=document.getElementById("heatmap-summary");if(label)label.textContent=visibleSignals+" active threshold flags · "+symbols.length+" symbols";
+ const root=document.getElementById("heatmap");if(!root)return;
+ const group=document.getElementById("watch-group")?.value||"liquid",interval=selectedMarketInterval(),hidden=new Set(heatmapHidden[group]||[]),symbols=visibleSymbols().filter(s=>!hidden.has(s));root.innerHTML="";let flags=0;
+ symbols.forEach(s=>{const c=analysisCache[analysisKey(s,interval)],fresh=c&&Date.now()-c.time<CACHE_MS,act=fresh?c.action:"WAIT";if(fresh&&act!=="WAIT")flags++;
+  const wrap=document.createElement("div");wrap.className="heatmap-wrap";const b=document.createElement("button");b.type="button";b.className="cell "+(fresh&&act==="BUY"?"buy":fresh&&act==="SELL"?"sell":"wait");
+  const t=document.createElement("strong"),d=document.createElement("small");t.textContent=s;d.textContent=fresh?(act+" · RSI "+c.rsi.toFixed(1)+" · STO "+c.stoch.toFixed(1)):"WAIT · LOAD DATA";b.append(t,d);b.onclick=()=>{symbol=s;const sel=document.getElementById("symbol-select");if(sel)sel.value=s;const ticket=document.getElementById("ticket-symbol");if(ticket)ticket.value=s;loadChart()};
+  const x=document.createElement("button");x.type="button";x.className="heatmap-remove";x.textContent="×";x.title="Hide from heatmap only";x.onclick=e=>{e.preventDefault();e.stopPropagation();hideHeatmapSymbol(s)};wrap.append(b,x);root.append(wrap);
+ });
+ const label=document.getElementById("heatmap-summary");if(label)label.textContent=flags+" active threshold flags · "+symbols.length+" visible";
 }
 function updateSignalMode(){
   const mode=document.getElementById("mode").value;
@@ -775,6 +749,24 @@ function stopWatchlistScan(){
 }
 
 /* OPTIONS */
+
+function currentGroup(){const g=document.getElementById("watch-group")?.value||"liquid";return g==="all"?"liquid":g}
+function addCurrentSymbol(){const input=document.getElementById("add-symbol-input"),s=(input?.value||"").trim().toUpperCase(),g=currentGroup();if(!/^[A-Z0-9][A-Z0-9._:!^\-]{0,19}$/.test(s)){setWatchStatus("Enter a valid ticker, e.g. NVDA, BTC-USD or ES1!.");return}watchPrefs.removed[g]=(watchPrefs.removed[g]||[]).filter(x=>x!==s);watchPrefs.custom[g]=Array.from(new Set([...(watchPrefs.custom[g]||[]),s]));heatmapHidden[g]=(heatmapHidden[g]||[]).filter(x=>x!==s);persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();if(input)input.value="";renderWatchlist();setWatchStatus(s+" added to "+(WATCH_GROUP_LABELS[g]||g)+". Provider support is checked when loaded or scanned.")}
+function removeCurrentSymbol(s){const g=currentGroup();if((DEFAULT_WATCH_GROUPS[g]||[]).includes(s))watchPrefs.removed[g]=Array.from(new Set([...(watchPrefs.removed[g]||[]),s]));watchPrefs.custom[g]=(watchPrefs.custom[g]||[]).filter(x=>x!==s);persistWatchPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus(s+" removed from "+(WATCH_GROUP_LABELS[g]||g)+"; other groups unchanged.")}
+function resetCurrentGroup(){const g=currentGroup();delete watchPrefs.removed[g];delete watchPrefs.custom[g];delete heatmapHidden[g];persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus((WATCH_GROUP_LABELS[g]||g)+" restored to defaults.")}
+function hideHeatmapSymbol(s){const g=currentGroup();heatmapHidden[g]=Array.from(new Set([...(heatmapHidden[g]||[]),s]));persistHeatmapPrefs();renderHeatmap()}
+function restoreHeatmapGroup(){delete heatmapHidden[currentGroup()];persistHeatmapPrefs();renderHeatmap()}
+function setWatchStatus(s){const el=document.getElementById("scan-status");if(el)el.textContent=s}
+function toggleSideMenu(force){const m=document.getElementById("side-menu"),b=document.getElementById("side-backdrop");if(!m||!b)return;const open=force===undefined?!m.classList.contains("open"):Boolean(force);m.classList.toggle("open",open);b.classList.toggle("open",open);document.body.style.overflow=open?"hidden":""}
+function closeSideMenu(){toggleSideMenu(false)}
+function openPanel(id){const p=document.getElementById(id);if(p&&p.tagName==="DETAILS")p.open=true;closeSideMenu();setTimeout(()=>p?.scrollIntoView({behavior:"smooth",block:"start"}),60)}
+function setTerminalTheme(theme){const a=["lyfe","ocean","violet","amber","crimson"];document.body.dataset.theme=a.includes(theme)?theme:"lyfe";try{localStorage.setItem("rolyfe-terminal-theme",document.body.dataset.theme)}catch(e){}const s=document.getElementById("theme-select");if(s)s.value=document.body.dataset.theme}
+function renderTerminalClock(){const now=new Date(),date=document.getElementById("terminal-date"),time=document.getElementById("terminal-clock");if(date)date.textContent=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",year:"numeric"}).format(now);if(time)time.textContent=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",second:"2-digit",timeZoneName:"short"}).format(now)+" · Eastern Time";const cal=document.getElementById("calendar-date");if(cal&&!cal.value){const ps=new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(now),o={};ps.forEach(p=>o[p.type]=p.value);cal.value=o.year+"-"+o.month+"-"+o.day}}
+function toggleAIPanel(force){const p=document.getElementById("ai-panel");if(!p)return;const open=force===undefined?!p.classList.contains("open"):Boolean(force);p.classList.toggle("open",open);if(open)document.getElementById("ai-floating-question")?.focus()}
+function buildCurrentChartPrompt(){const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],q=(document.getElementById("ai-floating-question")?.value||"").trim();return "RO’Lyfe stock-first chart review. Symbol: "+symbol+". Timeframe: "+selectedMarketInterval()+". Current provider snapshot: "+(r?JSON.stringify({close:r.close,trend:r.trend,ema20:r.ema20,ema50:r.ema50,ema200:r.ema200,macd:r.macd,rsi:r.rsi,stochastic:r.stoch,cci:r.cci,relativeVolume:r.volumeRatio,lastBarTime:r.barTime,signal:r.action,coverage:r.coverage}):"No provider snapshot loaded")+". Question: "+(q||"Explain the current setup and missing confirmations.")+". Explain bullish/bearish/neutral context; distinguish direction from trigger; check freshness, trend, EMA alignment, RSI 50/70/30, Stochastic 20/80, MACD line/signal/histogram, CCI, volume, levels and candle close. List confirmed and missing checks, invalidation, event/liquidity risks. Calculate size and 1R/2R/3R only if entry and stop are entered. Never say buy now from an oscillator alone; do not invent data or place orders. Verify live broker quotes and submit orders manually in Thinkorswim. Educational only."}
+function copyToClipboard(value,statusId){const status=document.getElementById(statusId),fallback=()=>{if(status)status.textContent=value};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(value).then(()=>{if(status)status.textContent="Copied. Paste into ChatGPT for optional review."}).catch(fallback);else fallback()}
+function copyChartCoachPrompt(){copyToClipboard(buildCurrentChartPrompt(),"ai-floating-status");const s=document.getElementById("ai-copy-status");if(s)s.textContent="Prompt includes your selected symbol, timeframe, available readings and question."}
+
 function toggleOptions(id){
 let o=document.getElementById(id);
 o.innerHTML="<b>OPTIONS CHAIN NOT CONNECTED</b><p>No live contracts are being shown here. Strike, bid/ask, expiration, open interest and Greeks must come from a verified options-data provider. Do not use generated example contracts for trading decisions.</p><p>Next stage: connect a licensed chain, then calculate premium risk, breakeven and expiration payoff.</p>";

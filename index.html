@@ -672,6 +672,7 @@ function renderWatchlist(){
   if(scanButton)scanButton.disabled=scanInProgress;
   if(stopButton)stopButton.disabled=!scanInProgress;
   if(scanButton)scanButton.textContent=scanInProgress?"Scan running…":"Scan this group";
+  ["watch-group","watch-search","timeframe-select"].forEach(id=>{const control=document.getElementById(id);if(control)control.disabled=scanInProgress;});
   renderHeatmap();
 }
 function renderHeatmap(){
@@ -703,13 +704,15 @@ async function scanWatchlist(){
   if(scanInProgress)return;
   activeScanSymbols=visibleSymbols();
   if(!activeScanSymbols.length){const s=document.getElementById("scan-status");if(s)s.textContent="No symbols to scan in this group.";return;}
+  const groupLabel=WATCH_GROUP_LABELS[document.getElementById("watch-group")?.value||"stocks"]||"Current group";
+  const scanInterval=selectedMarketInterval();
   scanInProgress=true;stopScanRequested=false;renderWatchlist();
-  const status=document.getElementById("scan-status");if(status){status.classList.add("active");status.textContent="Scan started · "+activeScanSymbols.length+" symbols · "+selectedMarketInterval()+". You can stop after the current provider request.";}
+  const status=document.getElementById("scan-status");if(status){status.classList.add("active");status.textContent="Scan started · "+groupLabel+" · "+activeScanSymbols.length+" symbols · "+scanInterval+" candles. You can stop after the current provider request.";}
   let checked=0,errors=0;
   try{
     for(const s of activeScanSymbols){
       if(stopScanRequested)break;
-      if(status)status.textContent="Scanning "+(checked+1)+" / "+activeScanSymbols.length+" · "+s+" · "+selectedMarketInterval()+" candles";
+      if(status)status.textContent="Scanning "+(checked+1)+" / "+activeScanSymbols.length+" · "+s+" · "+scanInterval+" candles";
       const result=await analyzeSymbol(s,{updateMainStatus:true});
       checked++;if(!result)errors++;
       if(stopScanRequested)break;

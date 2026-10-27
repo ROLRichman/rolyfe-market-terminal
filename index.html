@@ -200,7 +200,7 @@ body[data-theme="violet"]{--rol-accent:#b69cff;--rol-bg:#100b20;--rol-panel:#191
 body[data-theme="amber"]{--rol-accent:#ffc45c;--rol-bg:#191107;--rol-panel:#21180d;--rol-border:#6a4b20}
 body[data-theme="crimson"]{--rol-accent:#ff7186;--rol-bg:#180a12;--rol-panel:#210f1a;--rol-border:#6f2c45}
 body[data-theme="lyfe"]{--rol-accent:#00d984;--rol-bg:#020617;--rol-panel:#0b0f1a;--rol-border:#23364a}
-body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.learning-panel{border-color:var(--rol-border)}a.link{color:var(--rol-accent)}
+body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.learning-panel{border-color:var(--rol-border);background:var(--rol-panel)}.panel-collapse,.signal-strip,.metric{border-color:var(--rol-border)}a.link{color:var(--rol-accent)}.utility-bar{border-color:var(--rol-border)}.utility-bar button,.ticket-actions button{background:var(--rol-accent);border-color:var(--rol-accent)}.item.selected{border-color:var(--rol-accent)}.panel-summary:after{color:var(--rol-accent)}
 .utility-bar{position:sticky;top:0;z-index:1200;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;margin:0 0 12px;background:#030914f2;border:1px solid #1e3347;border-radius:12px;backdrop-filter:blur(12px)}
 .utility-bar select,.utility-bar input{max-width:145px;font-size:11px}.utility-clock{display:flex;flex:1 1 165px;flex-direction:column;gap:2px;min-width:145px}.utility-clock strong{font-size:12px}.utility-clock small{font-size:10px;color:#92a8c1}.utility-btn{white-space:nowrap;font-size:11px;padding:8px 10px}
 .side-backdrop{position:fixed;inset:0;background:#0009;z-index:2000;display:none}.side-backdrop.open{display:block}
@@ -585,14 +585,14 @@ async function analyzeSymbol(sym,options={}){
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
     const result={...snap,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
-    if(updateMain)showAnalysisStatus(result);
+    if(updateMain&&sym===symbol&&selectedMarketInterval()===interval)showAnalysisStatus(result);
     if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
     renderWatchlist();renderSignalSchool();
     return result;
   }catch(error){
     delete signals[key];delete analysisCache[key];
     const reason=error?.name==="AbortError"?"provider request timed out after 25 seconds":(error?.message||"unknown request error");
-    if(updateMain){setDataUnavailable(sym,interval,reason);status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";}
+    if(updateMain&&sym===symbol&&selectedMarketInterval()===interval){setDataUnavailable(sym,interval,reason);status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";}
     renderWatchlist();renderSignalSchool();
     return null;
   }
@@ -740,6 +740,7 @@ async function scanWatchlist(){
     const stopped=stopScanRequested&&checked<activeScanSymbols.length;
     if(status){status.classList.remove("active");status.textContent=(stopped?"Scan stopped after current request. ":"Scan finished. ")+checked+" checked · "+errors+" unavailable · "+coverageCount(activeScanSymbols)+" fresh snapshots. Signals require valid provider bars.";}
     renderWatchlist();
+    showNextScannerToast();
   }
 }
 function stopWatchlistScan(){
@@ -752,8 +753,8 @@ function stopWatchlistScan(){
 
 function currentGroup(){const g=document.getElementById("watch-group")?.value||"liquid";return g==="all"?"liquid":g}
 function addCurrentSymbol(){const input=document.getElementById("add-symbol-input"),s=(input?.value||"").trim().toUpperCase(),g=currentGroup();if(!/^[A-Z0-9][A-Z0-9._:!^\-]{0,19}$/.test(s)){setWatchStatus("Enter a valid ticker, e.g. NVDA, BTC-USD or ES1!.");return}watchPrefs.removed[g]=(watchPrefs.removed[g]||[]).filter(x=>x!==s);watchPrefs.custom[g]=Array.from(new Set([...(watchPrefs.custom[g]||[]),s]));heatmapHidden[g]=(heatmapHidden[g]||[]).filter(x=>x!==s);persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();if(input)input.value="";renderWatchlist();setWatchStatus(s+" added to "+(WATCH_GROUP_LABELS[g]||g)+". Provider support is checked when loaded or scanned.")}
-function removeCurrentSymbol(s){const g=currentGroup();if((DEFAULT_WATCH_GROUPS[g]||[]).includes(s))watchPrefs.removed[g]=Array.from(new Set([...(watchPrefs.removed[g]||[]),s]));watchPrefs.custom[g]=(watchPrefs.custom[g]||[]).filter(x=>x!==s);persistWatchPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus(s+" removed from "+(WATCH_GROUP_LABELS[g]||g)+"; other groups unchanged.")}
-function resetCurrentGroup(){const g=currentGroup();delete watchPrefs.removed[g];delete watchPrefs.custom[g];delete heatmapHidden[g];persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus((WATCH_GROUP_LABELS[g]||g)+" restored to defaults.")}
+function removeCurrentSymbol(s){const chosen=document.getElementById("watch-group")?.value||"liquid",groups=chosen==="all"?Object.keys(DEFAULT_WATCH_GROUPS):[currentGroup()];groups.forEach(g=>{if((DEFAULT_WATCH_GROUPS[g]||[]).includes(s))watchPrefs.removed[g]=Array.from(new Set([...(watchPrefs.removed[g]||[]),s]));watchPrefs.custom[g]=(watchPrefs.custom[g]||[]).filter(x=>x!==s)});persistWatchPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus(s+" removed from "+(chosen==="all"?"all groups":WATCH_GROUP_LABELS[chosen]||chosen)+". Restore group to bring defaults back.")}
+function resetCurrentGroup(){const selected=document.getElementById("watch-group")?.value||"liquid",groups=selected==="all"?Object.keys(DEFAULT_WATCH_GROUPS):[currentGroup()];groups.forEach(g=>{delete watchPrefs.removed[g];delete watchPrefs.custom[g];delete heatmapHidden[g]});persistWatchPrefs();persistHeatmapPrefs();refreshMasterWatchlist();renderWatchlist();setWatchStatus((selected==="all"?"All master groups":WATCH_GROUP_LABELS[selected]||selected)+" restored to defaults.")}
 function hideHeatmapSymbol(s){const g=currentGroup();heatmapHidden[g]=Array.from(new Set([...(heatmapHidden[g]||[]),s]));persistHeatmapPrefs();renderHeatmap()}
 function restoreHeatmapGroup(){delete heatmapHidden[currentGroup()];persistHeatmapPrefs();renderHeatmap()}
 function setWatchStatus(s){const el=document.getElementById("scan-status");if(el)el.textContent=s}

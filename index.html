@@ -767,6 +767,101 @@ function buildCurrentChartPrompt(){const r=analysisCache[analysisKey(symbol,sele
 function copyToClipboard(value,statusId){const status=document.getElementById(statusId),fallback=()=>{if(status)status.textContent=value};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(value).then(()=>{if(status)status.textContent="Copied. Paste into ChatGPT for optional review."}).catch(fallback);else fallback()}
 function copyChartCoachPrompt(){copyToClipboard(buildCurrentChartPrompt(),"ai-floating-status");const s=document.getElementById("ai-copy-status");if(s)s.textContent="Prompt includes your selected symbol, timeframe, available readings and question."}
 
+
+const SAVED_PLAN_KEY="rolyfe-terminal-saved-plans-v2";
+let lastTicketCalculation=null;
+function readSavedPlans(){try{const x=JSON.parse(localStorage.getItem(SAVED_PLAN_KEY)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}}
+function writeSavedPlans(plans){try{localStorage.setItem(SAVED_PLAN_KEY,JSON.stringify(plans));const s=document.getElementById("workbench-status");if(s)s.textContent="Saved "+plans.length+" plan(s) in this browser/device."}catch(e){const s=document.getElementById("workbench-status");if(s)s.textContent="Browser storage unavailable. Download the plan for a separate copy."}}
+function ticketValue(id){return(document.getElementById(id)?.value||"").trim()}
+function ticketNumber(id){const v=ticketValue(id);return v===""?NaN:Number(v)}
+function currentTicketData(){return{symbol:ticketValue("ticket-symbol").toUpperCase(),side:ticketValue("ticket-side")||"long",orderType:ticketValue("ticket-order-type")||"Limit",timeframe:ticketValue("ticket-timeframe")||selectedMarketInterval(),entry:ticketNumber("ticket-entry"),stop:ticketNumber("ticket-stop"),account:ticketNumber("ticket-account"),riskPercent:ticketNumber("ticket-risk-pct"),target:ticketNumber("ticket-target"),expiration:ticketValue("ticket-expiry"),thesis:ticketValue("ticket-thesis")}}
+function calculateTradeTicket(){
+ const d=currentTicketData(),out=document.getElementById("ticket-result");
+ if(!d.symbol){out.textContent="Enter a ticker symbol first.";return null}
+ if(d.side==="observe"){lastTicketCalculation={...d,status:"OBSERVE ONLY"};out.textContent="OBSERVE ONLY · No position size calculated. Add a specific setup and risk plan only when ready.";return lastTicketCalculation}
+ if(!(d.entry>0)||!(d.stop>0)||!(d.account>0)||!(d.riskPercent>0)||d.riskPercent>5){out.textContent="RISK CHECK BLOCKED · Enter a positive entry, stop, account value and risk percentage from 0.1% to 5%.";return null}
+ if((d.side==="long"&&d.stop>=d.entry)||(d.side==="short"&&d.stop<=d.entry)){out.textContent="RISK CHECK BLOCKED · Long plan needs stop below entry; short plan needs stop above entry. Correct the stop before sizing.";return null}
+ if(Number.isFinite(d.target)&&d.target>0&&((d.side==="long"&&d.target<=d.entry)||(d.side==="short"&&d.target>=d.entry))){out.textContent="RISK CHECK BLOCKED · Target must be above entry for a long plan or below entry for a short plan.";return null}
+ const unitRisk=Math.abs(d.entry-d.stop),budget=d.account*d.riskPercent/100,units=Math.floor(budget/unitRisk),direction=d.side==="long"?1:-1;
+ const levels=[1,2,3].map(r=>({r,price:d.entry+direction*unitRisk*r}));
+ const rr=Number.isFinite(d.target)&&d.target>0?Math.abs(d.target-d.entry)/unitRisk:null;
+ const actualRisk=units*unitRisk;
+ lastTicketCalculation={...d,unitRisk,riskBudget:budget,units,estimatedRisk:actualRisk,levels,rewardRisk:rr,status:units>0?"RISK CHECK COMPLETE":"RISK BUDGET TOO SMALL FOR ONE UNIT",savedAt:new Date().toISOString()};
+ out.textContent=[
+  lastTicketCalculation.status,
+  "Symbol / timeframe: "+d.symbol+" · "+d.timeframe,
+  "Bias / order idea: "+d.side.toUpperCase()+" · "+d.orderType,
+  "Risk budget: $"+budget.toFixed(2)+" ("+d.riskPercent+"% of entered account value)",
+  "Risk per share/unit: $"+unitRisk.toFixed(4),
+  "Estimated units: "+units+" (whole-unit estimate; no fees, slippage, gaps or contract multiplier)",
+  "Estimated planned stop risk: $"+actualRisk.toFixed(2),
+  "1R: "+levels[0].price.toFixed(4)+" · 2R: "+levels[1].price.toFixed(4)+" · 3R: "+levels[2].price.toFixed(4),
+  Number.isFinite(rr)?"Target reward/risk: "+rr.toFixed(2)+"R":"Optional target not entered",
+  d.expiration?"Option expiration to verify: "+d.expiration:"Stock/underlying plan; no option contract priced",
+  "FINAL REVIEW REQUIRED · Verify current price, setup trigger, liquidity, order details and actual risk in Thinkorswim."
+ ].join("\n");
+ return lastTicketCalculation
+}
+function ticketPlanForExport(){return{product:"RO’Lyfe Terminal · Review-only trade plan",createdAt:new Date().toISOString(),plan:currentTicketData(),riskCalculation:lastTicketCalculation,disclaimer:"Planning worksheet only. No order is routed. Confirm real-time pricing, fees, contract multiplier, expiration and order details in Thinkorswim."}}
+function downloadTextFile(filename,text,mime="application/json;charset=utf-8"){const blob=new Blob([text],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+function saveTradePlan(){let risk=calculateTradeTicket();if(!risk)return;const d=ticketPlanForExport(),plans=readSavedPlans();d.id="plan-"+Date.now();plans.unshift(d);writeSavedPlans(plans.slice(0,100));renderSavedPlans();const st=document.getElementById("ticket-result");if(st)st.textContent+="\nPlan saved locally. Download a copy for separate backup.";return d}
+function exportTradePlan(){const d=ticketPlanForExport();downloadTextFile("ROLyfe_"+(d.plan.symbol||"Trade")+"_Trade_Plan.json",JSON.stringify(d,null,2));const st=document.getElementById("workbench-status");if(st)st.textContent="Trade plan downloaded. It is a worksheet, not an order confirmation."}
+function emailTradePlan(){const d=ticketPlanForExport(),p=d.plan,r=d.riskCalculation;const body=["RO’Lyfe Trade Plan","Created: "+d.createdAt,"Symbol: "+p.symbol,"Bias: "+p.side,"Order type idea: "+p.orderType,"Timeframe: "+p.timeframe,"Entry: "+(Number.isFinite(p.entry)?p.entry:"Not entered"),"Stop: "+(Number.isFinite(p.stop)?p.stop:"Not entered"),"Account value: "+(Number.isFinite(p.account)?p.account:"Not entered"),"Risk: "+(Number.isFinite(p.riskPercent)?p.riskPercent+"%":"Not entered"),"Thesis: "+(p.thesis||"Not entered"),"Risk calculation: "+(r?JSON.stringify(r):"Not calculated"),"",d.disclaimer].join("\n");location.href="mailto:richmoneybroker@gmail.com,richman@rootoflyfe.com?subject="+encodeURIComponent("RO’Lyfe Trade Plan — "+(p.symbol||"Review"))+"&body="+encodeURIComponent(body.slice(0,8500))}
+function renderSavedPlans(){const root=document.getElementById("saved-plans");if(!root)return;const plans=readSavedPlans();root.innerHTML="";if(!plans.length){root.textContent="No plans saved on this device yet.";return}const title=document.createElement("b");title.textContent="Saved local plans ("+plans.length+")";root.append(title);plans.slice(0,12).forEach(p=>{const row=document.createElement("div");row.className="saved-plan-row";const label=document.createElement("span");label.textContent=(p.plan?.symbol||"Plan")+" · "+new Date(p.createdAt).toLocaleString();const load=document.createElement("button");load.textContent="Load";load.onclick=()=>loadSavedPlan(p.id);const del=document.createElement("button");del.textContent="Delete";del.onclick=()=>{writeSavedPlans(readSavedPlans().filter(x=>x.id!==p.id));renderSavedPlans()};row.append(label,load,del);root.append(row)})}
+function loadSavedPlan(id){const p=readSavedPlans().find(x=>x.id===id)?.plan;if(!p)return;const map={symbol:"ticket-symbol",side:"ticket-side",orderType:"ticket-order-type",timeframe:"ticket-timeframe",entry:"ticket-entry",stop:"ticket-stop",account:"ticket-account",riskPercent:"ticket-risk-pct",target:"ticket-target",expiration:"ticket-expiry",thesis:"ticket-thesis"};Object.entries(map).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.value=p[k]??""});calculateTradeTicket()}
+function exportAllTradePlans(){downloadTextFile("ROLyfe_Saved_Trade_Plans.json",JSON.stringify(readSavedPlans(),null,2));const s=document.getElementById("workbench-status");if(s)s.textContent="Saved plans exported from this browser."}
+function clearSavedPlans(){if(!confirm("Clear saved plans from this browser? Download a backup first if you need one."))return;writeSavedPlans([]);renderSavedPlans()}
+const FAQS=[
+["What does WAIT mean?","The configured threshold setup has not triggered. Check directional context and wait for confirmation; WAIT does not predict what price will do next."],
+["What is bullish bias?","Several direction checks lean upward, such as price/EMAs and MACD. Bias is context, not an entry trigger."],
+["What is bearish bias?","Several checks lean downward. For a long plan, consider waiting instead of trying to catch a falling price."],
+["What is neutral or mixed?","Indicators disagree, price is ranging, or data is insufficient. Stay prepared rather than forcing a trade."],
+["What is a Sniper Candidate?","A review label when trend and momentum conditions align. It is not a buy command or a guarantee."],
+["Why use RSI 50?","The 50 area helps describe the momentum regime. Above may support positive momentum; below often shows weaker momentum."],
+["Do RSI 30 and 70 mean buy or sell?","No. They are reference zones. RSI can remain overbought or oversold during strong trends."],
+["What do Stochastic 20 and 80 mean?","They mark a close near the lower or upper part of a recent range. Look for a turn and the trend context."],
+["What does MACD confirm?","The line, signal and histogram help describe momentum change. Crosses can fail, so confirm on price structure."],
+["Why use EMA 20, 50 and 200?","They provide short, intermediate and longer trend context. Moving averages lag and are not entries on their own."],
+["What is VWAP?","An intraday volume-weighted average. It can frame intraday control, but session resets and symbol support matter."],
+["What is CCI?","A typical-price deviation measure. Use its zero and ±100 context with price action, not alone."],
+["What does relative volume mean?","Latest bar volume compared with the prior 20-bar average when data exists. Partial bars can distort the ratio."],
+["What is TTM Squeeze?","A volatility compression framework used to watch for expansion. It does not guarantee a breakout."],
+["Why do indicators disagree between daily and 5m?","Each timeframe measures a different horizon. Daily trend can be constructive while the short-term chart is stretched."],
+["Which timeframe should I use first?","Your stock-first ladder starts with wider context—daily and 4H—then refines through 1H, 15m and 5m. Use 1m selectively."],
+["Can I scan the whole watchlist?","Choose a group and tap Scan this group. Requests run sequentially, and unsupported symbols may show unavailable data."],
+["Why does a symbol say LOAD DATA?","That symbol/timeframe has no fresh cached snapshot yet. Select it or start a group scan."],
+["Are all 76 stocks and 35 crypto symbols live?","They are included in the lists, but provider coverage is not guaranteed for every symbol. Only valid returned candles create indicators."],
+["Does scanning work when I close the page?","No. This browser-based Terminal cannot scan while closed. Unattended recurring scans require a separate server or scheduler."],
+["What is a trade ticket?","A structured plan with symbol, bias, order idea, entry, stop, target and risk. This ticket is a worksheet; it does not send orders."],
+["Where do I place the real order?","Verify the live bid/ask, contract details, expiration, order type and risk in Thinkorswim, then submit it yourself or discuss it with your broker."],
+["What is a limit order?","It sets a maximum buy price or minimum sell price. It might not fill; confirm the order and status with the broker."],
+["What is a market order?","It seeks a fill at available prices. The fill may differ from the last price, especially in fast or thin markets."],
+["What is invalidation?","The price or condition that proves your setup is no longer valid. Define it before sizing."],
+["What are 1R, 2R and 3R?","Illustrative levels at one, two and three times the risk distance from entry, not forecasts."],
+["How is position size estimated?","Risk budget divided by the absolute entry-to-stop distance, rounded down. Fees, slippage, gaps and contract multipliers may change actual risk."],
+["Does this ticket size option contracts?","No. It estimates underlying units. Options require contract multiplier, premium, expiration, spread and contract-level risk."],
+["Can the AI place orders?","No. The AI Coach prepares a prompt for ChatGPT. It cannot submit orders or verify broker permissions from this public page."],
+["What is the final pre-flight check?","Verify symbol, timeframe, fresh price, setup trigger, liquidity/events, entry, stop, target, quantity, order type and expiration."],
+["How do I save or email a plan?","Save stores it in this browser, Download/Export creates a file, and Email opens a draft with the plan details."]
+];
+function renderFAQ(){const root=document.getElementById("faq-list");if(!root)return;root.innerHTML="";FAQS.forEach((it,i)=>{const d=document.createElement("details"),s=document.createElement("summary"),p=document.createElement("p");s.textContent=String(i+1).padStart(2,"0")+". "+it[0];p.textContent=it[1];d.append(s,p);root.append(d)})}
+const SCANNER_TOAST_MS=6000;let scannerToastTimer=null,scannerRotation=0;
+function dismissScannerToast(){const el=document.getElementById("scanner-toast");if(el)el.classList.remove("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=null}
+function scannerCandidates(){
+ const interval=selectedMarketInterval(),maxAge=({"1m":15,"5m":30,"10m":45,"15m":90,"1h":360,"4h":1200,"1d":7200,"1w":20000})[interval]||60,now=Date.now(),items=[];
+ Object.entries(analysisCache).forEach(([key,r])=>{if(!key.endsWith("|"+interval)||now-r.time>CACHE_MS||!r||!Number.isFinite(r.lastBarTime))return;const ts=r.lastBarTime>1e12?r.lastBarTime:r.lastBarTime*1000,age=(now-ts)/60000;if(age<0||age>maxAge)return;const sniper=classifySniper(r);if(r.action!=="WAIT"||sniper.stage==="SNIPER CANDIDATE")items.push({symbol:r.symbol||key.split("|")[0],r,sniper,age})});
+ return items.sort((a,b)=>(a.sniper.stage==="SNIPER CANDIDATE"?0:a.r.action!=="WAIT"?1:2)-(b.sniper.stage==="SNIPER CANDIDATE"?0:b.r.action!=="WAIT"?1:2)).slice(0,5)
+}
+function showNextScannerToast(){
+ const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");
+ if(!el||!body)return;const items=scannerCandidates();if(!items.length){dismissScannerToast();return}
+ const item=items[scannerRotation%items.length];scannerRotation++;
+ body.textContent=item.symbol+" · "+item.sniper.stage+" · "+item.sniper.side+". RSI "+item.r.rsi.toFixed(1)+" · Stochastic "+item.r.stoch.toFixed(1)+" · "+item.age.toFixed(0)+" min from last bar.";
+ if(meta)meta.textContent="Fresh cached provider data · "+items.length+" qualifying item(s) · no new request started";
+ el.classList.add("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=setTimeout(dismissScannerToast,SCANNER_TOAST_MS)
+}
+function openSniperFromToast(){const p=document.getElementById("sniper-panel");if(p)p.open=true;dismissScannerToast();p?.scrollIntoView({behavior:"smooth",block:"start"})}
+
 function toggleOptions(id){
 let o=document.getElementById(id);
 o.innerHTML="<b>OPTIONS CHAIN NOT CONNECTED</b><p>No live contracts are being shown here. Strike, bid/ask, expiration, open interest and Greeks must come from a verified options-data provider. Do not use generated example contracts for trading decisions.</p><p>Next stage: connect a licensed chain, then calculate premium risk, breakeven and expiration payoff.</p>";

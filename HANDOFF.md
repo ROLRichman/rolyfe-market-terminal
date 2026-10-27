@@ -1,0 +1,52 @@
+# RO’Lyfe Terminal — Project Handoff
+**Updated:** 2026-10-27  
+**Live app:** https://rolrichman.github.io/rolyfe-market-terminal/  
+**Repository:** https://github.com/ROLRichman/rolyfe-market-terminal  
+**Supabase project:** `ykmdyfbklvuoseqdjnxy`  
+**Market-data function:** `market-data` — https://ykmdyfbklvuoseqdjnxy.supabase.co/functions/v1/market-data
+
+## Purpose
+Mobile-first, stock-first market research cockpit for multi-asset watchlists, provider-backed candle analysis, chart review, technical context, a cautious Sniper workflow, risk-first trade-ticket planning, and manual handoff to Thinkorswim. This is not a brokerage connection and never submits orders.
+
+## Changes made on 2026-10-27
+- Expanded the Supabase Edge Function CORS allow-header list. Deployed `market-data` version 19 with JWT verification still enabled; provider secrets were not changed.
+- Removed the unnecessary `Accept: application/json` request header from the browser fetch.
+- Added a visible **Retry data** control. It clears the selected symbol/timeframe's failed cached snapshot and retries through the chart loader.
+- Added client-side 10-minute candle aggregation using provider-returned 5-minute OHLCV bars, because the provider endpoint does not support a native `10m` interval.
+- Validated the main HTML's inline JavaScript syntax and checked for duplicate HTML IDs after these edits.
+
+## Data integrity and signal behavior
+- Technical indicators are calculated from returned OHLCV bars; missing or invalid bars must not create a signal.
+- `WAIT` means the configured threshold has not triggered. It is not the same as neutral direction, and neither state means buy or sell.
+- A Sniper Candidate is a review queue, not an automatic entry. Candle close, higher-timeframe context, liquidity, nearby levels, invalidation, position size and risk must be checked manually.
+- The trade ticket is a worksheet only. Confirm current bid/ask, order type, quantity, expiration, contract multiplier and time-in-force in Thinkorswim before placing any order.
+- The browser contains only the Supabase public/anon key required to call the function. Provider API secrets belong in Supabase Edge Function Secrets, never in GitHub Pages source.
+
+## Current verification status
+**Code-level checks passed:** JavaScript parses; no duplicate HTML IDs; the 10-minute aggregation and retry control are present; Supabase reports the function active at version 19 with JWT verification enabled.
+
+**Live data connection is not yet confirmed after the CORS change.** The Supabase logs showed an `OPTIONS 200` preflight for the latest AAPL 5-minute request but no corresponding GET in that same request window. That pattern suggests the browser may be stopping at CORS preflight, but it does not by itself prove the exact browser-side cause. The CORS allow-header list was broadened and the redundant request header removed. A fresh page reload and a successful provider GET are still needed to confirm the fix end-to-end. Do not describe the feed as verified/live until a successful response includes a valid bar array and a plausible last-bar timestamp.
+
+## Watchlist notes
+- The **Liquid Leaders** group is the intended quick-start watchlist; other groups include the broader stock universes, crypto, forex, futures and macro symbols.
+- Symbols in a group do not all have guaranteed Tickerbot coverage. Some futures, macro symbols, crypto aliases or timeframes may be unsupported by the provider. Unsupported symbols must remain `LOAD DATA` / unavailable rather than showing fabricated values.
+- 10-minute bars are derived from 5-minute bars in the browser. They are not a separate native provider interval.
+- Scanning is manual and page-bound; it does not continue while the page is closed. Scanner notifications use available cached analysis and should never be interpreted as an order.
+
+## Next verification steps
+1. Open the live page in a fresh tab or reload it after GitHub Pages updates.
+2. Choose **Liquid Leaders**, select AAPL and 5m, then press **Retry data**.
+3. Confirm the status changes to a provider response and that the returned bar count, last-bar time and calculated indicators are populated.
+4. In Supabase logs, confirm a successful `GET` request to `market-data?provider=tickerbot&symbol=AAPL&interval=5m&limit=300` after the latest deployment.
+5. Test one supported crypto alias and one other stock. Record unsupported symbols/timeframes explicitly rather than treating missing data as a setup.
+6. Verify the embedded TradingView chart and mobile price-axis/zoom behavior separately from the Supabase signal data; these are different data/rendering paths.
+
+## Connected RO’Lyfe workspaces
+- Trading Intelligence Classroom: https://rolrichman.github.io/RO-Lyfe-Trading-Intelligence-Classroom/
+- Tactical Intelligence Center — Trading Scanner: https://rolrichman.github.io/RO-Lyfe-Tactical-Intelligence-Center-/
+- Tactical Intelligence Execution Center — Real Estate / Capital workflow: https://rolrichman.github.io/ro-lyfe-tactical-intelligence-execution-center/
+- Auction Capital Machine — Property → Owner → Tax → Buildability: https://rolrichman.github.io/ro-lyfe-auction-capital-machine/#vault
+- Trading Calculator Pro hub: https://rolrichman.github.io/ROlyfe-Trading-Calculator-Pro/
+
+## Safety / scope
+Educational decision support only. Not financial, investment, legal, tax, lending or trading advice. No guarantees, no broker order routing, and no automated execution. The user makes all final decisions and places any order in their brokerage platform.

@@ -972,9 +972,10 @@ function enableBrowserScanAlerts(){
 }
 function sendBrowserScanAlert(item){
  if(!item||!browserScanAlertsAllowed())return;
- const key=[item.symbol,selectedMarketInterval(),item.r.lastBarTime,item.r.action,item.sniper.stage].join("|");
+ const approval=classifyDirection(item.r);if(!approval||approval.kind==="neutral")return;
+ const key=[item.symbol,selectedMarketInterval(),item.r.lastBarTime,item.r.action,item.sniper.stage,approval.kind].join("|");
  if(key===lastBrowserScanAlertKey)return;lastBrowserScanAlertKey=key;
- const st=item.studies||expandedStudyState(item.r),context=st.ready?("HMA"+st.period+" "+(st.hmaBull?"bullish":st.hmaBear?"bearish":"mixed")+"; "+(st.ppsUp?"PPS-style up":st.ppsDown?"PPS-style down":"PPS-style wait")+"; "+st.pullbackLabel):"HMA / pullback context unavailable";try{new Notification("RO’Lyfe Scan Alert · "+item.symbol,{body:item.sniper.stage+" · "+item.sniper.side+" · "+item.r.action+" · "+context+". Review chart and risk before any trade."})}catch(e){}
+ const st=item.studies||expandedStudyState(item.r),context=st.ready?("HMA"+st.period+" "+(st.hmaBull?"bullish":st.hmaBear?"bearish":"mixed")+"; "+(st.ppsUp?"PPS-style up":st.ppsDown?"PPS-style down":"PPS-style wait")+"; "+st.pullbackLabel):"HMA / pullback context unavailable";try{new Notification("RO’Lyfe Scan Alert · "+item.symbol,{body:approval.label+" · "+item.sniper.stage+" · "+item.sniper.side+" · "+context+". Directional approval is still a watch, not a trade instruction; verify the chart and risk.})}catch(e){}
 }
 function showScannerStatusToast(sym,interval){
  const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");

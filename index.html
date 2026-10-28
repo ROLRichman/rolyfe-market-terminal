@@ -624,7 +624,8 @@ function calculateOptionLab(){
 function calculateSnapshot(bars){
   const closes=bars.map(b=>b.c),volumes=bars.map(b=>b.v);
   const last=bars[bars.length-1],prev=bars[bars.length-2];
-  const ema20=emaSeries(closes,20).at(-1),ema50=emaSeries(closes,50).at(-1),ema200=emaSeries(closes,200).at(-1);\n  const hmaPeriod=Number(document.getElementById("hma-period")?.value)||31,hmas=hmaSeries(closes,hmaPeriod);
+  const ema20=emaSeries(closes,20).at(-1),ema50=emaSeries(closes,50).at(-1),ema200=emaSeries(closes,200).at(-1);
+  const hmaPeriod=Number(document.getElementById("hma-period")?.value)||31,hmas=hmaSeries(closes,hmaPeriod);
   const macd=macdSnapshot(closes),cci=cci20(bars);
   const volumeBase=volumes.length>=21&&volumes.slice(-21,-1).every(Number.isFinite)?volumes.slice(-21,-1).reduce((a,b)=>a+b,0)/20:null;
   const volumeRatio=volumeBase>0&&Number.isFinite(last.v)?last.v/volumeBase:null;

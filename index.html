@@ -268,6 +268,9 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
  .rol-visual-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
  #chart-workspace .chart-controls{font-size:10px}
 }
+
+/* Independent Multi Chart: refresh + full-screen zoom workspace */
+.multi-chart-label{display:block;color:#a9bdd2;font-size:12px;font-weight:800;margin:10px 0 5px}.multi-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.multi-chart-actions button,.multi-chart-size-controls button{min-height:38px}.multi-chart-size-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.multi-chart-size-controls input[type=range]{flex:1;min-width:120px}.multi-fullscreen{display:none;position:fixed;inset:0;z-index:100000;background:#05080d;color:#f8fafc;padding:10px;overflow:auto;overscroll-behavior:contain}.multi-fullscreen.open{display:block}.multi-fullscreen-shell{width:100%;max-width:1800px;margin:0 auto}.multi-fullscreen-header{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px;background:#0b1420;border:1px solid #243449;border-radius:12px}.multi-fullscreen-header strong{font-size:13px;letter-spacing:.04em}.multi-fullscreen-header p{margin:4px 0 0;font-size:11px;color:#a9bdd2}.multi-fullscreen-actions{display:flex;flex-wrap:wrap;gap:7px}.multi-fullscreen-actions button,.multi-fullscreen-controls button{min-height:38px;padding:8px 12px}.multi-fullscreen-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 4px}.multi-fullscreen-controls label{font-size:12px;font-weight:800}.multi-fullscreen-controls input[type=range]{flex:1;min-width:130px}.multi-fullscreen-controls p{flex-basis:100%;margin:0;color:#9fb2c7;font-size:11px;line-height:1.5}.multi-fullscreen-controls.collapsed{display:none}.multi-fullscreen-widget{width:100%;min-height:320px;resize:vertical;overflow:hidden;border:1px solid #26384d;border-radius:10px;background:#0b1220}.multi-fullscreen-studies{margin-top:10px;border:1px solid #26384d;border-radius:10px;background:#0b1420}.multi-fullscreen-studies summary{padding:12px;cursor:pointer;font-weight:800}.multi-fullscreen-studies p{padding:0 12px 12px;margin:0;color:#a9bdd2;font-size:12px;line-height:1.6}.multi-fullscreen.open~*{pointer-events:none}@media(max-width:600px){.multi-fullscreen{padding:5px}.multi-fullscreen-header{align-items:flex-start;padding:8px}.multi-fullscreen-actions{width:100%}.multi-fullscreen-actions button{flex:1;font-size:11px;padding:7px}.multi-fullscreen-controls{gap:7px}.multi-fullscreen-widget{min-height:360px}}
 </style>
 </head>
 
@@ -440,7 +443,8 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div class="section">
 <h3>Multi Chart</h3>
 
-<select onchange="loadChart2(this.value)">
+<label for="independent-chart-symbol" class="multi-chart-label">Independent symbol</label>
+<select id="independent-chart-symbol" onchange="loadChart2(this.value)">
 <option>AAPL</option>
 <option>TSLA</option>
 <option>SPY</option>
@@ -449,7 +453,16 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <option>ES1!</option>
 <option>NQ1!</option>
 </select>
-
+<div class="multi-chart-actions">
+<button type="button" onclick="refreshMultiChart()">↻ Refresh Multi Chart</button>
+<button type="button" onclick="openMultiChartFullscreen()">⛶ Full Screen + Indicators</button>
+</div>
+<div class="chart-controls multi-chart-size-controls">
+<label for="multi-chart-height">Chart height</label>
+<input id="multi-chart-height" type="range" min="320" max="720" step="20" value="480" oninput="setMultiChartHeight(this.value)" aria-label="Multi Chart height slider">
+<span id="multi-chart-height-label">480px</span>
+<button type="button" onclick="resetMultiChartHeight()">Reset</button>
+</div>
 <div class="chart-container">
 <div class="chart-inner">
 <div id="chart2"></div>
@@ -461,6 +474,32 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 
 <button onclick="toggleCalc('calc2')">📊 Trade Calculator</button>
 <div id="calc2" class="option-box"></div>
+</div>
+
+<!-- Multi Chart full-screen workspace: independent from main scan -->
+<div id="multi-chart-fullscreen" class="multi-fullscreen" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Multi Chart full screen workspace">
+ <div class="multi-fullscreen-shell">
+  <header class="multi-fullscreen-header">
+   <div><strong id="multi-fullscreen-title">MULTI CHART · INDEPENDENT REFERENCE</strong><p id="multi-fullscreen-subtitle">Separate chart; does not change the main scan.</p></div>
+   <div class="multi-fullscreen-actions">
+    <button type="button" onclick="refreshMultiChart()">↻ Refresh</button>
+    <button type="button" onclick="toggleMultiChartControls()" id="multi-controls-toggle" aria-expanded="true">⌄ Collapse controls</button>
+    <button type="button" onclick="closeMultiChartFullscreen()" aria-label="Close full screen chart">✕ Close</button>
+   </div>
+  </header>
+  <div id="multi-fullscreen-controls" class="multi-fullscreen-controls">
+   <label for="multi-fullscreen-height">Chart height / viewing space</label>
+   <input id="multi-fullscreen-height" type="range" min="300" max="900" step="30" value="600" oninput="setMultiFullscreenHeight(this.value)" aria-label="Full screen chart height slider">
+   <span id="multi-fullscreen-height-label">600px</span>
+   <button type="button" onclick="setMultiFullscreenHeight(600)">Reset height</button>
+   <p>Use TradingView’s own zoom, crosshair, timeframe and drawing tools inside the chart. The studies below the price chart are provided by TradingView.</p>
+  </div>
+  <div id="multi-chart-fullscreen-widget" class="multi-fullscreen-widget" style="height:600px"></div>
+  <details class="multi-fullscreen-studies" open>
+   <summary>📊 Indicators loaded in this full-screen chart</summary>
+   <p>EMA studies from your enabled chart studies, plus RSI, MACD and Stochastic panels. Study availability can vary by symbol/widget entitlement. This independent chart does not drive the Terminal scan or main chart’s locally calculated indicator graphs.</p>
+  </details>
+ </div>
 </div>
 
 <!-- 🔥 FULL LINKS (RESTORED — NOTHING REMOVED) -->
@@ -656,6 +695,18 @@ function loadChart(){
   }
 }
 
+function multiChartSymbol(){return document.getElementById("independent-chart-symbol")?.value||"AAPL"}
+function multiChartStudies(){const base=selectedChartStudies();["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"].forEach(x=>{if(!base.includes(x))base.push(x)});return base}
+function refreshMultiChart(){const sym=multiChartSymbol();loadChart2(sym);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open"))loadMultiFullscreenWidget(sym);const note=document.querySelector(".multi-chart-sync-note");if(note)note.textContent="Refreshed independent chart for "+sym+" · "+chartIntervalLabel()+". This chart remains separate from the main scan and its indicator graphs."}
+function setMultiChartHeight(value){const n=Math.max(320,Math.min(720,Number(value)||480));const chart=document.getElementById("chart2");if(chart)chart.style.height=n+"px";const label=document.getElementById("multi-chart-height-label");if(label)label.textContent=n+"px"}
+function resetMultiChartHeight(){const slider=document.getElementById("multi-chart-height");if(slider)slider.value="480";setMultiChartHeight(480)}
+function setMultiFullscreenHeight(value){const n=Math.max(300,Math.min(900,Number(value)||600));const widget=document.getElementById("multi-chart-fullscreen-widget");if(widget)widget.style.height=n+"px";const label=document.getElementById("multi-fullscreen-height-label");if(label)label.textContent=n+"px"}
+function loadMultiFullscreenWidget(sym){const target=document.getElementById("multi-chart-fullscreen-widget");if(!target)return;target.innerHTML="";const title=document.getElementById("multi-fullscreen-title");if(title)title.textContent="MULTI CHART · "+sym+" · INDEPENDENT REFERENCE";const sub=document.getElementById("multi-fullscreen-subtitle");if(sub)sub.textContent="Independent symbol · "+chartIntervalLabel()+" · does not drive the main scan.";if(typeof TradingView==="undefined"){target.textContent="TradingView is unavailable. Refresh this page and try again.";return}try{new TradingView.widget({container_id:"multi-chart-fullscreen-widget",symbol:chartSymbol(sym),interval:tf,range:chartRange,theme:"dark",autosize:true,allow_symbol_change:true,studies:multiChartStudies()})}catch(error){target.textContent="Full-screen chart could not load. Use Refresh to try again."}}
+function openMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";const slider=document.getElementById("multi-fullscreen-height");if(slider)slider.value="600";setMultiFullscreenHeight(600);loadMultiFullscreenWidget(multiChartSymbol())}
+function closeMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";const target=document.getElementById("multi-chart-fullscreen-widget");if(target)target.innerHTML=""}
+function toggleMultiChartControls(){const controls=document.getElementById("multi-fullscreen-controls"),button=document.getElementById("multi-controls-toggle");if(!controls||!button)return;const collapsed=controls.classList.toggle("collapsed");button.textContent=collapsed?"⌃ Show controls":"⌄ Collapse controls";button.setAttribute("aria-expanded",String(!collapsed))}
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMultiChartFullscreen()});
+
 function loadChart2(sym){
   const chart=document.getElementById("chart2");
   if(!chart) return;
@@ -672,7 +723,7 @@ function loadChart2(sym){
       range:chartRange,
       theme:"dark",
       autosize:true,
-      studies:["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"]
+      studies:multiChartStudies()
     });
   }catch(error){
     chart.textContent="Multi-chart could not be loaded from the chart provider.";

@@ -573,39 +573,38 @@ function stochastic14(bars){
 }
 function wmaSeries(values,period){const out=Array(values.length).fill(null);for(let i=period-1;i<values.length;i++){let sum=0,den=period*(period+1)/2;for(let j=0;j<period;j++)sum+=values[i-period+1+j]*(j+1);out[i]=sum/den}return out}
 function hmaSeries(values,period){const half=Math.max(1,Math.floor(period/2)),root=Math.max(1,Math.floor(Math.sqrt(period))),wHalf=wmaSeries(values,half),wFull=wmaSeries(values,period),diff=values.map((v,i)=>wHalf[i]===null||wFull[i]===null?null:2*wHalf[i]-wFull[i]);const valid=diff.map(v=>Number.isFinite(v)?v:0);const raw=wmaSeries(valid,root);return raw.map((v,i)=>diff[i]===null?null:v)}
+function expandedStudyState(r){
+ const bars=r&&Array.isArray(r.ohlcv)?r.ohlcv:null,period=Number(document.getElementById("hma-period")?.value)||31;
+ if(!bars||bars.length<period+Math.ceil(Math.sqrt(period))+2)return{ready:false,period,pullbackLabel:"Need more valid candles"};
+ const closes=bars.map(b=>b.c),last=bars.at(-1),prev=bars.at(-2),hmas=hmaSeries(closes,period),hma=hmas.at(-1),prevHma=hmas.at(-2);
+ if(!Number.isFinite(hma)||!Number.isFinite(prevHma))return{ready:false,period,pullbackLabel:"HMA not available for this history"};
+ const hmaBull=r.close>hma&&hma>prevHma,hmaBear=r.close<hma&&hma<prevHma;
+ const ppsUp=prev&&prev.c<=prevHma&&r.close>hma,ppsDown=prev&&prev.c>=prevHma&&r.close<hma;
+ const pbLength=Math.max(2,Math.min(300,Number(document.getElementById("pb-length")?.value)||50)),mult=Math.max(.1,Math.min(10,Number(document.getElementById("pb-multiplier")?.value)||1.5)),buyEma=Math.max(1,Math.min(100,Number(document.getElementById("pb-buy-ema")?.value)||1)),sellEma=Math.max(2,Math.min(300,Number(document.getElementById("pb-sell-ema")?.value)||13)),volUp=Math.max(0,Number(document.getElementById("pb-vol-up")?.value)||100),volDown=Math.max(0,Number(document.getElementById("pb-vol-down")?.value)||100);
+ const emaAnchor=emaSeries(closes,pbLength).at(-1),emaBuy=emaSeries(closes,buyEma).at(-1),emaSell=emaSeries(closes,sellEma).at(-1);
+ const trs=bars.slice(-14).map((bar,i)=>{const idx=bars.length-14+i,prior=bars[idx-1];return Math.max(bar.h-bar.l,prior?Math.abs(bar.h-prior.c):0,prior?Math.abs(bar.l-prior.c):0)}).filter(Number.isFinite),atr=trs.length?trs.reduce((a,b)=>a+b,0)/trs.length:null;
+ const near=Number.isFinite(atr)&&atr>0&&Number.isFinite(emaAnchor)&&Math.abs(r.close-emaAnchor)<=mult*atr;
+ const volChange=prev&&prev.v>0&&Number.isFinite(last.v)?((last.v-prev.v)/prev.v)*100:null;
+ const bullZone=near&&r.close>=emaAnchor&&r.close>emaSell&&last.c>prev.c;
+ const bearZone=near&&r.close<=emaAnchor&&r.close<emaSell&&last.c<prev.c;
+ const bullConfirmed=bullZone&&Number.isFinite(volChange)&&volChange>=volUp;
+ const bearConfirmed=bearZone&&Number.isFinite(volChange)&&volChange<=-volDown;
+ let pullbackLabel="No aligned pullback setup · WAIT";
+ if(bullZone)pullbackLabel="⬆ Bullish pullback area · "+(bullConfirmed?"volume gate confirmed":"volume gate not met");
+ if(bearZone)pullbackLabel="⬇ Bearish pullback area · "+(bearConfirmed?"volume gate confirmed":"volume gate not met");
+ const showLabel=document.getElementById("pb-show-label")?.checked!==false;
+ if(!showLabel)pullbackLabel=(bullConfirmed||bearConfirmed)?"PULLBACK WATCH":"WAIT";
+ return{ready:true,period,hma,prevHma,hmaBull,hmaBear,ppsUp,ppsDown,emaAnchor,emaBuy,emaSell,atr,near,bullZone,bearZone,bullConfirmed,bearConfirmed,pullbackLabel,volChange,volUp,volDown,pbLength,mult,buyEma,sellEma};
+}
 function renderExpandedIndicators(){
- const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],period=Number(document.getElementById("hma-period")?.value)||31;
- const h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading");
- const bars=r&&Array.isArray(r.ohlcv)?r.ohlcv:null,closes=bars?bars.map(x=>x.c):[];
- if(!r||!bars||closes.length<period+Math.ceil(Math.sqrt(period))+2){[h,p,pb].forEach(e=>{if(e)e.textContent="Waiting for enough valid provider candles…"});return}
- const hmas=hmaSeries(closes,period),hma=hmas.at(-1),prevHma=hmas.at(-2),last=bars.at(-1),prev=bars.at(-2);
- if(!Number.isFinite(hma)||!Number.isFinite(prevHma)){[h,p,pb].forEach(e=>{if(e)e.textContent="HMA not available for this history length"});return}
- const bullish=r.close>hma&&hma>prevHma,bearish=r.close<hma&&hma<prevHma;
- if(h)h.textContent="HMA "+period+" · $"+hma.toFixed(2)+" · "+(bullish?"⬆ BULLISH":bearish?"⬇ BEARISH":"➡ MIXED");
- const crossUp=prev&&prev.c<=prevHma&&r.close>hma,crossDown=prev&&prev.c>=prevHma&&r.close<hma;
- if(p)p.textContent=crossUp?"⬆ UP MARKER (local heuristic)":crossDown?"⬇ DOWN MARKER (local heuristic)":"No fresh HMA cross · WAIT";
- const length=Math.max(2,Math.min(300,Number(document.getElementById("pb-length")?.value)||50));
- const mult=Math.max(.1,Math.min(10,Number(document.getElementById("pb-multiplier")?.value)||1.5));
- const buyPeriod=Math.max(1,Math.min(100,Number(document.getElementById("pb-buy-ema")?.value)||1));
- const sellPeriod=Math.max(2,Math.min(300,Number(document.getElementById("pb-sell-ema")?.value)||13));
- const emaAnchor=emaSeries(closes,length).at(-1),emaBuy=emaSeries(closes,buyPeriod).at(-1),emaSell=emaSeries(closes,sellPeriod).at(-1);
- const tr=bars.slice(-15).map((bar,i,arr)=>{const actualIndex=bars.length-arr.length+i,prior=bars[actualIndex-1];return Math.max(bar.h-bar.l,prior?Math.abs(bar.h-prior.c):0,prior?Math.abs(bar.l-prior.c):0)}).filter(Number.isFinite);
- const atr=tr.length?tr.reduce((sum,v)=>sum+v,0)/tr.length:null;
- const nearAnchor=Number.isFinite(atr)&&Number.isFinite(emaAnchor)&&Math.abs(r.close-emaAnchor)<=mult*atr;
- const prevVol=prev&&Number.isFinite(prev.v)?prev.v:null,volChange=prevVol>0&&Number.isFinite(last.v)?((last.v-prevVol)/prevVol)*100:null;
- const volUp=Math.max(0,Number(document.getElementById("pb-vol-up")?.value)||100),volDown=Math.max(0,Number(document.getElementById("pb-vol-down")?.value)||100);
- const upVolume=Number.isFinite(volChange)&&volChange>=volUp,downVolume=Number.isFinite(volChange)&&volChange<=-volDown;
- const bullPullback=nearAnchor&&r.close>=emaAnchor&&r.close>emaSell&&last.c>prev.c;
- const bearPullback=nearAnchor&&r.close<=emaAnchor&&r.close<emaSell&&last.c<prev.c;
- const labelOn=document.getElementById("pb-show-label")?.checked!==false;
- let setup="No pullback alignment yet · WAIT";
- if(bullPullback)setup="⬆ Bullish pullback watch · "+(upVolume?"volume pop confirmed":"volume threshold not confirmed");
- if(bearPullback)setup="⬇ Bearish pullback watch · "+(downVolume?"volume decline confirmed":"volume threshold not confirmed");
- if(pb)pb.textContent=(labelOn?setup:((bullPullback||bearPullback)?"WATCH":"WAIT"))+" · anchor EMA"+length+(Number.isFinite(atr)?" · ATR proximity "+(atr>0?(Math.abs(r.close-emaAnchor)/atr).toFixed(2)+"×":"—"):"");
- const he=document.getElementById("hma-explain");if(he)he.textContent="Close "+(r.close>=hma?"above":"below")+" HMA; slope "+(hma>prevHma?"rising":hma<prevHma?"falling":"flat")+". Context only, not an entry instruction.";
- const pe=document.getElementById("pps-explain");if(pe)pe.textContent="Local HMA crossing heuristic only. Buy EMA "+buyPeriod+"; sell EMA "+sellPeriod+". It does not recreate the Thinkorswim proprietary PPS study.";
- const pbe=document.getElementById("pullback-explain");
- if(pbe)pbe.textContent="Reference settings: length "+length+" · multiplier "+mult+" · buy EMA "+buyPeriod+" · sell EMA "+sellPeriod+" · volume thresholds +"+volUp+"% / −"+volDown+"% · spread limit "+(document.getElementById("pb-spread-limit")?.value||"0.09")+". Quote spread is not returned by OHLCV, so that guard is not validated here.";
+ const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading"),study=expandedStudyState(r);
+ if(!r||!study.ready){[h,p,pb].forEach(e=>{if(e)e.textContent="Waiting for enough valid provider candles…"});return}
+ if(h)h.textContent="HMA "+study.period+" · $"+study.hma.toFixed(2)+" · "+(study.hmaBull?"⬆ BULLISH":study.hmaBear?"⬇ BEARISH":"➡ MIXED");
+ if(p)p.textContent=study.ppsUp?"⬆ UP MARKER (local HMA-cross heuristic)":study.ppsDown?"⬇ DOWN MARKER (local HMA-cross heuristic)":"No fresh crossover · WAIT";
+ if(pb)pb.textContent=study.pullbackLabel;
+ const he=document.getElementById("hma-explain");if(he)he.textContent="Close "+(r.close>=study.hma?"above":"below")+" HMA; slope "+(study.hma>study.prevHma?"rising":study.hma<study.prevHma?"falling":"flat")+". Period updates locally from the currently loaded bars.";
+ const pe=document.getElementById("pps-explain");if(pe)pe.textContent="Local HMA-cross heuristic; not the proprietary Thinkorswim PPS study. Reference buy EMA "+study.buyEma+", sell EMA "+study.sellEma+".";
+ const pbe=document.getElementById("pullback-explain");if(pbe)pbe.textContent="Reference settings: length "+study.pbLength+" · multiplier "+study.mult+" · buy EMA "+study.buyEma+" · sell EMA "+study.sellEma+" · volume thresholds +"+study.volUp+"% / −"+study.volDown+"% · spread limit "+(document.getElementById("pb-spread-limit")?.value||"0.09")+" · arrow placement "+(document.getElementById("pb-move-to")?.value||"UP")+". Quote spread is not returned by OHLCV and remains unverified.";
 }
 function calculateOptionLab(){const side=document.getElementById("opt-side-lab").value,strike=Number(document.getElementById("opt-strike-lab").value),prem=Number(document.getElementById("opt-premium-lab").value),iv=Number(document.getElementById("opt-iv-lab").value),rankText=document.getElementById("opt-iv-rank-lab").value,percentileText=document.getElementById("opt-iv-percentile-lab").value,rank=rankText===""?null:Number(rankText),percentile=percentileText===""?null:Number(percentileText),expiry=document.getElementById("opt-expiry-lab").value,qty=Math.floor(Number(document.getElementById("opt-qty-lab").value)||0),out=document.getElementById("opt-result-lab");if(!expiry||!Number.isFinite(strike)||strike<=0||!Number.isFinite(prem)||prem<0||qty<1||!Number.isFinite(iv)||iv<0||rank!==null&&(!Number.isFinite(rank)||rank<0||rank>100)||percentile!==null&&(!Number.isFinite(percentile)||percentile<0||percentile>100)){out.textContent="Enter valid strike, quoted premium, IV, expiration, quantity, and optional IV Rank/Percentile values from a current options chain or research source.";return}const now=new Date();now.setHours(0,0,0,0);const exp=new Date(expiry+"T00:00:00");const dte=Math.ceil((exp-now)/86400000);if(dte<0){out.textContent="That expiration is in the past. Choose the correct future expiration.";return}const cost=prem*100*qty,breakeven=side==="call"?strike+prem:strike-prem;let ivContext="IV "+iv.toFixed(1)+"% entered. IV alone cannot confirm whether premium is historically expensive or cheap.";if(rank!==null||percentile!==null){const parts=[];if(rank!==null)parts.push("IV Rank "+rank.toFixed(0)+"% ("+(rank>=70?"high relative to its 52-week range":rank<=20?"low relative to its 52-week range":"middle of its 52-week range")+")");if(percentile!==null)parts.push("IV Percentile "+percentile.toFixed(0)+"% ("+(percentile>=70?"IV has been higher than most observations":percentile<=20?"IV has been lower than most observations":"middle historical percentile")+")");ivContext=parts.join("; ")+". Use both with the expiration, expected move, spreads and event risk."}out.textContent="Estimated premium value: $"+cost.toFixed(2)+" for "+qty+" contract(s) (100-share multiplier, before fees). "+ivContext+" Expiration: "+expiry+" · "+dte+" calendar days. Long "+side+" expiration breakeven: $"+breakeven.toFixed(2)+". For selling, use the current bid and model collateral, assignment and max-loss exposure separately; premium received is not guaranteed profit."}
 function calculateSnapshot(bars){
@@ -949,8 +948,8 @@ const SCANNER_TOAST_MS=12000,SCAN_ALERT_PREF="rolyfe-terminal-browser-scan-alert
 function dismissScannerToast(){const el=document.getElementById("scanner-toast");if(el)el.classList.remove("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=null}
 function scannerCandidates(){
  const interval=selectedMarketInterval(),maxAge=({"1m":15,"5m":30,"10m":45,"15m":90,"1h":360,"4h":1200,"1d":7200,"1w":20000})[interval]||60,now=Date.now(),items=[];
- Object.entries(analysisCache).forEach(([key,r])=>{if(!key.endsWith("|"+interval)||now-r.time>CACHE_MS||!r||!Number.isFinite(r.lastBarTime))return;const ts=r.lastBarTime>1e12?r.lastBarTime:r.lastBarTime*1000,age=(now-ts)/60000;if(age<0||age>maxAge)return;const sniper=classifySniper(r);if(r.action!=="WAIT"||sniper.stage==="SNIPER CANDIDATE")items.push({symbol:r.symbol||key.split("|")[0],r,sniper,age})});
- return items.sort((a,b)=>(a.sniper.stage==="SNIPER CANDIDATE"?0:a.r.action!=="WAIT"?1:2)-(b.sniper.stage==="SNIPER CANDIDATE"?0:b.r.action!=="WAIT"?1:2)).slice(0,5)
+ Object.entries(analysisCache).forEach(([key,r])=>{if(!key.endsWith("|"+interval)||!r||now-r.time>CACHE_MS||!Number.isFinite(r.lastBarTime))return;const ts=r.lastBarTime>1e12?r.lastBarTime:r.lastBarTime*1000,age=(now-ts)/60000;if(age<0||age>maxAge)return;const sniper=classifySniper(r),studies=expandedStudyState(r),studySignal=studies.ready&&(studies.ppsUp||studies.ppsDown||studies.bullConfirmed||studies.bearConfirmed);if(r.action!=="WAIT"||sniper.stage==="SNIPER CANDIDATE"||studySignal)items.push({symbol:r.symbol||key.split("|")[0],r,sniper,age,studies,studySignal})});
+ return items.sort((a,b)=>(a.sniper.stage==="SNIPER CANDIDATE"?0:a.r.action!=="WAIT"?1:a.studySignal?2:3)-(b.sniper.stage==="SNIPER CANDIDATE"?0:b.r.action!=="WAIT"?1:b.studySignal?2:3)).slice(0,12)
 }
 function browserScanAlertsAllowed(){try{return localStorage.getItem(SCAN_ALERT_PREF)==="on"&&"Notification"in window&&Notification.permission==="granted"}catch(e){return false}}
 function enableBrowserScanAlerts(){
@@ -974,7 +973,7 @@ function showNextScannerToast(options={}){
  const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");
  if(!el||!body)return;const items=scannerCandidates();if(!items.length){if(options.symbol)showScannerStatusToast(options.symbol,selectedMarketInterval());else dismissScannerToast();return}
  const item=(options.symbol&&items.find(x=>x.symbol===options.symbol))||items[scannerRotation%items.length];scannerRotation++;
- body.textContent=item.symbol+" · "+item.sniper.stage+" · "+item.sniper.side+". RSI "+item.r.rsi.toFixed(1)+" · Stochastic "+item.r.stoch.toFixed(1)+" · "+item.age.toFixed(0)+" min from last bar.";
+ const st=item.studies||expandedStudyState(item.r),hmaText=st.ready?"HMA"+st.period+" "+(st.hmaBull?"BULLISH":st.hmaBear?"BEARISH":"MIXED"):"HMA not ready",ppsText=st.ready?(st.ppsUp?"PPS-style UP":st.ppsDown?"PPS-style DOWN":"PPS-style WAIT"):"PPS-style not ready";body.textContent=item.symbol+" · "+item.sniper.stage+" · "+item.sniper.side+". RSI "+(Number.isFinite(item.r.rsi)?item.r.rsi.toFixed(1):"—")+" · Stochastic "+(Number.isFinite(item.r.stoch)?item.r.stoch.toFixed(1):"—")+" · "+hmaText+" · "+ppsText+" · "+(st.ready?st.pullbackLabel:"Pullback not ready")+" · "+item.age.toFixed(0)+" min from last bar.";
  if(meta)meta.textContent="Fresh provider candles · "+items.length+" qualifying item(s) · no order sent";
  el.classList.add("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=setTimeout(dismissScannerToast,SCANNER_TOAST_MS);
  if(options.notify)sendBrowserScanAlert(item)

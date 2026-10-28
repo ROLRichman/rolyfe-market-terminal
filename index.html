@@ -217,6 +217,58 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 @media(max-width:650px){.utility-bar{padding:7px}.utility-bar select,.utility-bar input{max-width:none;flex:1 1 90px}.utility-clock{flex-basis:125px}.watch-controls{grid-template-columns:1fr 1fr}.watch-controls #add-symbol-input{grid-column:span 2}.trade-ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.item-wrap .item{min-height:40px}#ai-fab{right:10px;bottom:10px;width:58px;height:58px}#ai-panel{right:8px;bottom:78px}}
 
 .data-status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.data-status-copy{flex:1;min-width:220px}.data-status-row .secondary-button{flex:0 0 auto;white-space:nowrap}@media(max-width:560px){.data-status-row .secondary-button{width:100%}}</style>
+
+<style id="rol-chart-indicator-styles">
+#chart-workspace{order:-5;scroll-margin-top:12px}
+#chart-workspace .chart-inner{min-width:0!important;width:100%;max-width:100%}
+#chart-workspace #chart{width:100%;min-width:0!important;max-width:100%;height:480px}
+#chart-scan-sync{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:9px 0;border:1px solid #1c7951;border-radius:10px;background:linear-gradient(120deg,rgba(0,230,118,.1),rgba(7,15,25,.96))}
+#chart-scan-sync strong{color:#4ade80;font-size:12px;letter-spacing:.03em}
+#chart-scan-sync p{margin:4px 0 0;color:#bac8d8;font-size:11px;line-height:1.45}
+#chart-scan-sync .sync-actions{display:flex;gap:7px;flex-wrap:wrap}
+#chart-scan-sync button{min-height:36px;padding:7px 10px;font-size:11px}
+#chart-indicator-visuals{margin-top:10px;border:1px solid #24384c;border-radius:12px;overflow:hidden;background:#080d15}
+#chart-indicator-visuals>summary{padding:13px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:900;background:#101a27}
+#chart-indicator-visuals>summary span:last-child{font-size:10px;color:#9bb0c7;font-weight:700;text-align:right}
+#chart-indicator-visuals>.panel-body{padding:10px;display:grid;gap:9px}
+#chart-indicator-visuals .chart-indicator-intro{padding:10px;border:1px solid #26394e;border-radius:9px;background:#0d1622;color:#b7c7da;font-size:11px;line-height:1.6;margin:0}
+#chart-indicator-status{font-size:11px;line-height:1.5;color:#b3c2d5;padding:8px 10px;border-left:3px solid #64748b;background:#0b1420}
+#chart-indicator-status.good{border-color:#22c55e;color:#dcfce7}
+#chart-indicator-status.warn{border-color:#fbbf24;color:#fde68a}
+.rol-visual-drop{border:1px solid #26384d;border-radius:10px;overflow:hidden;background:#0b121c;min-width:0}
+.rol-visual-drop>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;padding:12px;font-size:12px;font-weight:900;color:#edf6ff}
+.rol-visual-drop>summary::-webkit-details-marker{display:none}
+.rol-visual-drop>summary:after{content:"＋";color:#4ade80;font-weight:900}
+.rol-visual-drop[open]>summary:after{content:"−"}
+.rol-visual-drop .visual-drop-meta{font-size:10px;font-weight:600;color:#94a3b8;text-align:right}
+.rol-visual-content{padding:9px 9px 11px;border-top:1px solid #1f3043}
+.rol-visual-reading{font-size:11px;line-height:1.5;color:#cbd5e1;margin:0 0 8px;overflow-wrap:anywhere}
+.rol-svg-chart{width:100%;height:auto;display:block;min-width:0;background:#070d14;border:1px solid #1d2c3d;border-radius:8px}
+.rol-visual-legend{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;padding:8px 2px 0;font-size:10px;color:#b5c5d8}
+.rol-visual-legend span{display:inline-flex;align-items:center;gap:5px}
+.rol-visual-legend i{display:inline-block;width:13px;height:3px;border-radius:4px}
+.rol-visual-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 9px}
+.rol-visual-settings label{display:grid;gap:4px;font-size:10px;line-height:1.4;color:#aebfd3}
+.rol-visual-settings input{width:100%;min-width:0;box-sizing:border-box;background:#080e16;color:#f1f5f9;border:1px solid #34465c;border-radius:7px;padding:8px;font-size:12px}
+#chart-linked-controls-slot{display:grid;gap:10px}
+#chart-linked-controls-slot>details{margin:0!important}
+#chart-linked-controls-slot .panel-summary{font-size:12px}
+#chart-workspace .chart-controls{gap:8px}
+#chart-workspace .chart-controls input{min-width:90px;flex:1}
+#chart-workspace .section{margin-top:8px}
+@media(max-width:650px){
+ #chart-workspace{padding:8px}
+ #chart-workspace #chart{height:430px}
+ #chart-scan-sync{align-items:flex-start}
+ #chart-scan-sync .sync-actions{width:100%}
+ #chart-scan-sync .sync-actions button{flex:1}
+ #chart-indicator-visuals>.panel-body{padding:7px}
+ .rol-visual-drop>summary{padding:11px 9px}
+ .rol-visual-content{padding:7px}
+ .rol-visual-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #chart-workspace .chart-controls{font-size:10px}
+}
+</style>
 </head>
 
 <body>
@@ -287,7 +339,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
  <div class="panel-body">
   <p class="learning-note">These readings use the selected symbol's validated provider candles where available. HMA defaults to 31 bars. PPS-style arrows are a transparent local reversal approximation, not the proprietary Thinkorswim PPS study.</p>
   <div class="indicator-guide">
-   <div class="indicator-mini"><b>Hull Moving Average (HMA)</b><p id="hma-reading">Waiting for valid candles…</p><p>Period <select id="hma-period" aria-label="HMA period" onchange="renderExpandedIndicators()"><option value="31" selected>31</option><option value="32">32</option></select></p><p id="hma-explain">Tap Retry data or load a supported symbol to calculate.</p></div>
+   <div class="indicator-mini"><b>Hull Moving Average (HMA)</b><p id="hma-reading">Waiting for valid candles…</p><p>Period <select id="hma-period" aria-label="HMA period" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"><option value="31" selected>31</option><option value="32">32</option></select></p><p id="hma-explain">Tap Retry data or load a supported symbol to calculate.</p></div>
    <div class="indicator-mini"><b>PPS-style reversal marker</b><p id="pps-reading">Waiting for valid candles…</p><p id="pps-explain">A local HMA/price reversal heuristic; not the licensed PPS study.</p></div>
    <div class="indicator-mini"><b>Pullback setup</b><p id="pullback-reading">Waiting for valid candles…</p><p id="pullback-explain">Transparent local approximation using a 50-period anchor and ATR proximity; this does not reproduce the proprietary script exactly.</p><details class="pullback-settings"><summary class="panel-summary">Pullback study settings from your screenshot</summary><div class="trade-ticket-grid">
    <label>Length<input id="pb-length" type="number" min="2" max="300" value="50" onchange="renderExpandedIndicators()"></label>
@@ -345,6 +397,28 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div id="chart"></div>
 </div>
 </div>
+<div id="chart-scan-sync" aria-live="polite">
+ <div><strong id="chart-sync-title">MAIN CHART ↔ INDICATOR GRAPHS</strong><p id="chart-sync-note">Main chart: TradingView. Visual studies below: calculated from the selected symbol's Tickerbot historical candles through the RO’Lyfe data service.</p></div>
+ <div class="sync-actions"><button type="button" onclick="retryCurrentData()">↻ Refresh chart + studies</button><button type="button" onclick="openPanel('chart-indicator-visuals')">📉 Open indicator graphs</button></div>
+</div>
+<details id="chart-indicator-visuals" open>
+ <summary><span>📉 INDICATOR VISUALS · DIRECTLY UNDER YOUR CHART</span><span id="chart-indicator-count">10 expandable study graphs</span></summary>
+ <div class="panel-body">
+  <p class="chart-indicator-intro"><b>What syncs with what:</b> the main TradingView chart and every graph below follow the symbol and timeframe selectors at the top of this page. The graph calculations use Tickerbot OHLCV candles requested through the RO’Lyfe Supabase data service. The chart's own internal symbol search is disabled so it cannot quietly drift away from the scan. <b>6M / 1Y / All</b> changes the TradingView display range; the scanner uses up to 300 candles at the selected timeframe. Quote/option-chain data is not included in these OHLCV graphs.</p>
+  <div id="chart-indicator-status" role="status" aria-live="polite">Waiting for a validated scan. Select a symbol/timeframe and refresh to populate these graphs.</div>
+  <details class="rol-visual-drop" id="visual-ema" open><summary><span>① EMA TREND · Close vs EMA 5 / 10 / 20 / 50 / 200</span><span class="visual-drop-meta">Price + trend averages</span></summary><div class="rol-visual-content"><p id="visual-ema-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-ema-graph"></div><div id="visual-ema-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-vwap"><summary><span>② VWAP · Price vs session-weighted average</span><span class="visual-drop-meta">Volume-weighted context</span></summary><div class="rol-visual-content"><p id="visual-vwap-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-vwap-graph"></div><div id="visual-vwap-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-rsi"><summary><span>③ RSI · Relative Strength Index</span><span class="visual-drop-meta">14 default · levels 30 / 50 / 70</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>RSI period<input id="visual-rsi-period" type="number" min="2" max="50" value="14" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-rsi-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-rsi-graph"></div><div id="visual-rsi-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-macd" open><summary><span>④ MACD · Line / Signal / Histogram</span><span class="visual-drop-meta">12 / 26 / 9 default</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>Fast EMA<input id="visual-macd-fast" type="number" min="2" max="50" value="12" onchange="renderChartIndicatorVisuals()"></label><label>Slow EMA<input id="visual-macd-slow" type="number" min="3" max="100" value="26" onchange="renderChartIndicatorVisuals()"></label><label>Signal<input id="visual-macd-signal" type="number" min="2" max="50" value="9" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-macd-reading" class="rol-visual-reading">Waiting for historical-bar scan.</p><div id="visual-macd-graph"></div><div id="visual-macd-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-stochastic" open><summary><span>⑤ STOCHASTIC · %K / %D</span><span class="visual-drop-meta">14 / 3 default · zones 20 / 80</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>Lookback %K<input id="visual-stoch-period" type="number" min="2" max="50" value="14" onchange="renderChartIndicatorVisuals()"></label><label>Smoothing %D<input id="visual-stoch-smooth" type="number" min="1" max="20" value="3" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-stochastic-reading" class="rol-visual-reading">Waiting for historical-bar scan.</p><div id="visual-stochastic-graph"></div><div id="visual-stochastic-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-cci"><summary><span>⑥ CCI · Commodity Channel Index</span><span class="visual-drop-meta">20 default · levels −100 / 0 / +100</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>CCI period<input id="visual-cci-period" type="number" min="2" max="60" value="20" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-cci-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-cci-graph"></div><div id="visual-cci-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-ttm"><summary><span>⑦ TTM SQUEEZE / MOMENTUM PROXY</span><span class="visual-drop-meta">Educational approximation</span></summary><div class="rol-visual-content"><p id="visual-ttm-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-ttm-graph"></div><div id="visual-ttm-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-hma"><summary><span>⑧ HMA + PPS-STYLE UP / DOWN MARKERS</span><span class="visual-drop-meta">HMA 31 default</span></summary><div class="rol-visual-content"><p id="visual-hma-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-hma-graph"></div><div id="visual-hma-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-pullback"><summary><span>⑨ RL PULLBACK · ATR BAND + EMA TRIGGERS</span><span class="visual-drop-meta">Your V4_5_13 reference settings</span></summary><div class="rol-visual-content"><p id="visual-pullback-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-pullback-graph"></div><div id="visual-pullback-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-volume"><summary><span>⑩ VOLUME · Current candle vs 20-bar average</span><span class="visual-drop-meta">Volume is not options-chain liquidity</span></summary><div class="rol-visual-content"><p id="visual-volume-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-volume-graph"></div><div id="visual-volume-legend" class="rol-visual-legend"></div></div></details>
+  <details id="chart-linked-controls"><summary class="panel-summary"><span>⚙️ Indicator settings, favorite studies &amp; learning controls</span><span class="panel-summary-meta">Applies below / in embedded chart as labelled</span></summary><div class="panel-body" id="chart-linked-controls-slot"></div></details>
+ </div>
+</details>
 
 <button onclick="toggleOptions('options')">💥 Options Ladder</button>
 <div id="options" class="option-box"></div>
@@ -445,6 +519,7 @@ let stopScanRequested=false;
 let activeScanSymbols=[];
 
 window.onload=()=>{
+ arrangeChartFirstLayout();
  refreshMasterWatchlist();const sel=document.getElementById("symbol-select");if(sel)sel.value=symbol;tf=document.getElementById("timeframe-select")?.value||"5";
  const group=document.getElementById("watch-group");if(group)group.value="liquid";
  try{setTerminalTheme(localStorage.getItem("rolyfe-terminal-theme")||"lyfe")}catch(e){setTerminalTheme("lyfe")}
@@ -465,6 +540,86 @@ function copyChartCoachPrompt(){const r=analysisCache[analysisKey(symbol,selecte
 function setChartHeight(v){const n=Math.max(380,Math.min(680,Number(v)||480));["chart","chart2"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.height=n+"px"});const label=document.getElementById("chart-height-label");if(label)label.textContent=n+"px"}
 function resetChartView(){const s=document.getElementById("chart-zoom");if(s)s.value="480";setChartHeight(480);loadChart()}
 
+
+function chartIntervalLabel(){return ({"1":"1m","5":"5m","10":"10m","15":"15m","60":"1H","240":"4H","D":"1D","W":"1W"})[tf]||selectedMarketInterval()}
+function setChartIndicatorStatus(message,kind=""){const el=document.getElementById("chart-indicator-status");if(el){el.textContent=message;el.className=kind}}
+function syncChartScanLink(result=null,message=""){const title=document.getElementById("chart-sync-title"),note=document.getElementById("chart-sync-note");if(title)title.textContent="MAIN CHART ↔ INDICATOR GRAPHS · "+symbol+" · "+chartIntervalLabel();if(note)note.textContent=message||("Main price chart: TradingView · symbol "+symbol+" · timeframe "+chartIntervalLabel()+". Indicator plots below: calculated from Tickerbot OHLCV candles requested through the RO’Lyfe Supabase data service for the same selected symbol/timeframe. Chart range "+chartRange+" affects the TradingView display only; scanner history is up to 300 candles.");}
+function arrangeChartFirstLayout(){
+ const workspace=document.getElementById("chart-workspace"),strip=document.getElementById("signal-strip"),slot=document.getElementById("chart-linked-controls-slot");
+ if(workspace&&strip&&workspace.previousElementSibling!==strip)strip.insertAdjacentElement("afterend",workspace);
+ const favourites=document.getElementById("indicator-dropdown"),expanded=document.getElementById("expanded-indicators");
+ if(slot&&favourites&&favourites.parentElement!==slot)slot.appendChild(favourites);
+ if(slot&&expanded&&expanded.parentElement!==slot)slot.appendChild(expanded);
+ const multi=document.getElementById("chart2")?.closest(".section");if(multi){const h=multi.querySelector("h3");if(h)h.textContent="Multi Chart · INDEPENDENT REFERENCE (NOT SCAN-SYNCED)";let note=multi.querySelector(".multi-chart-sync-note");if(!note){note=document.createElement("p");note.className="multi-chart-sync-note learning-note";h?.after(note);}note.textContent="This secondary chart can show a different symbol. It does not drive the main scan or the indicator graphs. Use the top symbol and timeframe selectors for the connected main chart.";const select=multi.querySelector("select");if(select&&!select.id)select.id="independent-chart-symbol";}
+}
+function indicatorFinite(v){return typeof v==="number"&&Number.isFinite(v)}
+function indicatorSma(values,period){const out=Array(values.length).fill(NaN),p=Math.max(1,Math.floor(Number(period)||1));for(let i=p-1;i<values.length;i++){const v=values.slice(i-p+1,i+1);if(v.every(indicatorFinite))out[i]=v.reduce((a,b)=>a+b,0)/p;}return out}
+function indicatorEmaWithGaps(values,period){const out=Array(values.length).fill(NaN),p=Math.max(1,Math.floor(Number(period)||1));let run=[],ema=NaN,alpha=2/(p+1);for(let i=0;i<values.length;i++){const v=values[i];if(!indicatorFinite(v)){run=[];ema=NaN;continue;}if(!indicatorFinite(ema)){run.push(v);if(run.length===p){ema=run.reduce((a,b)=>a+b,0)/p;out[i]=ema;}}else{ema=v*alpha+ema*(1-alpha);out[i]=ema;}}return out}
+function indicatorRsiSeries(values,period=14){const p=Math.max(2,Math.floor(Number(period)||14)),out=Array(values.length).fill(NaN);if(values.length<=p)return out;let gain=0,loss=0;for(let i=1;i<=p;i++){const d=values[i]-values[i-1];gain+=Math.max(0,d);loss+=Math.max(0,-d);}gain/=p;loss/=p;out[p]=loss===0?(gain===0?50:100):100-100/(1+gain/loss);for(let i=p+1;i<values.length;i++){const d=values[i]-values[i-1];gain=(gain*(p-1)+Math.max(0,d))/p;loss=(loss*(p-1)+Math.max(0,-d))/p;out[i]=loss===0?(gain===0?50:100):100-100/(1+gain/loss);}return out}
+function indicatorStochSeries(bars,period=14,smooth=3){const k=Array(bars.length).fill(NaN),p=Math.max(2,Math.floor(Number(period)||14));for(let i=p-1;i<bars.length;i++){const chunk=bars.slice(i-p+1,i+1),lo=Math.min(...chunk.map(b=>b.l)),hi=Math.max(...chunk.map(b=>b.h));if(hi>lo)k[i]=(bars[i].c-lo)/(hi-lo)*100;}return{k,d:indicatorSma(k,Math.max(1,Math.floor(Number(smooth)||3)))}}
+function indicatorMacdSeries(closes,fast=12,slow=26,signal=9){fast=Math.max(2,Math.floor(Number(fast)||12));slow=Math.max(fast+1,Math.floor(Number(slow)||26));signal=Math.max(2,Math.floor(Number(signal)||9));const f=emaSeries(closes,fast),sl=emaSeries(closes,slow),line=closes.map((_,i)=>indicatorFinite(f[i])&&indicatorFinite(sl[i])?f[i]-sl[i]:NaN),sig=indicatorEmaWithGaps(line,signal),hist=line.map((v,i)=>indicatorFinite(v)&&indicatorFinite(sig[i])?v-sig[i]:NaN);return{line,signal:sig,hist,fast,slow,signalPeriod:signal}}
+function indicatorCciSeries(bars,period=20){const p=Math.max(2,Math.floor(Number(period)||20)),typ=bars.map(b=>(b.h+b.l+b.c)/3),out=Array(bars.length).fill(NaN);for(let i=p-1;i<bars.length;i++){const w=typ.slice(i-p+1,i+1),avg=w.reduce((a,b)=>a+b,0)/p,dev=w.reduce((a,v)=>a+Math.abs(v-avg),0)/p;if(dev>0)out[i]=(typ[i]-avg)/(.015*dev);else out[i]=0;}return out}
+function indicatorAtrSeries(bars,period=14){const p=Math.max(2,Math.floor(Number(period)||14)),tr=bars.map((b,i)=>{const prev=i?bars[i-1].c:b.c;return Math.max(b.h-b.l,Math.abs(b.h-prev),Math.abs(b.l-prev))}),out=Array(bars.length).fill(NaN);if(tr.length<p)return out;let v=tr.slice(0,p).reduce((a,b)=>a+b,0)/p;out[p-1]=v;for(let i=p;i<tr.length;i++){v=((v*(p-1))+tr[i])/p;out[i]=v;}return out}
+function indicatorVwapSeries(bars){const out=Array(bars.length).fill(NaN);let key="",pv=0,vsum=0;bars.forEach((b,i)=>{const n=Number(b.t),ms=n>1e12?n:n*1000,d=Number.isFinite(ms)?new Date(ms).toISOString().slice(0,10):"unknown";if(d!==key){key=d;pv=0;vsum=0;}const vol=Number(b.v),typ=(b.h+b.l+b.c)/3;if(Number.isFinite(vol)&&vol>0){pv+=typ*vol;vsum+=vol;out[i]=pv/vsum;}});return out}
+function indicatorSqueezeSeries(bars,period=20){const closes=bars.map(b=>b.c),mean=indicatorSma(closes,period),atr=indicatorAtrSeries(bars,14),momentum=closes.map((v,i)=>indicatorFinite(mean[i])?v-mean[i]:NaN),squeeze=closes.map((_,i)=>{if(i<period-1||!indicatorFinite(atr[i]))return null;const w=closes.slice(i-period+1,i+1),m=mean[i],std=Math.sqrt(w.reduce((sum,v)=>sum+Math.pow(v-m,2),0)/period);return std*2<atr[i]*1.5});return{momentum,squeeze,mean,atr}}
+function indicatorEscape(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function indicatorTimeLabel(t){const n=Number(t),ms=n>1e12?n:n*1000;try{return new Date(ms).toLocaleString(undefined,{month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"})}catch(e){return "—"}}
+function indicatorFormat(v,format){if(!Number.isFinite(v))return "—";if(format==="price")return "$"+v.toFixed(v<1?4:2);if(format==="volume"){const a=Math.abs(v);return a>=1e9?(v/1e9).toFixed(1)+"B":a>=1e6?(v/1e6).toFixed(1)+"M":a>=1e3?(v/1e3).toFixed(1)+"K":v.toFixed(0);}return v.toFixed(Math.abs(v)>=100?0:2)}
+function renderIndicatorGraph(targetId,bars,options={}){
+ const node=document.getElementById(targetId);if(!node)return;
+ if(!Array.isArray(bars)||bars.length<3){node.innerHTML='<p class="rol-visual-reading">Waiting for enough validated historical candles.</p>';return;}
+ const width=620,height=212,left=48,right=12,top=13,bottom=29,plotW=width-left-right,plotH=height-top-bottom,count=Math.min(90,bars.length),offset=bars.length-count,visibleBars=bars.slice(offset),lines=(options.lines||[]).map(x=>({...x,values:x.values.slice(offset)})),cols=(options.columns||[]).map(x=>({...x,values:x.values.slice(offset)})),thresholds=options.thresholds||[];
+ let vals=[];lines.forEach(x=>x.values.forEach(v=>{if(indicatorFinite(v))vals.push(v)}));cols.forEach(x=>x.values.forEach(v=>{if(indicatorFinite(v))vals.push(v)}));thresholds.forEach(x=>{if(indicatorFinite(x.value))vals.push(x.value)});
+ let lo=Array.isArray(options.domain)?options.domain[0]:(vals.length?Math.min(...vals):0),hi=Array.isArray(options.domain)?options.domain[1]:(vals.length?Math.max(...vals):1);if(!Number.isFinite(lo)||!Number.isFinite(hi)){lo=0;hi=1;}if(hi===lo){const d=Math.max(1,Math.abs(hi)*.05);lo-=d;hi+=d;}else if(!Array.isArray(options.domain)){const pad=(hi-lo)*.08;lo-=pad;hi+=pad;}
+ const xAt=i=>left+(visibleBars.length<=1?0:i/(visibleBars.length-1))*plotW,yAt=v=>top+(hi-v)/(hi-lo)*plotH,scaleCount=4;
+ let svg='<svg class="rol-svg-chart" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+indicatorEscape(options.aria||options.title||"Technical indicator chart")+'"><title>'+indicatorEscape(options.title||"Technical indicator")+'</title>';
+ for(let i=0;i<=scaleCount;i++){const v=hi-(hi-lo)*i/scaleCount,y=top+plotH*i/scaleCount;svg+='<line x1="'+left+'" y1="'+y.toFixed(2)+'" x2="'+(width-right)+'" y2="'+y.toFixed(2)+'" stroke="#263648" stroke-width="1"/><text x="'+(left-6)+'" y="'+(y+3).toFixed(2)+'" fill="#91a5bd" font-size="10" text-anchor="end">'+indicatorEscape(indicatorFormat(v,options.format))+'</text>';}
+ thresholds.forEach(t=>{if(indicatorFinite(t.value)&&t.value>=lo&&t.value<=hi){const y=yAt(t.value);svg+='<line x1="'+left+'" y1="'+y.toFixed(2)+'" x2="'+(width-right)+'" y2="'+y.toFixed(2)+'" stroke="'+(t.color||"#64748b")+'" stroke-dasharray="4 4" opacity=".9"/>';if(t.label)svg+='<text x="'+(width-right-2)+'" y="'+(y-3).toFixed(2)+'" fill="'+(t.color||"#64748b")+'" font-size="9" text-anchor="end">'+indicatorEscape(t.label)+'</text>'; }});
+ const zero=options.zeroLine!==false&&lo<=0&&hi>=0?yAt(0):yAt(lo);
+ cols.forEach(c=>{const v=c.values,barW=Math.max(1,plotW/visibleBars.length*.66);v.forEach((val,i)=>{if(!indicatorFinite(val))return;const x=xAt(i)-barW/2,y=yAt(Math.max(lo,Math.min(hi,val))),base=zero,topY=Math.min(y,base),h=Math.max(1,Math.abs(base-y));const color=val>=0?(c.color||"#22c55e"):(c.negativeColor||"#fb7185");svg+='<rect x="'+x.toFixed(2)+'" y="'+topY.toFixed(2)+'" width="'+barW.toFixed(2)+'" height="'+h.toFixed(2)+'" fill="'+color+'" opacity=".78"/>';});});
+ lines.forEach(line=>{const v=line.values;if(line.marker){v.forEach((val,i)=>{if(!indicatorFinite(val))return;const x=xAt(i),y=yAt(val);if(line.marker==="up")svg+='<polygon points="'+x.toFixed(2)+','+(y-7).toFixed(2)+' '+(x-5).toFixed(2)+','+(y+3).toFixed(2)+' '+(x+5).toFixed(2)+','+(y+3).toFixed(2)+'" fill="'+line.color+'"/>';else if(line.marker==="down")svg+='<polygon points="'+x.toFixed(2)+','+(y+7).toFixed(2)+' '+(x-5).toFixed(2)+','+(y-3).toFixed(2)+' '+(x+5).toFixed(2)+','+(y-3).toFixed(2)+'" fill="'+line.color+'"/>';else svg+='<circle cx="'+x.toFixed(2)+'" cy="'+y.toFixed(2)+'" r="3.5" fill="'+line.color+'"/>';});return;}
+ let d="",pen=false;v.forEach((val,i)=>{if(!indicatorFinite(val)){pen=false;return;}d+=(pen?" L ":"M ")+xAt(i).toFixed(2)+" "+yAt(val).toFixed(2);pen=true;});if(d)svg+='<path d="'+d+'" fill="none" stroke="'+line.color+'" stroke-width="'+(line.width||2)+'" stroke-linejoin="round" stroke-linecap="round"/>';});
+ svg+='<text x="'+left+'" y="'+(height-8)+'" fill="#91a5bd" font-size="10">'+indicatorEscape(indicatorTimeLabel(visibleBars[0].t))+'</text><text x="'+(width-right)+'" y="'+(height-8)+'" fill="#91a5bd" font-size="10" text-anchor="end">'+indicatorEscape(indicatorTimeLabel(visibleBars[visibleBars.length-1].t))+'</text></svg>';
+ node.innerHTML=svg;
+ const legend=document.getElementById(targetId.replace("-graph","-legend"));if(legend){const parts=[];lines.filter(x=>!x.marker).forEach(x=>parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>'));cols.forEach(x=>parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>'));thresholds.forEach(x=>{if(x.label)parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>')});legend.innerHTML=parts.join("")}
+}
+function renderChartIndicatorVisuals(result=null,reason=""){
+ const activeSymbol=symbol,interval=selectedMarketInterval(),cached=analysisCache[analysisKey(activeSymbol,interval)],r=result||(cached&&Date.now()-cached.time<CACHE_MS?cached:null);
+ syncChartScanLink(r);
+ if(!r||r.symbol!==activeSymbol||r.interval!==interval||!Array.isArray(r.ohlcv)||r.ohlcv.length<3){setChartIndicatorStatus(reason||("Waiting for validated "+activeSymbol+" · "+chartIntervalLabel()+" Tickerbot candles. The visual graphs will appear here after a successful matching-symbol scan."),"warn");["ema","vwap","rsi","macd","stochastic","cci","ttm","hma","pullback","volume"].forEach(k=>{const graph=document.getElementById("visual-"+k+"-graph");if(graph)graph.innerHTML='<p class="rol-visual-reading">Waiting for a valid '+indicatorEscape(activeSymbol)+' · '+indicatorEscape(chartIntervalLabel())+' scan.</p>';const read=document.getElementById("visual-"+k+"-reading");if(read)read.textContent="Waiting for validated scan data.";const legend=document.getElementById("visual-"+k+"-legend");if(legend)legend.innerHTML="";});return}
+ const bars=r.ohlcv,closes=bars.map(b=>b.c),highs=bars.map(b=>b.h),lows=bars.map(b=>b.l),volumes=bars.map(b=>indicatorFinite(b.v)?b.v:NaN),priceLine={label:"Close",color:"#e5edf8",values:closes,width:2};
+ setChartIndicatorStatus("MATCHED DATA · "+r.symbol+" · "+chartIntervalLabel()+" · "+bars.length+" validated candles · last bar "+indicatorTimeLabel(r.lastBarTime)+". TradingView is the price chart; the graphs below are calculated from this same selected symbol/timeframe's Tickerbot bars.","good");
+ const ema5=emaSeries(closes,5),ema10=emaSeries(closes,10),ema20=emaSeries(closes,20),ema50=emaSeries(closes,50),ema200=emaSeries(closes,200);
+ const emaRead=document.getElementById("visual-ema-reading");if(emaRead)emaRead.textContent="Close "+indicatorFormat(closes.at(-1),"price")+" · EMA5 "+indicatorFormat(ema5.at(-1),"price")+" · EMA10 "+indicatorFormat(ema10.at(-1),"price")+" · EMA20 "+indicatorFormat(ema20.at(-1),"price")+" · EMA50 "+indicatorFormat(ema50.at(-1),"price")+" · EMA200 "+indicatorFormat(ema200.at(-1),"price")+". Lines use "+r.symbol+" "+chartIntervalLabel()+" candles.";
+ renderIndicatorGraph("visual-ema-graph",bars,{title:"Price and five EMA periods",aria:"Selected symbol price overlaid with EMA 5, 10, 20, 50 and 200",format:"price",lines:[priceLine,{label:"EMA 5",color:"#f59e0b",values:ema5},{label:"EMA 10",color:"#fb7185",values:ema10},{label:"EMA 20",color:"#a78bfa",values:ema20},{label:"EMA 50",color:"#22c55e",values:ema50},{label:"EMA 200",color:"#38bdf8",values:ema200}]});
+ const vwap=indicatorVwapSeries(bars),vwLast=vwap.at(-1),vwapRead=document.getElementById("visual-vwap-reading");if(vwapRead)vwapRead.textContent="Close "+indicatorFormat(closes.at(-1),"price")+" · timestamp-day VWAP proxy "+indicatorFormat(vwLast,"price")+". VWAP resets by UTC date from the returned timestamps; verify session reset against your chart platform.";
+ renderIndicatorGraph("visual-vwap-graph",bars,{title:"Close versus timestamp-day VWAP proxy",format:"price",lines:[priceLine,{label:"Timestamp-day VWAP proxy",color:"#4ade80",values:vwap}]});
+ const rsiPeriod=Math.max(2,Math.min(50,Number(document.getElementById("visual-rsi-period")?.value)||14)),rsiValues=indicatorRsiSeries(closes,rsiPeriod),rsiLast=rsiValues.at(-1);const rsiRead=document.getElementById("visual-rsi-reading");if(rsiRead)rsiRead.textContent="RSI("+rsiPeriod+") = "+indicatorFormat(rsiLast)+". Above 50 is stronger momentum context; 30/70 are reference zones, not automatic entries.";
+ renderIndicatorGraph("visual-rsi-graph",bars,{title:"RSI oscillator",format:"number",domain:[0,100],thresholds:[{value:70,label:"70",color:"#fb7185"},{value:50,label:"50",color:"#64748b"},{value:30,label:"30",color:"#4ade80"}],lines:[{label:"RSI("+rsiPeriod+")",color:"#a78bfa",values:rsiValues}]});
+ const macdFast=Math.max(2,Math.min(50,Number(document.getElementById("visual-macd-fast")?.value)||12)),macdSlow=Math.max(macdFast+1,Math.min(100,Number(document.getElementById("visual-macd-slow")?.value)||26)),macdSignal=Math.max(2,Math.min(50,Number(document.getElementById("visual-macd-signal")?.value)||9)),macd=indicatorMacdSeries(closes,macdFast,macdSlow,macdSignal),macdLast=macd.line.at(-1),sigLast=macd.signal.at(-1),histLast=macd.hist.at(-1),macdRead=document.getElementById("visual-macd-reading");if(macdRead)macdRead.textContent="MACD "+indicatorFormat(macdLast)+" · Signal "+indicatorFormat(sigLast)+" · Histogram "+indicatorFormat(histLast)+". "+(indicatorFinite(histLast)?histLast>0?"Histogram above zero.":"Histogram below zero.":"Waiting for enough bars for the selected periods.");
+ renderIndicatorGraph("visual-macd-graph",bars,{title:"MACD line signal and histogram",format:"number",thresholds:[{value:0,label:"Zero",color:"#64748b"}],columns:[{label:"Histogram",values:macd.hist,color:"#22c55e",negativeColor:"#fb7185"}],lines:[{label:"MACD line",color:"#38bdf8",values:macd.line},{label:"Signal",color:"#f59e0b",values:macd.signal}]});
+ const stochPeriod=Math.max(2,Math.min(50,Number(document.getElementById("visual-stoch-period")?.value)||14)),stochSmooth=Math.max(1,Math.min(20,Number(document.getElementById("visual-stoch-smooth")?.value)||3)),stoch=indicatorStochSeries(bars,stochPeriod,stochSmooth),stochK=stoch.k.at(-1),stochD=stoch.d.at(-1),stochRead=document.getElementById("visual-stochastic-reading");if(stochRead)stochRead.textContent="%K "+indicatorFormat(stochK)+" · %D "+indicatorFormat(stochD)+". 80/20 are zones; interpret crossovers with trend direction.";
+ renderIndicatorGraph("visual-stochastic-graph",bars,{title:"Stochastic %K and %D",format:"number",domain:[0,100],thresholds:[{value:80,label:"80",color:"#fb7185"},{value:50,label:"50",color:"#64748b"},{value:20,label:"20",color:"#4ade80"}],lines:[{label:"%K("+stochPeriod+")",color:"#38bdf8",values:stoch.k},{label:"%D("+stochSmooth+")",color:"#f59e0b",values:stoch.d}]});
+ const cciPeriod=Math.max(2,Math.min(60,Number(document.getElementById("visual-cci-period")?.value)||20)),cciValues=indicatorCciSeries(bars,cciPeriod),cciLast=cciValues.at(-1),cciRead=document.getElementById("visual-cci-reading");if(cciRead)cciRead.textContent="CCI("+cciPeriod+") = "+indicatorFormat(cciLast)+". +100/−100 represent elevated positive/negative deviation; values can remain extreme in a trend.";
+ const cciAbs=Math.max(150,Math.min(300,Math.ceil(Math.max(100,...cciValues.filter(indicatorFinite).slice(-90).map(v=>Math.abs(v)))/50)*50));
+ renderIndicatorGraph("visual-cci-graph",bars,{title:"CCI oscillator",format:"number",domain:[-cciAbs,cciAbs],thresholds:[{value:100,label:"+100",color:"#4ade80"},{value:0,label:"0",color:"#64748b"},{value:-100,label:"−100",color:"#fb7185"}],lines:[{label:"CCI("+cciPeriod+")",color:"#f59e0b",values:cciValues}]});
+ const squeeze=indicatorSqueezeSeries(bars),sq=squeeze.squeeze.at(-1),momentum=squeeze.momentum.at(-1),ttmRead=document.getElementById("visual-ttm-reading");if(ttmRead)ttmRead.textContent="Squeeze proxy: "+(sq===null?"unavailable":sq?"ON":"OFF")+" · momentum proxy "+indicatorFormat(momentum)+". This is an educational BB-width / ATR proxy, not an exact TTM Squeeze implementation.";
+ const momAbs=Math.max(.01,...squeeze.momentum.filter(indicatorFinite).slice(-90).map(v=>Math.abs(v)))*1.1;
+ renderIndicatorGraph("visual-ttm-graph",bars,{title:"Momentum proxy histogram",format:"price",domain:[-momAbs,momAbs],thresholds:[{value:0,label:"Zero",color:"#64748b"}],columns:[{label:"Momentum proxy (close − SMA20)",values:squeeze.momentum,color:"#22c55e",negativeColor:"#fb7185"}]});
+ const hmaPeriod=Math.max(2,Math.min(100,Number(document.getElementById("hma-period")?.value)||31)),hma=hmaSeries(closes,hmaPeriod),upMarks=Array(bars.length).fill(NaN),downMarks=Array(bars.length).fill(NaN);for(let i=1;i<bars.length;i++){if(indicatorFinite(hma[i])&&indicatorFinite(hma[i-1])&&closes[i]>hma[i]&&closes[i-1]<=hma[i-1])upMarks[i]=closes[i];if(indicatorFinite(hma[i])&&indicatorFinite(hma[i-1])&&closes[i]<hma[i]&&closes[i-1]>=hma[i-1])downMarks[i]=closes[i];}
+ const hmaRead=document.getElementById("visual-hma-reading");if(hmaRead)hmaRead.textContent="HMA("+hmaPeriod+") "+indicatorFormat(hma.at(-1),"price")+" · "+(closes.at(-1)>hma.at(-1)&&hma.at(-1)>hma.at(-2)?"BULLISH SLOPE":closes.at(-1)<hma.at(-1)&&hma.at(-1)<hma.at(-2)?"BEARISH SLOPE":"MIXED")+" · arrows mark local close/HMA crossings (not proprietary PPS).";
+ renderIndicatorGraph("visual-hma-graph",bars,{title:"HMA close cross and PPS-style markers",format:"price",lines:[priceLine,{label:"HMA("+hmaPeriod+")",color:"#4ade80",values:hma},{label:"PPS-style UP markers",color:"#22c55e",values:upMarks,marker:"up"},{label:"PPS-style DOWN markers",color:"#fb7185",values:downMarks,marker:"down"}]});
+ const pbLength=Math.max(2,Math.min(300,Number(document.getElementById("pb-length")?.value)||50)),pbMultiplier=Math.max(.1,Math.min(10,Number(document.getElementById("pb-multiplier")?.value)||1.5)),pbBuyEma=Math.max(1,Math.min(100,Number(document.getElementById("pb-buy-ema")?.value)||1)),pbSellEma=Math.max(2,Math.min(300,Number(document.getElementById("pb-sell-ema")?.value)||13)),upRaw=document.getElementById("pb-vol-up")?.value,downRaw=document.getElementById("pb-vol-down")?.value,pbVolUp=Math.max(0,Number(upRaw===""||upRaw===undefined?100:upRaw)),pbVolDown=Math.max(0,Number(downRaw===""||downRaw===undefined?100:downRaw)),anchor=emaSeries(closes,pbLength),buyEma=emaSeries(closes,pbBuyEma),sellEma=emaSeries(closes,pbSellEma),atr=indicatorAtrSeries(bars,14),upper=anchor.map((v,i)=>indicatorFinite(v)&&indicatorFinite(atr[i])?v+pbMultiplier*atr[i]:NaN),lower=anchor.map((v,i)=>indicatorFinite(v)&&indicatorFinite(atr[i])?v-pbMultiplier*atr[i]:NaN),pbUp=Array(bars.length).fill(NaN),pbDown=Array(bars.length).fill(NaN);
+ let pbLast="No aligned pullback setup · WAIT";
+ for(let i=1;i<bars.length;i++){const near=indicatorFinite(anchor[i])&&indicatorFinite(atr[i])&&atr[i]>0&&Math.abs(closes[i]-anchor[i])<=pbMultiplier*atr[i],chg=indicatorFinite(volumes[i])&&indicatorFinite(volumes[i-1])&&volumes[i-1]>0?((volumes[i]-volumes[i-1])/volumes[i-1])*100:NaN,bull=near&&buyEma[i]>=anchor[i]&&buyEma[i]>sellEma[i]&&buyEma[i]>closes[i-1]&&indicatorFinite(chg)&&chg>=pbVolUp,bear=near&&buyEma[i]<=anchor[i]&&buyEma[i]<sellEma[i]&&buyEma[i]<closes[i-1]&&indicatorFinite(chg)&&chg<=-pbVolDown;if(bull)pbUp[i]=closes[i];if(bear)pbDown[i]=closes[i];if(i===bars.length-1&&(bull||bear))pbLast=(bull?"BULLISH":"BEARISH")+" PULLBACK WATCH · volume "+indicatorFormat(chg)+"% change gate met.";}
+ if(document.getElementById("pb-show-label")?.checked===false)pbLast=pbUp.at(-1)||pbDown.at(-1)?"PULLBACK WATCH":"WAIT";
+ const pbRead=document.getElementById("visual-pullback-reading");if(pbRead)pbRead.textContent="Anchor EMA"+pbLength+" "+indicatorFormat(anchor.at(-1),"price")+" · ATR14 "+indicatorFormat(atr.at(-1),"price")+" · band ±"+pbMultiplier+"×ATR · buy EMA "+pbBuyEma+" / sell EMA "+pbSellEma+" · spread cap $"+(document.getElementById("pb-spread-limit")?.value||"0.09")+" (not verifiable from candle data). "+pbLast;
+ renderIndicatorGraph("visual-pullback-graph",bars,{title:"Configured pullback EMA and ATR bands",format:"price",lines:[priceLine,{label:"EMA anchor",color:"#38bdf8",values:anchor},{label:"Upper ATR band",color:"#64748b",values:upper},{label:"Lower ATR band",color:"#64748b",values:lower},{label:"Bullish pullback markers",color:"#22c55e",values:pbUp,marker:"up"},{label:"Bearish pullback markers",color:"#fb7185",values:pbDown,marker:"down"}]});
+ const avgVolume=indicatorSma(volumes,20),vLast=volumes.at(-1),avgLast=avgVolume.at(-1),volRead=document.getElementById("visual-volume-reading");if(volRead)volRead.textContent="Latest candle volume "+indicatorFormat(vLast,"volume")+" · 20-bar mean "+indicatorFormat(avgLast,"volume")+" · "+(indicatorFinite(vLast)&&indicatorFinite(avgLast)&&avgLast>0?(vLast/avgLast).toFixed(2)+"× average":"volume unavailable")+". This is underlying share/coin volume, not options-chain liquidity.";
+ renderIndicatorGraph("visual-volume-graph",bars,{title:"Latest OHLCV volume versus 20-bar average",format:"volume",columns:[{label:"Bar volume",values:volumes,color:"#38bdf8",negativeColor:"#38bdf8"}],lines:[{label:"20-bar average",color:"#f59e0b",values:avgVolume}]});
+ const count=document.getElementById("chart-indicator-count");if(count)count.textContent="10 graph dropdowns · "+r.symbol+" · "+chartIntervalLabel();
+}
+
 /* CHARTS */
 function loadChart(){
   const chart=document.getElementById("chart");
@@ -472,7 +627,15 @@ function loadChart(){
   renderWatchlist();
   renderHeatmap();
   renderSignalSchool();
-  analyzeSymbol(symbol).then(renderSignalSchool);
+  const requestedSymbol=symbol,requestedInterval=selectedMarketInterval();
+  syncChartScanLink(null,"Loading matching scan data for "+requestedSymbol+" · "+chartIntervalLabel()+". The graphs below will only show data validated for this selection.");
+  renderChartIndicatorVisuals(null,"Loading provider candles for "+requestedSymbol+" · "+chartIntervalLabel()+"…");
+  analyzeSymbol(requestedSymbol).then(result=>{
+    if(symbol!==requestedSymbol||selectedMarketInterval()!==requestedInterval)return;
+    renderSignalSchool();
+    if(result&&result.symbol===requestedSymbol&&result.interval===requestedInterval)renderChartIndicatorVisuals(result);
+    else{const msg=document.getElementById("data-status")?.textContent||"No matching scan data.";syncChartScanLink(null,"NO MATCHING SCAN · "+msg);renderChartIndicatorVisuals(null,"No matching "+requestedSymbol+" · "+chartIntervalLabel()+" scan. "+msg);}
+  });
   if(typeof TradingView==="undefined"){
     if(chart) chart.textContent="Chart provider unavailable. The signal/data panels can still report provider status.";
     return;
@@ -484,7 +647,7 @@ function loadChart(){
       interval:tf,
       range:chartRange,
       theme:"dark",
-      allow_symbol_change:true,
+      allow_symbol_change:false,
       autosize:true,
       studies:selectedChartStudies()
     });
@@ -526,6 +689,7 @@ function analysisKey(sym, interval=selectedMarketInterval()){
   return sym+"|"+interval;
 }
 function buildSignal(sym){ return signals[analysisKey(sym)] || "WAIT"; }
+function normalizeMarketSymbol(value){return String(value||"").trim().toUpperCase().split(":").pop().replace(/[-_\/](USD|USDT)$/,"").replace(/(USDT|USD)$/,"").replace(/\.US$/,"");}
 function tickerbotSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "X:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);return m?"X:"+m[1]+"USD":sym}
 function chartSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "COINBASE:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);if(m)return "COINBASE:"+m[1]+"USD";const map={"ES1!":"CME_MINI:ES1!","NQ1!":"CME_MINI:NQ1!","YM1!":"CBOT_MINI:YM1!","RTY1!":"CME_MINI:RTY1!","MES1!":"CME_MINI:MES1!","MNQ1!":"CME_MINI:MNQ1!","MYM1!":"CBOT_MINI:MYM1!","M2K1!":"CME_MINI:M2K1!"};return map[sym]||sym}
 function rsi14(closes){
@@ -674,6 +838,8 @@ async function analyzeSymbol(sym,options={}){
       data=await response.json();
     }finally{clearTimeout(timeoutId);}
     if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+    const reportedSymbol=data.symbol?normalizeMarketSymbol(data.symbol):normalizeMarketSymbol(sym),expectedSymbol=normalizeMarketSymbol(tickerbotSymbol(sym));
+    if(reportedSymbol!==expectedSymbol)throw new Error("SYMBOL MISMATCH: selected "+sym+" but Tickerbot reported "+data.symbol+". This response was rejected; no indicators will be shown from a different ticker. Re-select "+sym+" and retry.");
     if(!Array.isArray(data.bars)||data.bars.length<15)throw new Error("Not enough provider candles to calculate indicators.");
     let bars=data.bars.map(b=>({t:Number(b.t),o:Number(b.o),h:Number(b.h),l:Number(b.l),c:Number(b.c),v:b.v!==null&&b.v!==undefined&&Number.isFinite(Number(b.v))?Number(b.v):null}))
       .filter(b=>Number.isFinite(b.t)&&Number.isFinite(b.o)&&Number.isFinite(b.h)&&Number.isFinite(b.l)&&Number.isFinite(b.c)&&b.o>0&&b.c>0&&b.h>=b.l&&b.h>=Math.max(b.o,b.c)&&b.l<=Math.min(b.o,b.c));
@@ -686,7 +852,7 @@ async function analyzeSymbol(sym,options={}){
     const snap=calculateSnapshot(bars);
     if(!Number.isFinite(snap.rsi)||!Number.isFinite(snap.stoch))throw new Error("Indicator calculation unavailable for this data.");
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
-    const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
+    const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
     const expandedAlert=expandedStudyState(result);if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE"||(expandedAlert.ready&&(expandedAlert.ppsUp||expandedAlert.ppsDown||expandedAlert.bullConfirmed||expandedAlert.bearConfirmed)))showNextScannerToast({symbol:sym,notify:true});
     else if(updateMain)showScannerStatusToast(sym,interval);

@@ -61,3 +61,12 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - Existing RTIC score logic remains unchanged by the added HMA, PPS-style and pullback rows. These rows are contextual, non-scoring indicators. Scores, stale/missing data and unverified quotes are not trade instructions.
 - Review branch: `feature/expanded-indicators-oct-2026`. Changes are not live on the default branch until reviewed and merged.
 - Validation note: the source changes were inspected for insertion points and expected feature markers; the live provider/CORS connection and real phone notification delivery still require in-browser testing after review.
+
+
+## Main chart + linked visual indicator suite (2026-10-28)
+- Moved the main chart workspace to immediately below the compact selected-symbol status strip so users reach the chart before the lower watchlist, signal-school and trade-planning sections.
+- Added ten expandable visual graph panels directly beneath the main TradingView chart: EMA 5/10/20/50/200 overlays, timestamp-day VWAP proxy, RSI, MACD line/signal/histogram (12/26/9 defaults), Stochastic %K/%D (14/3), CCI, an explicitly approximate TTM Squeeze/momentum proxy, HMA plus local PPS-style cross markers, the RL pullback ATR-band setup and volume versus its 20-bar mean.
+- Graphs recalculate from the matching selected symbol/timeframe's Tickerbot historical candles returned through the RO'Lyfe Supabase data service. Chart range (6M/1Y/All) changes the TradingView display range; selected timeframe controls scanner bars. A separate Multi Chart is labelled independent and does not drive the main scan.
+- Moved Favorite Indicators controls and the HMA/PPS-style/pullback/option learning panel below the chart inside the chart-linked controls accordion.
+- Disabled independent symbol changes inside the main TradingView widget so the top symbol selector remains the source of truth. Added a provider returned-symbol guard; a mismatched response (e.g. requested SPY but provider says AAPL) is rejected and no indicator graphs are shown for that response.
+- Mobile styling keeps graphs within screen width with SVG plots. The graphs are source-checked for JavaScript syntax; actual browser rendering/provider data freshness still requires manual testing.

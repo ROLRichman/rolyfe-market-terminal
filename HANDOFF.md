@@ -87,3 +87,10 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - Added common exchange mappings for futures, FX pairs, VIX, DXY, S&P 500 and Nasdaq indices. Symbol availability still depends on TradingView entitlement and exchange notation.
 - Main scan and its connected indicator graphs remain separate; Multi Chart symbol selection doesn't change the main scan's ticker.
 - The secondary chart supports refresh, normal height slider/reset, full-screen mode, a dedicated full-screen height slider, collapsible controls, and Escape to close.
+
+
+## Scroll-aware terminal shortcuts (2026-10-28)
+- Added a floating quick-navigation rail that appears after the user scrolls beyond 420px, with one-tap **Top** and **Main Chart + Indicator Graphs** actions.
+- Added the same explicit shortcuts to the slide-out Terminal menu, including a dedicated link to open the Indicator Visuals accordion.
+- The chart shortcut opens the indicator graph accordion and scrolls to the main chart; it closes Multi Chart full-screen first if that overlay is active.
+- JavaScript source syntax passed. Mobile appearance still requires an in-browser/device check.

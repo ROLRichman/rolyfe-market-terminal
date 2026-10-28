@@ -781,10 +781,11 @@ function refreshMultiChartIndicatorVisuals(sym=multiChartSymbol(),intervalOverri
 function bindMultiChartWidgetEvents(widget){
  if(!widget)return;
  const bind=()=>{
+  if(widget!==multiFullscreenWidgetInstance)return;
   let chart;try{chart=typeof widget.activeChart==="function"?widget.activeChart():null;}catch(e){chart=null;}
   if(!chart)return;
   try{const subscription=chart.onSymbolChanged?.();subscription?.subscribe?.(null,info=>{
-   if(!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
+   if(widget!==multiFullscreenWidgetInstance||!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
    const raw=String(info?.ticker||info?.name||"").trim().toUpperCase().split(":").pop();
    if(!/^[A-Z0-9.^=_!/-]{1,24}$/.test(raw)||raw===multiChartSymbol())return;
    const field=document.getElementById("independent-chart-symbol");if(field)field.value=raw;
@@ -792,7 +793,7 @@ function bindMultiChartWidgetEvents(widget){
    refreshMultiChartIndicatorVisuals(raw,multiChartIndicatorInterval||selectedMarketInterval());
   });}catch(e){}
   try{const subscription=chart.onIntervalChanged?.();subscription?.subscribe?.(null,interval=>{
-   if(!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
+   if(widget!==multiFullscreenWidgetInstance||!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
    const next=intervalFromTradingView(interval);if(!next||next===(multiChartIndicatorInterval||selectedMarketInterval()))return;
    multiChartIndicatorInterval=next;
    const label=document.getElementById("multi-chart-indicator-status-short");if(label)label.textContent="Timeframe changed · "+next+" · refreshing indicators…";
@@ -820,7 +821,7 @@ function loadMultiFullscreenWidget(sym){
  }catch(error){target.textContent="Full-screen chart could not load. Use Refresh to try again."}
 }
 function openMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";multiChartIndicatorInterval=selectedMarketInterval();const slider=document.getElementById("multi-fullscreen-height");if(slider)slider.value="600";setMultiFullscreenHeight(600);moveMultiChartIndicatorsIntoFullscreen();loadMultiFullscreenWidget(multiChartSymbol());refreshMultiChartIndicatorVisuals(multiChartSymbol(),multiChartIndicatorInterval)}
-function closeMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";const target=document.getElementById("multi-chart-fullscreen-widget");if(target)target.innerHTML="";restoreMultiChartIndicatorsToMain()}
+function closeMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";multiFullscreenWidgetInstance=null;const target=document.getElementById("multi-chart-fullscreen-widget");if(target)target.innerHTML="";restoreMultiChartIndicatorsToMain()}
 function toggleMultiChartControls(){const controls=document.getElementById("multi-fullscreen-controls"),button=document.getElementById("multi-controls-toggle");if(!controls||!button)return;const collapsed=controls.classList.toggle("collapsed");button.textContent=collapsed?"⌃ Show controls":"⌄ Collapse controls";button.setAttribute("aria-expanded",String(!collapsed))}
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMultiChartFullscreen()});
 

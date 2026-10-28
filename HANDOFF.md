@@ -70,3 +70,20 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - Moved Favorite Indicators controls and the HMA/PPS-style/pullback/option learning panel below the chart inside the chart-linked controls accordion.
 - Disabled independent symbol changes inside the main TradingView widget so the top symbol selector remains the source of truth. Added a provider returned-symbol guard; a mismatched response (e.g. requested SPY but provider says AAPL) is rejected and no indicator graphs are shown for that response.
 - Mobile styling keeps graphs within screen width with SVG plots. The graphs are source-checked for JavaScript syntax; actual browser rendering/provider data freshness still requires manual testing.
+
+
+## Multi Chart fullscreen workflow (2026-10-28)
+- Preserved the main chart and its ten chart-linked indicator graphs unchanged.
+- The secondary chart remains explicitly independent of the main scan. Added a labelled independent-symbol selector, refresh action, and compact chart-height slider.
+- Added a full-viewport Multi Chart workspace with its own TradingView chart, adjustable chart-height slider, reset, refresh, close/Escape behavior, and collapsible controls row to reclaim vertical space.
+- Fullscreen Multi Chart loads the current enabled chart studies plus RSI, MACD, and Stochastic in the TradingView widget. Chart zoom/crosshair/timeframe/drawing interactions are provided by TradingView; the Terminal slider changes the chart viewing height.
+- Fullscreen symbol selection is seeded from the independent Multi Chart selector and does not change the main scan symbol. The multi-chart refresh reloads the independent chart only.
+- Validation: inline JavaScript syntax checked after changes. Full live-browser interaction and TradingView symbol/widget entitlement still require manual confirmation.
+
+
+## Multi Chart symbol search and expanded quick watchlist (2026-10-28)
+- Expanded the independent Multi Chart selector from seven hard-coded tickers to a searchable ticker input with a datalist of 100+ stock, ETF, sector, crypto, FX, index and futures suggestions, plus a quick-pick menu.
+- Manual symbol entry supports Enter or the "Load ticker" button and then refreshes the independent chart. The Multi Chart's embedded TradingView widget and full-screen widget both expose TradingView's native symbol search.
+- Added common exchange mappings for futures, FX pairs, VIX, DXY, S&P 500 and Nasdaq indices. Symbol availability still depends on TradingView entitlement and exchange notation.
+- Main scan and its connected indicator graphs remain separate; Multi Chart symbol selection doesn't change the main scan's ticker.
+- The secondary chart supports refresh, normal height slider/reset, full-screen mode, a dedicated full-screen height slider, collapsible controls, and Escape to close.

@@ -50,3 +50,14 @@ Mobile-first, stock-first market research cockpit for multi-asset watchlists, pr
 
 ## Safety / scope
 Educational decision support only. Not financial, investment, legal, tax, lending or trading advice. No guarantees, no broker order routing, and no automated execution. The user makes all final decisions and places any order in their brokerage platform.
+
+
+## Expanded indicator + scan-alert update (feature branch, 2026-10-28)
+- Added an HMA(31/32) reading, locally calculated PPS-style HMA-cross markers, and a configurable pullback proxy to the Terminal's indicator lab and scan candidate context.
+- Captured the user's RL_Pull_Back_V4_5_13 reference settings: length 50, multiplier 1.5, buy EMA 1, sell EMA 13, volume-change thresholds +100% / −100%, spread limit 0.09, labels enabled, arrow placement UP. The local pullback is an explicitly labeled approximation, not a claim to replicate the proprietary Thinkorswim script.
+- Added IV, optional IV Rank/Percentile, position intent (buy/sell), expiration/DTE, premium debit/credit and expiration breakeven worksheet. Values must be entered from a current options chain; this page does not fetch a live options chain or infer IV from stock candles.
+- Repositioned scanner status as a viewport-pinned mobile-safe toast. Every completed valid scan shows an on-screen outcome; a directional setup may trigger a richer scan toast that includes HMA/PPS-style/pullback context.
+- Optional browser/phone notifications are opt-in, require the user's click and browser permission, and only notify when directional context is bullish or bearish. They are not background monitoring when the tab is closed and never submit orders.
+- Existing RTIC score logic remains unchanged by the added HMA, PPS-style and pullback rows. These rows are contextual, non-scoring indicators. Scores, stale/missing data and unverified quotes are not trade instructions.
+- Review branch: `feature/expanded-indicators-oct-2026`. Changes are not live on the default branch until reviewed and merged.
+- Validation note: the source changes were inspected for insertion points and expected feature markers; the live provider/CORS connection and real phone notification delivery still require in-browser testing after review.

@@ -280,13 +280,16 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 
 .multi-chart-label{display:block;color:#a9bdd2;font-size:12px;font-weight:800;margin:10px 0 5px}.multi-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.multi-chart-actions button,.multi-chart-size-controls button{min-height:38px}.multi-chart-size-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.multi-chart-size-controls input[type=range]{flex:1;min-width:120px}.multi-fullscreen{display:none;position:fixed;inset:0;z-index:100000;background:#05080d;color:#f8fafc;padding:10px;overflow:auto;overscroll-behavior:contain}.multi-fullscreen.open{display:block}.multi-fullscreen-shell{width:100%;max-width:1800px;margin:0 auto}.multi-fullscreen-header{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px;background:#0b1420;border:1px solid #243449;border-radius:12px}.multi-fullscreen-header strong{font-size:13px;letter-spacing:.04em}.multi-fullscreen-header p{margin:4px 0 0;font-size:11px;color:#a9bdd2}.multi-fullscreen-actions{display:flex;flex-wrap:wrap;gap:7px}.multi-fullscreen-actions button,.multi-fullscreen-controls button{min-height:38px;padding:8px 12px}.multi-fullscreen-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 4px}.multi-fullscreen-controls label{font-size:12px;font-weight:800}.multi-fullscreen-controls input[type=range]{flex:1;min-width:130px}.multi-fullscreen-controls p{flex-basis:100%;margin:0;color:#9fb2c7;font-size:11px;line-height:1.5}.multi-fullscreen-controls.collapsed{display:none}.multi-fullscreen-widget{width:100%;min-height:320px;resize:vertical;overflow:hidden;border:1px solid #26384d;border-radius:10px;background:#0b1220}.multi-fullscreen-studies{margin-top:10px;border:1px solid #26384d;border-radius:10px;background:#0b1420}.multi-fullscreen-studies summary{padding:12px;cursor:pointer;font-weight:800}.multi-fullscreen-studies p{padding:0 12px 12px;margin:0;color:#a9bdd2;font-size:12px;line-height:1.6}.multi-fullscreen.open~*{pointer-events:none}@media(max-width:600px){.multi-fullscreen{padding:5px}.multi-fullscreen-header{align-items:flex-start;padding:8px}.multi-fullscreen-actions{width:100%}.multi-fullscreen-actions button{flex:1;font-size:11px;padding:7px}.multi-fullscreen-controls{gap:7px}.multi-fullscreen-widget{min-height:360px}}
 
-/* Scroll-aware jump controls for the chart-first workflow */
-.terminal-scroll-shortcuts{position:fixed;right:10px;top:54%;transform:translate(12px,-50%);z-index:1050;display:flex;flex-direction:column;gap:7px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s;background:rgba(5,13,22,.96);border:1px solid #31506a;border-radius:13px;padding:6px;box-shadow:0 8px 26px #0008;backdrop-filter:blur(10px)}
-.terminal-scroll-shortcuts.visible{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}
-.terminal-scroll-shortcuts button{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-height:40px;min-width:40px;width:100%;margin:0;padding:8px 10px;border-radius:8px;background:#102219;border:1px solid #24533e;color:#e9fff3;font-size:12px;font-weight:850;white-space:nowrap}
-.terminal-scroll-shortcuts button:first-child{background:#102033;border-color:#31506a}
-.terminal-scroll-shortcuts button:focus-visible{outline:2px solid #4ade80;outline-offset:2px}
-@media(max-width:600px){.terminal-scroll-shortcuts{right:5px;padding:4px;gap:5px;top:58%}.terminal-scroll-shortcuts button{min-height:38px;padding:8px;font-size:11px}.terminal-scroll-shortcuts button span{max-width:92px;white-space:normal;text-align:left;line-height:1.15}}
+
+/* The RTIC graph set is moved into Multi Chart full-screen without duplicating its DOM IDs. */
+#multi-chart-indicator-dock #chart-indicator-visuals{display:block!important;margin:0;border:0;background:transparent}
+#multi-chart-indicator-dock #chart-indicator-visuals>summary{display:none}
+#multi-chart-indicator-dock #chart-indicator-visuals>.panel-body{padding:0;gap:9px}
+#multi-chart-indicator-dock .chart-indicator-intro{margin-top:0}
+#multi-chart-indicator-accordion{margin-top:12px}
+#multi-chart-indicator-accordion>summary{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+#multi-chart-indicator-accordion>summary span{font-size:11px;color:#9cb2c8;font-weight:800}
+.multi-chart-indicator-note{margin:10px 0;color:#9cb2c8;font-size:12px;line-height:1.55}
 </style>
 </head>
 
@@ -294,17 +297,13 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div id="app">
 <div id="side-backdrop" class="side-backdrop" onclick="closeSideMenu()"></div>
 <aside id="side-menu" class="side-menu" aria-label="RO'Lyfe navigation"><h3>🟢 RO’Lyfe Terminal</h3><button type="button" onclick="closeSideMenu()">✕ Close menu</button>
-<div class="nav-group">Workspace</div><a href="#top" onclick="closeSideMenu()">⌂ Home &amp; Clock</a><a href="#top" onclick="scrollTerminalTop();return false;">↑ Back to top</a><a href="#chart-workspace" onclick="openTerminalChartWorkspace();return false;">▥ Main Chart + Indicator Graphs</a><a href="#chart-indicator-visuals" onclick="openTerminalIndicatorGraphs();return false;">📊 Open Indicator Visuals</a><a href="#watchlist-panel" onclick="openPanel('watchlist-panel')">☷ Master Watchlists</a><a href="#heatmap-panel" onclick="openPanel('heatmap-panel')">▦ Heatmap</a><a href="#sniper-panel" onclick="openPanel('sniper-panel')">🎯 Sniper List</a><a href="#trade-ticket" onclick="closeSideMenu()">✍ Trade Ticket / Risk</a><a href="#signal-guide" onclick="openPanel('signal-guide')">◉ Signal School &amp; Indicators</a><a href="#faq-panel" onclick="openPanel('faq-panel')">? FAQ / Quick Answers</a>
+<div class="nav-group">Workspace</div><a href="#top" onclick="closeSideMenu()">⌂ Home &amp; Clock</a><a href="#top" onclick="scrollTerminalTop();return false;">↑ Back to top</a><a href="#chart-workspace" onclick="openTerminalChartWorkspace();return false;">▥ Main Chart + Indicator Graphs</a><a href="#chart-indicator-visuals" onclick="openTerminalIndicatorGraphs();return false;">📊 Open Indicator Visuals</a><a href="#multi-chart-panel" onclick="openTerminalMultiChart();return false;">🖥 Multi Chart + Indicators</a><a href="#watchlist-panel" onclick="openPanel('watchlist-panel')">☷ Master Watchlists</a><a href="#heatmap-panel" onclick="openPanel('heatmap-panel')">▦ Heatmap</a><a href="#sniper-panel" onclick="openPanel('sniper-panel')">🎯 Sniper List</a><a href="#trade-ticket" onclick="closeSideMenu()">✍ Trade Ticket / Risk</a><a href="#signal-guide" onclick="openPanel('signal-guide')">◉ Signal School &amp; Indicators</a><a href="#faq-panel" onclick="openPanel('faq-panel')">? FAQ / Quick Answers</a>
 <div class="nav-group">Tools &amp; Research</div><a href="#market-tools" onclick="closeSideMenu()">↗ Market &amp; Tools</a><a href="#workbench" onclick="closeSideMenu()">⬇ Export &amp; Email</a><a href="#affiliate-vault" onclick="closeSideMenu()">◇ Affiliate Links</a>
 <div class="nav-group">Connected RO’Lyfe apps</div><a target="_blank" rel="noopener" href="https://rolrichman.github.io/RO-Lyfe-Trading-Intelligence-Classroom/">Trading Intelligence Classroom ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/RO-Lyfe-Tactical-Intelligence-Center-/">Tactical Intelligence Center ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/ro-lyfe-tactical-intelligence-execution-center/">Tactical Execution Center ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/ro-lyfe-auction-capital-machine/#vault">Auction Capital Machine ↗</a></aside>
 <div class="utility-bar" id="top"><button class="utility-btn" type="button" onclick="toggleSideMenu()">☰ Menu</button><div class="utility-clock"><strong id="terminal-date">Loading date…</strong><small id="terminal-clock">Loading time…</small></div>
 <label style="font-size:10px;color:#91a6bf">Theme <select id="theme-select" onchange="setTerminalTheme(this.value)" aria-label="Color theme"><option value="lyfe">Lyfe Green</option><option value="ocean">Ocean Blue</option><option value="violet">Violet</option><option value="amber">Amber</option><option value="crimson">Crimson</option></select></label>
 <label style="font-size:10px;color:#91a6bf">Calendar <input type="date" id="calendar-date" aria-label="Calendar date"></label><button class="utility-btn" type="button" onclick="document.getElementById('trade-ticket').scrollIntoView({behavior:'smooth'})">✍ Trade Ticket</button></div>
 
-<div id="terminal-scroll-shortcuts" class="terminal-scroll-shortcuts" aria-label="Quick navigation" aria-hidden="true">
- <button type="button" onclick="scrollTerminalTop()" aria-label="Scroll to top">↑ <span>Top</span></button>
- <button type="button" onclick="openTerminalChartWorkspace()" aria-label="Jump to main chart and indicator graphs">📊 <span>Chart + Indicators</span></button>
-</div>
 <div id="scanner-toast" role="status" aria-live="polite"><div class="toast-heading"><span>◉ RO’LYFE LIVE SCANNER · CACHED RESULTS</span><button type="button" onclick="dismissScannerToast()">✕</button></div><div class="toast-body" id="scanner-toast-body"></div><div class="toast-foot"><span id="scanner-toast-meta">From the latest manual scan</span><button type="button" onclick="enableBrowserScanAlerts()">Enable phone alerts</button><button type="button" onclick="openSniperFromToast()">Open Sniper List ↗</button></div></div>
 <h2>🔥 RO’LYFE TERMINAL — LEVEL 3 MONEY MACHINE</h2>
 <p class="terminal-subtitle">STOCK-FIRST MARKET INTELLIGENCE · MULTI-ASSET WATCHLIST · RISK BEFORE EXECUTION</p>
@@ -366,15 +365,15 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
    <div class="indicator-mini"><b>Hull Moving Average (HMA)</b><p id="hma-reading">Waiting for valid candles…</p><p>Period <select id="hma-period" aria-label="HMA period" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"><option value="31" selected>31</option><option value="32">32</option></select></p><p id="hma-explain">Tap Retry data or load a supported symbol to calculate.</p></div>
    <div class="indicator-mini"><b>PPS-style reversal marker</b><p id="pps-reading">Waiting for valid candles…</p><p id="pps-explain">A local HMA/price reversal heuristic; not the licensed PPS study.</p></div>
    <div class="indicator-mini"><b>Pullback setup</b><p id="pullback-reading">Waiting for valid candles…</p><p id="pullback-explain">Transparent local approximation using a 50-period anchor and ATR proximity; this does not reproduce the proprietary script exactly.</p><details class="pullback-settings"><summary class="panel-summary">Pullback study settings from your screenshot</summary><div class="trade-ticket-grid">
-   <label>Length<input id="pb-length" type="number" min="2" max="300" value="50" onchange="renderExpandedIndicators()"></label>
-   <label>Multiplier<input id="pb-multiplier" type="number" min="0.1" max="10" step="0.1" value="1.5" onchange="renderExpandedIndicators()"></label>
-   <label>EMA length buy<input id="pb-buy-ema" type="number" min="1" max="100" value="1" onchange="renderExpandedIndicators()"></label>
-   <label>EMA length sell<input id="pb-sell-ema" type="number" min="2" max="300" value="13" onchange="renderExpandedIndicators()"></label>
-   <label>Volume change threshold up (%)<input id="pb-vol-up" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators()"></label>
-   <label>Volume change threshold down (%)<input id="pb-vol-down" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators()"></label>
-   <label>Spread limit<input id="pb-spread-limit" type="number" min="0" step="0.01" value="0.09" onchange="renderExpandedIndicators()"></label>
-   <label>Show label<input id="pb-show-label" type="checkbox" checked onchange="renderExpandedIndicators()"></label>
-   <label>Arrow placement<select id="pb-move-to" onchange="renderExpandedIndicators()"><option value="UP" selected>UP</option><option value="DOWN">DOWN</option></select></label>
+   <label>Length<input id="pb-length" type="number" min="2" max="300" value="50" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Multiplier<input id="pb-multiplier" type="number" min="0.1" max="10" step="0.1" value="1.5" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>EMA length buy<input id="pb-buy-ema" type="number" min="1" max="100" value="1" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>EMA length sell<input id="pb-sell-ema" type="number" min="2" max="300" value="13" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Volume change threshold up (%)<input id="pb-vol-up" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Volume change threshold down (%)<input id="pb-vol-down" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Spread limit<input id="pb-spread-limit" type="number" min="0" step="0.01" value="0.09" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Show label<input id="pb-show-label" type="checkbox" checked onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Arrow placement<select id="pb-move-to" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"><option value="UP" selected>UP</option><option value="DOWN">DOWN</option></select></label>
   </div><p class="learning-note">Settings are captured from RL_Pull_Back_V4_5_13. Spread needs a current quote, not OHLCV candles, so the spread limit is displayed but cannot be validated from this historical-bar feed.</p></details></div>
   </div>
   <h3>Options Premium &amp; Expiration Worksheet</h3>
@@ -443,6 +442,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
   <details id="chart-linked-controls"><summary class="panel-summary"><span>⚙️ Indicator settings, favorite studies &amp; learning controls</span><span class="panel-summary-meta">Applies below / in embedded chart as labelled</span></summary><div class="panel-body" id="chart-linked-controls-slot"></div></details>
  </div>
 </details>
+<div id="chart-indicator-home-anchor" aria-hidden="true"></div>
 
 <button onclick="toggleOptions('options')">💥 Options Ladder</button>
 <div id="options" class="option-box"></div>
@@ -520,9 +520,10 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
    <p>Use TradingView’s own zoom, crosshair, timeframe and drawing tools inside the chart. The studies below the price chart are provided by TradingView.</p>
   </div>
   <div id="multi-chart-fullscreen-widget" class="multi-fullscreen-widget" style="height:600px"></div>
-  <details class="multi-fullscreen-studies" open>
-   <summary>📊 Indicators loaded in this full-screen chart</summary>
-   <p>EMA studies from your enabled chart studies, plus RSI, MACD and Stochastic panels. Study availability can vary by symbol/widget entitlement. This independent chart does not drive the Terminal scan or main chart’s locally calculated indicator graphs.</p>
+  <details id="multi-chart-indicator-accordion" class="multi-fullscreen-studies">
+   <summary>📊 RTIC INDICATORS · <span id="multi-chart-indicator-count">10 dropdowns</span><span id="multi-chart-indicator-status-short">Waiting for scan</span></summary>
+   <p class="multi-chart-indicator-note">These are the actual ten RO’Lyfe visual indicator graphs, recalculated from Tickerbot historical bars for this independent Multi Chart ticker and the selected page timeframe. They do not change your main scanner. The embedded TradingView chart can change timeframe on its own; use the page timeframe selector if you want the Tickerbot indicator graphs to match that timeframe.</p>
+   <div id="multi-chart-indicator-dock"></div>
   </details>
  </div>
 </div>
@@ -607,14 +608,14 @@ function resetChartView(){const s=document.getElementById("chart-zoom");if(s)s.v
 
 function chartIntervalLabel(){return ({"1":"1m","5":"5m","10":"10m","15":"15m","60":"1H","240":"4H","D":"1D","W":"1W"})[tf]||selectedMarketInterval()}
 function setChartIndicatorStatus(message,kind=""){const el=document.getElementById("chart-indicator-status");if(el){el.textContent=message;el.className=kind}}
-function syncChartScanLink(result=null,message=""){const title=document.getElementById("chart-sync-title"),note=document.getElementById("chart-sync-note");if(title)title.textContent="MAIN CHART ↔ INDICATOR GRAPHS · "+symbol+" · "+chartIntervalLabel();if(note)note.textContent=message||("Main price chart: TradingView · symbol "+symbol+" · timeframe "+chartIntervalLabel()+". Indicator plots below: calculated from Tickerbot OHLCV candles requested through the RO’Lyfe Supabase data service for the same selected symbol/timeframe. Chart range "+chartRange+" affects the TradingView display only; scanner history is up to 300 candles.");}
+function syncChartScanLink(result=null,message="",independent=false){const title=document.getElementById("chart-sync-title"),note=document.getElementById("chart-sync-note"),scopeSymbol=result?.symbol||symbol,scopeInterval=result?.interval||selectedMarketInterval();if(title)title.textContent=(independent?"MULTI CHART INDICATORS · ":"MAIN CHART ↔ INDICATOR GRAPHS · ")+scopeSymbol+" · "+scopeInterval;if(note)note.textContent=message||(independent?"Independent Multi Chart symbol "+scopeSymbol+" · "+scopeInterval+". These plots use Tickerbot OHLCV candles returned through the RO’Lyfe data service, not the main symbol's candles. The page timeframe selector controls the indicator timeframe; the TradingView chart's own internal timeframe may differ.":"Main price chart: TradingView · symbol "+scopeSymbol+" · timeframe "+scopeInterval+". Indicator plots below: calculated from Tickerbot OHLCV candles for the same selected symbol/timeframe. Chart range "+chartRange+" affects the TradingView display only; scanner history is up to 300 candles.");}
 function arrangeChartFirstLayout(){
  const workspace=document.getElementById("chart-workspace"),strip=document.getElementById("signal-strip"),slot=document.getElementById("chart-linked-controls-slot");
  if(workspace&&strip&&workspace.previousElementSibling!==strip)strip.insertAdjacentElement("afterend",workspace);
  const favourites=document.getElementById("indicator-dropdown"),expanded=document.getElementById("expanded-indicators");
  if(slot&&favourites&&favourites.parentElement!==slot)slot.appendChild(favourites);
  if(slot&&expanded&&expanded.parentElement!==slot)slot.appendChild(expanded);
- const multi=document.getElementById("chart2")?.closest(".section");if(multi){const h=multi.querySelector("h3");if(h)h.textContent="Multi Chart · INDEPENDENT REFERENCE (NOT SCAN-SYNCED)";let note=multi.querySelector(".multi-chart-sync-note");if(!note){note=document.createElement("p");note.className="multi-chart-sync-note learning-note";h?.after(note);}note.textContent="This secondary chart can show a different symbol. It does not drive the main scan or the indicator graphs. Use the top symbol and timeframe selectors for the connected main chart.";const select=multi.querySelector("select");if(select&&!select.id)select.id="independent-chart-symbol";}
+ const multi=document.getElementById("chart2")?.closest(".section");if(multi){if(!multi.id)multi.id="multi-chart-panel";const h=multi.querySelector("h3");if(h)h.textContent="Multi Chart · INDEPENDENT REFERENCE (NOT SCAN-SYNCED)";let note=multi.querySelector(".multi-chart-sync-note");if(!note){note=document.createElement("p");note.className="multi-chart-sync-note learning-note";h?.after(note);}note.textContent="This secondary chart can show a different symbol. It does not drive the main scan or the indicator graphs. Use the top symbol and timeframe selectors for the connected main chart.";const select=multi.querySelector("select");if(select&&!select.id)select.id="independent-chart-symbol";}
 }
 function indicatorFinite(v){return typeof v==="number"&&Number.isFinite(v)}
 function indicatorSma(values,period){const out=Array(values.length).fill(NaN),p=Math.max(1,Math.floor(Number(period)||1));for(let i=p-1;i<values.length;i++){const v=values.slice(i-p+1,i+1);if(v.every(indicatorFinite))out[i]=v.reduce((a,b)=>a+b,0)/p;}return out}
@@ -647,12 +648,14 @@ function renderIndicatorGraph(targetId,bars,options={}){
  node.innerHTML=svg;
  const legend=document.getElementById(targetId.replace("-graph","-legend"));if(legend){const parts=[];lines.filter(x=>!x.marker).forEach(x=>parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>'));cols.forEach(x=>parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>'));thresholds.forEach(x=>{if(x.label)parts.push('<span><i style="background:'+x.color+'"></i>'+indicatorEscape(x.label)+'</span>')});legend.innerHTML=parts.join("")}
 }
-function renderChartIndicatorVisuals(result=null,reason=""){
- const activeSymbol=symbol,interval=selectedMarketInterval(),cached=analysisCache[analysisKey(activeSymbol,interval)],r=result||(cached&&Date.now()-cached.time<CACHE_MS?cached:null);
- syncChartScanLink(r);
+function renderChartIndicatorVisuals(result=null,reason="",symbolOverride=null,intervalOverride=null,independent=false){
+ const mountedMultiPanel=Boolean(document.getElementById("chart-indicator-visuals")?.classList.contains("multi-chart-indicator-mounted")&&document.getElementById("multi-chart-fullscreen")?.classList.contains("open"));
+ if(!symbolOverride&&mountedMultiPanel){symbolOverride=multiChartSymbol();intervalOverride=multiChartIndicatorInterval||selectedMarketInterval();independent=true;}
+ const activeSymbol=symbolOverride||symbol,interval=intervalOverride||selectedMarketInterval(),cached=analysisCache[analysisKey(activeSymbol,interval)],r=result||(cached&&Date.now()-cached.time<CACHE_MS?cached:null);
+ syncChartScanLink(r||{symbol:activeSymbol,interval},reason,independent);
  if(!r||r.symbol!==activeSymbol||r.interval!==interval||!Array.isArray(r.ohlcv)||r.ohlcv.length<3){setChartIndicatorStatus(reason||("Waiting for validated "+activeSymbol+" · "+chartIntervalLabel()+" Tickerbot candles. The visual graphs will appear here after a successful matching-symbol scan."),"warn");["ema","vwap","rsi","macd","stochastic","cci","ttm","hma","pullback","volume"].forEach(k=>{const graph=document.getElementById("visual-"+k+"-graph");if(graph)graph.innerHTML='<p class="rol-visual-reading">Waiting for a valid '+indicatorEscape(activeSymbol)+' · '+indicatorEscape(chartIntervalLabel())+' scan.</p>';const read=document.getElementById("visual-"+k+"-reading");if(read)read.textContent="Waiting for validated scan data.";const legend=document.getElementById("visual-"+k+"-legend");if(legend)legend.innerHTML="";});return}
  const bars=r.ohlcv,closes=bars.map(b=>b.c),highs=bars.map(b=>b.h),lows=bars.map(b=>b.l),volumes=bars.map(b=>indicatorFinite(b.v)?b.v:NaN),priceLine={label:"Close",color:"#e5edf8",values:closes,width:2};
- setChartIndicatorStatus("MATCHED DATA · "+r.symbol+" · "+chartIntervalLabel()+" · "+bars.length+" validated candles · last bar "+indicatorTimeLabel(r.lastBarTime)+". TradingView is the price chart; the graphs below are calculated from this same selected symbol/timeframe's Tickerbot bars.","good");
+ setChartIndicatorStatus((independent?"MULTI CHART DATA · ":"MATCHED DATA · ")+r.symbol+" · "+interval+" · "+bars.length+" validated candles · last bar "+indicatorTimeLabel(r.lastBarTime)+". "+(independent?"The plots now use the independent Multi Chart symbol, not the main scan.":"TradingView is the price chart; these graphs use the same selected symbol/timeframe's Tickerbot bars."),"good");
  const ema5=emaSeries(closes,5),ema10=emaSeries(closes,10),ema20=emaSeries(closes,20),ema50=emaSeries(closes,50),ema200=emaSeries(closes,200);
  const emaRead=document.getElementById("visual-ema-reading");if(emaRead)emaRead.textContent="Close "+indicatorFormat(closes.at(-1),"price")+" · EMA5 "+indicatorFormat(ema5.at(-1),"price")+" · EMA10 "+indicatorFormat(ema10.at(-1),"price")+" · EMA20 "+indicatorFormat(ema20.at(-1),"price")+" · EMA50 "+indicatorFormat(ema50.at(-1),"price")+" · EMA200 "+indicatorFormat(ema200.at(-1),"price")+". Lines use "+r.symbol+" "+chartIntervalLabel()+" candles.";
  renderIndicatorGraph("visual-ema-graph",bars,{title:"Price and five EMA periods",aria:"Selected symbol price overlaid with EMA 5, 10, 20, 50 and 200",format:"price",lines:[priceLine,{label:"EMA 5",color:"#f59e0b",values:ema5},{label:"EMA 10",color:"#fb7185",values:ema10},{label:"EMA 20",color:"#a78bfa",values:ema20},{label:"EMA 50",color:"#22c55e",values:ema50},{label:"EMA 200",color:"#38bdf8",values:ema200}]});
@@ -721,16 +724,104 @@ function loadChart(){
 }
 
 function multiChartSymbol(){const field=document.getElementById("independent-chart-symbol");return String(field?.value||"AAPL").trim().toUpperCase()}
-function applyMultiChartSymbol(){const field=document.getElementById("independent-chart-symbol"),raw=String(field?.value||"").trim().toUpperCase();if(!raw){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Enter a ticker first, for example NVDA, SPY, BTCUSD or ES1!.";field?.focus();return}if(!/^[A-Z0-9.^=_!:/-]{1,24}$/.test(raw)){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Ticker contains unsupported characters. Try a symbol like NVDA, EURUSD or ES1!.";return}if(field)field.value=raw;loadChart2(raw);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open"))loadMultiFullscreenWidget(raw);const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Loaded "+raw+" in the independent Multi Chart. If the symbol is not supported by the chart provider, try its exchange-prefixed symbol or use TradingView search inside the chart."}
+function applyMultiChartSymbol(){const field=document.getElementById("independent-chart-symbol"),raw=String(field?.value||"").trim().toUpperCase();if(!raw){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Enter a ticker first, for example NVDA, SPY, BTCUSD or ES1!.";field?.focus();return}if(!/^[A-Z0-9.^=_!:/-]{1,24}$/.test(raw)){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Ticker contains unsupported characters. Try a symbol like NVDA, EURUSD or ES1!.";return}if(field)field.value=raw;loadChart2(raw);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open")){loadMultiFullscreenWidget(raw);refreshMultiChartIndicatorVisuals(raw,multiChartIndicatorInterval||selectedMarketInterval());}const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Loaded "+raw+" in the independent Multi Chart. If the symbol is not supported by the chart provider, try its exchange-prefixed symbol or use TradingView search inside the chart."}
 function pickMultiChartSymbol(value){if(!value)return;const field=document.getElementById("independent-chart-symbol");if(field)field.value=value;applyMultiChartSymbol()}
 function multiChartStudies(){const base=selectedChartStudies();["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"].forEach(x=>{if(!base.includes(x))base.push(x)});return base}
-function refreshMultiChart(){const sym=multiChartSymbol();loadChart2(sym);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open"))loadMultiFullscreenWidget(sym);const note=document.querySelector(".multi-chart-sync-note");if(note)note.textContent="Refreshed independent chart for "+sym+" · "+chartIntervalLabel()+". This chart remains separate from the main scan and its indicator graphs."}
+
+let multiChartPreviousIndicatorOpen=true;
+let multiChartIndicatorOriginalIntro=null;
+let multiChartIndicatorInterval=null;
+function intervalFromTradingView(value){
+ const raw=String(value||"").toUpperCase();
+ return ({"1":"1m","3":"3m","5":"5m","10":"10m","15":"15m","30":"30m","45":"45m","60":"1h","120":"2h","180":"3h","240":"4h","D":"1d","1D":"1d","W":"1w","1W":"1w","M":"1mo","1M":"1mo"})[raw]||null;
+}
+function tradingViewIntervalFromBars(value){
+ return ({"1m":"1","3m":"3","5m":"5","10m":"10","15m":"15","30m":"30","45m":"45","1h":"60","2h":"120","3h":"180","4h":"240","1d":"D","1w":"W","1mo":"M"})[String(value||"")]||tf;
+}
+function updateMultiChartIndicatorIntro(sym=multiChartSymbol()){
+ const panel=document.getElementById("chart-indicator-visuals"),intro=panel?.querySelector(".chart-indicator-intro");
+ if(!intro)return;
+ if(multiChartIndicatorOriginalIntro===null)multiChartIndicatorOriginalIntro=intro.innerHTML;
+ intro.innerHTML="<b>Multi Chart sync:</b> these ten graphs follow the independent ticker <b>"+indicatorEscape(sym)+"</b>, selected in the Multi Chart ticker field or by searching inside the TradingView chart, plus the Multi Chart's own selected timeframe. Their Tickerbot OHLCV scan is separate from the main scan. If you change ticker or timeframe in the TradingView chart, those changes update the graph source when the embedded widget exposes its chart events.";
+}
+function moveMultiChartIndicatorsIntoFullscreen(){
+ const panel=document.getElementById("chart-indicator-visuals"),dock=document.getElementById("multi-chart-indicator-dock");
+ if(!panel||!dock)return;
+ if(panel.parentElement!==dock){multiChartPreviousIndicatorOpen=panel.open;dock.appendChild(panel);}
+ panel.classList.add("multi-chart-indicator-mounted");panel.open=true;
+ updateMultiChartIndicatorIntro(multiChartSymbol());
+ const count=document.getElementById("multi-chart-indicator-count");if(count)count.textContent="10 dropdowns";
+ const status=document.getElementById("multi-chart-indicator-status-short");if(status)status.textContent="Independent · "+multiChartSymbol()+" · "+(multiChartIndicatorInterval||selectedMarketInterval());
+}
+function restoreMultiChartIndicatorsToMain(){
+ const panel=document.getElementById("chart-indicator-visuals"),anchor=document.getElementById("chart-indicator-home-anchor");
+ if(!panel||!anchor)return;
+ panel.classList.remove("multi-chart-indicator-mounted");
+ if(multiChartIndicatorOriginalIntro!==null){const intro=panel.querySelector(".chart-indicator-intro");if(intro)intro.innerHTML=multiChartIndicatorOriginalIntro;multiChartIndicatorOriginalIntro=null;}
+ if(panel.parentElement!==anchor.parentElement)anchor.insertAdjacentElement("beforebegin",panel);
+ panel.open=multiChartPreviousIndicatorOpen;multiChartIndicatorInterval=null;
+ const main=analysisCache[analysisKey(symbol,selectedMarketInterval())]||null;
+ renderChartIndicatorVisuals(main,main?"":"Select a symbol and refresh the main chart to load its graphs",symbol,selectedMarketInterval(),false);
+ renderExpandedIndicators();
+}
+function refreshMultiChartIndicatorVisuals(sym=multiChartSymbol(),intervalOverride=multiChartIndicatorInterval||selectedMarketInterval()){
+ const interval=intervalOverride,label=document.getElementById("multi-chart-indicator-status-short");
+ updateMultiChartIndicatorIntro(sym);
+ if(label)label.textContent="Loading "+sym+" · "+interval+" bars…";
+ renderChartIndicatorVisuals(null,"Loading "+sym+" · "+interval+" Tickerbot historical bars for the independent Multi Chart…",sym,interval,true);
+ analyzeSymbol(sym,{updateMainStatus:false,suppressAlerts:true,suppressMainRender:true,intervalOverride:interval}).then(result=>{
+  const modal=document.getElementById("multi-chart-fullscreen");
+  if(!modal?.classList.contains("open")||multiChartSymbol()!==sym||(multiChartIndicatorInterval||selectedMarketInterval())!==interval)return;
+  if(!result||result.symbol!==sym||result.interval!==interval){renderChartIndicatorVisuals(null,"No matching validated scan for "+sym+" · "+interval+". Refresh or try another supported ticker.",sym,interval,true);if(label)label.textContent="Scan unavailable";renderExpandedIndicators();return;}
+  renderChartIndicatorVisuals(result,"",sym,interval,true);
+  renderExpandedIndicators();
+  if(label)label.textContent=sym+" · "+interval+" · "+result.bars+" candles";
+ });
+}
+function bindMultiChartWidgetEvents(widget){
+ if(!widget)return;
+ const bind=()=>{
+  if(widget!==multiFullscreenWidgetInstance)return;
+  let chart;try{chart=typeof widget.activeChart==="function"?widget.activeChart():null;}catch(e){chart=null;}
+  if(!chart)return;
+  try{const subscription=chart.onSymbolChanged?.();subscription?.subscribe?.(null,info=>{
+   if(widget!==multiFullscreenWidgetInstance||!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
+   const raw=String(info?.ticker||info?.name||"").trim().toUpperCase().split(":").pop();
+   if(!/^[A-Z0-9.^=_!/-]{1,24}$/.test(raw)||raw===multiChartSymbol())return;
+   const field=document.getElementById("independent-chart-symbol");if(field)field.value=raw;
+   const quick=document.getElementById("multi-chart-quick-pick");if(quick)quick.value=Array.from(quick.options).some(o=>o.value===raw)?raw:"";
+   refreshMultiChartIndicatorVisuals(raw,multiChartIndicatorInterval||selectedMarketInterval());
+  });}catch(e){}
+  try{const subscription=chart.onIntervalChanged?.();subscription?.subscribe?.(null,interval=>{
+   if(widget!==multiFullscreenWidgetInstance||!document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))return;
+   const next=intervalFromTradingView(interval);if(!next||next===(multiChartIndicatorInterval||selectedMarketInterval()))return;
+   multiChartIndicatorInterval=next;
+   const label=document.getElementById("multi-chart-indicator-status-short");if(label)label.textContent="Timeframe changed · "+next+" · refreshing indicators…";
+   refreshMultiChartIndicatorVisuals(multiChartSymbol(),next);
+  });}catch(e){}
+ };
+ try{if(typeof widget.onChartReady==="function")widget.onChartReady(bind);else if(typeof widget.chartReady==="function")widget.chartReady().then(bind).catch(()=>{});}catch(e){}
+}
+function openTerminalMultiChart(){closeTerminalOverlays();arrangeChartFirstLayout();const target=document.getElementById("multi-chart-panel")||document.getElementById("chart2");if(target)target.scrollIntoView({behavior:"smooth",block:"start"});}
+
+function refreshMultiChart(){const sym=multiChartSymbol();loadChart2(sym);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open")){loadMultiFullscreenWidget(sym);refreshMultiChartIndicatorVisuals(sym,multiChartIndicatorInterval||selectedMarketInterval());}const note=document.querySelector(".multi-chart-sync-note");if(note)note.textContent="Refreshed independent chart for "+sym+" · "+(multiChartIndicatorInterval||chartIntervalLabel())+". This chart remains separate from the main scan."}
 function setMultiChartHeight(value){const n=Math.max(320,Math.min(720,Number(value)||480));const chart=document.getElementById("chart2");if(chart)chart.style.height=n+"px";const label=document.getElementById("multi-chart-height-label");if(label)label.textContent=n+"px"}
 function resetMultiChartHeight(){const slider=document.getElementById("multi-chart-height");if(slider)slider.value="480";setMultiChartHeight(480)}
 function setMultiFullscreenHeight(value){const n=Math.max(300,Math.min(900,Number(value)||600));const widget=document.getElementById("multi-chart-fullscreen-widget");if(widget)widget.style.height=n+"px";const label=document.getElementById("multi-fullscreen-height-label");if(label)label.textContent=n+"px"}
-function loadMultiFullscreenWidget(sym){const target=document.getElementById("multi-chart-fullscreen-widget");if(!target)return;target.innerHTML="";const title=document.getElementById("multi-fullscreen-title");if(title)title.textContent="MULTI CHART · "+sym+" · INDEPENDENT REFERENCE";const sub=document.getElementById("multi-fullscreen-subtitle");if(sub)sub.textContent="Independent symbol · "+chartIntervalLabel()+" · does not drive the main scan.";if(typeof TradingView==="undefined"){target.textContent="TradingView is unavailable. Refresh this page and try again.";return}try{new TradingView.widget({container_id:"multi-chart-fullscreen-widget",symbol:chartSymbol(sym),interval:tf,range:chartRange,theme:"dark",autosize:true,allow_symbol_change:true,studies:multiChartStudies()})}catch(error){target.textContent="Full-screen chart could not load. Use Refresh to try again."}}
-function openMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";const slider=document.getElementById("multi-fullscreen-height");if(slider)slider.value="600";setMultiFullscreenHeight(600);loadMultiFullscreenWidget(multiChartSymbol())}
-function closeMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";const target=document.getElementById("multi-chart-fullscreen-widget");if(target)target.innerHTML=""}
+let multiFullscreenWidgetInstance=null;
+function loadMultiFullscreenWidget(sym){
+ const target=document.getElementById("multi-chart-fullscreen-widget");if(!target)return;target.innerHTML="";
+ const title=document.getElementById("multi-fullscreen-title");if(title)title.textContent="MULTI CHART · "+sym+" · INDEPENDENT REFERENCE";
+ const interval=multiChartIndicatorInterval||selectedMarketInterval(),tvInterval=tradingViewIntervalFromBars(interval),sub=document.getElementById("multi-fullscreen-subtitle");
+ if(sub)sub.textContent="Independent symbol · "+interval+" · chart searches/timeframe changes sync the RTIC graphs when TradingView exposes chart events. Main scan is untouched.";
+ if(typeof TradingView==="undefined"){target.textContent="TradingView is unavailable. Refresh this page and try again.";return}
+ try{
+  multiFullscreenWidgetInstance=new TradingView.widget({container_id:"multi-chart-fullscreen-widget",symbol:chartSymbol(sym),interval:tvInterval,range:chartRange,theme:"dark",autosize:true,allow_symbol_change:true,studies:multiChartStudies()});
+  bindMultiChartWidgetEvents(multiFullscreenWidgetInstance);
+ }catch(error){target.textContent="Full-screen chart could not load. Use Refresh to try again."}
+}
+function openMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";multiChartIndicatorInterval=selectedMarketInterval();const slider=document.getElementById("multi-fullscreen-height");if(slider)slider.value="600";setMultiFullscreenHeight(600);moveMultiChartIndicatorsIntoFullscreen();loadMultiFullscreenWidget(multiChartSymbol());refreshMultiChartIndicatorVisuals(multiChartSymbol(),multiChartIndicatorInterval)}
+function closeMultiChartFullscreen(){const modal=document.getElementById("multi-chart-fullscreen");if(!modal)return;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";multiFullscreenWidgetInstance=null;const target=document.getElementById("multi-chart-fullscreen-widget");if(target)target.innerHTML="";restoreMultiChartIndicatorsToMain()}
 function toggleMultiChartControls(){const controls=document.getElementById("multi-fullscreen-controls"),button=document.getElementById("multi-controls-toggle");if(!controls||!button)return;const collapsed=controls.classList.toggle("collapsed");button.textContent=collapsed?"⌃ Show controls":"⌄ Collapse controls";button.setAttribute("aria-expanded",String(!collapsed))}
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMultiChartFullscreen()});
 
@@ -841,7 +932,8 @@ function expandedStudyState(r){
  return{ready:true,period,hma,prevHma,hmaBull,hmaBear,ppsUp,ppsDown,emaAnchor,emaBuy,emaSell,atr,near,bullZone,bearZone,bullConfirmed,bearConfirmed,pullbackLabel,volChange,volUp,volDown,pbLength,mult,buyEma,sellEma};
 }
 function renderExpandedIndicators(){
- const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading"),study=expandedStudyState(r);
+ const multiMounted=Boolean(document.getElementById("chart-indicator-visuals")?.classList.contains("multi-chart-indicator-mounted")&&document.getElementById("multi-chart-fullscreen")?.classList.contains("open")),activeSymbol=multiMounted?multiChartSymbol():symbol,activeInterval=multiMounted?(multiChartIndicatorInterval||selectedMarketInterval()):selectedMarketInterval();
+ const r=analysisCache[analysisKey(activeSymbol,activeInterval)],h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading"),study=expandedStudyState(r);
  if(!r||!study.ready){[h,p,pb].forEach(e=>{if(e)e.textContent="Waiting for enough valid provider candles…"});return}
  if(h)h.textContent="HMA "+study.period+" · $"+study.hma.toFixed(2)+" · "+(study.hmaBull?"⬆ BULLISH":study.hmaBear?"⬇ BEARISH":"➡ MIXED");
  if(p)p.textContent=study.ppsUp?"⬆ UP MARKER (local HMA-cross heuristic)":study.ppsDown?"⬇ DOWN MARKER (local HMA-cross heuristic)":"No fresh crossover · WAIT";
@@ -894,14 +986,14 @@ function determineSignal(rsi,stoch,mode){
 }
 function retryCurrentData(){const key=analysisKey(symbol,selectedMarketInterval());delete analysisCache[key];delete signals[key];setWatchStatus("Retrying provider candles for "+symbol+" · "+selectedMarketInterval()+"…");loadChart();}
 async function analyzeSymbol(sym,options={}){
-  const interval=selectedMarketInterval(),key=analysisKey(sym,interval),status=document.getElementById("data-status");
+  const interval=options.intervalOverride||selectedMarketInterval(),key=analysisKey(sym,interval),status=document.getElementById("data-status");
   const updateMain=options.updateMainStatus!==false&&sym===symbol;
   const cached=analysisCache[key];
   if(cached&&Date.now()-cached.time<CACHE_MS){
     cached.action=determineSignal(cached.rsi,cached.stoch,document.getElementById("mode").value);
     signals[key]=cached.action;
     if(updateMain)showAnalysisStatus(cached);
-    renderWatchlist();renderSignalSchool();
+    if(!options.suppressMainRender){renderWatchlist();renderSignalSchool();}
     return cached;
   }
   const previousAction=cached?.action||signals[key]||null;
@@ -933,17 +1025,20 @@ async function analyzeSymbol(sym,options={}){
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
     const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
-    const expandedAlert=expandedStudyState(result);if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE"||(expandedAlert.ready&&(expandedAlert.ppsUp||expandedAlert.ppsDown||expandedAlert.bullConfirmed||expandedAlert.bearConfirmed)))showNextScannerToast({symbol:sym,notify:true});
-    else if(updateMain)showScannerStatusToast(sym,interval);
+    if(!options.suppressAlerts){
+      const expandedAlert=expandedStudyState(result);
+      if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE"||(expandedAlert.ready&&(expandedAlert.ppsUp||expandedAlert.ppsDown||expandedAlert.bullConfirmed||expandedAlert.bearConfirmed)))showNextScannerToast({symbol:sym,notify:true});
+      else if(updateMain)showScannerStatusToast(sym,interval);
+      if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
+    }
     if(updateMain&&sym===symbol&&selectedMarketInterval()===interval)showAnalysisStatus(result);
-    if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
-    renderWatchlist();renderSignalSchool();
+    if(!options.suppressMainRender){renderWatchlist();renderSignalSchool();}
     return result;
   }catch(error){
     delete signals[key];delete analysisCache[key];
     const reason=error?.name==="AbortError"?"provider request timed out after 25 seconds":(error?.message||"unknown request error");
     if(updateMain&&sym===symbol&&selectedMarketInterval()===interval){setDataUnavailable(sym,interval,reason);status.textContent="DATA UNAVAILABLE for "+sym+" ("+interval+"): "+reason+". Signals are disabled until valid candles are available.";}
-    renderWatchlist();renderSignalSchool();
+    if(!options.suppressMainRender){renderWatchlist();renderSignalSchool();}
     return null;
   }
 }
@@ -1126,11 +1221,6 @@ function closeTerminalOverlays(){const menu=document.getElementById("side-menu")
 function scrollTerminalTop(){if(document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))closeMultiChartFullscreen();closeTerminalOverlays();window.scrollTo({top:0,behavior:"smooth"});}
 function openTerminalChartWorkspace(){if(document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))closeMultiChartFullscreen();closeTerminalOverlays();const visual=document.getElementById("chart-indicator-visuals");if(visual)visual.open=true;const target=document.getElementById("chart-workspace");if(target)target.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo({top:0,behavior:"smooth"});}
 function openTerminalIndicatorGraphs(){openTerminalChartWorkspace();const visual=document.getElementById("chart-indicator-visuals");if(visual)visual.open=true;setTimeout(()=>visual?.scrollIntoView({behavior:"smooth",block:"start"}),180);}
-function updateTerminalScrollShortcuts(){const el=document.getElementById("terminal-scroll-shortcuts");if(!el)return;const show=window.scrollY>420&&!document.getElementById("multi-chart-fullscreen")?.classList.contains("open");el.classList.toggle("visible",show);el.setAttribute("aria-hidden",String(!show));}
-window.addEventListener("scroll",updateTerminalScrollShortcuts,{passive:true});
-window.addEventListener("resize",updateTerminalScrollShortcuts);
-document.addEventListener("DOMContentLoaded",updateTerminalScrollShortcuts);
-updateTerminalScrollShortcuts();
 
 function toggleAIPanel(force){const p=document.getElementById("ai-panel");if(!p)return;const open=force===undefined?!p.classList.contains("open"):Boolean(force);p.classList.toggle("open",open);if(open)document.getElementById("ai-floating-question")?.focus()}
 function buildCurrentChartPrompt(){const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],q=(document.getElementById("ai-floating-question")?.value||"").trim();return "RO’Lyfe stock-first chart review. Symbol: "+symbol+". Timeframe: "+selectedMarketInterval()+". Current provider snapshot: "+(r?JSON.stringify({close:r.close,trend:r.trend,ema20:r.ema20,ema50:r.ema50,ema200:r.ema200,macd:r.macd,rsi:r.rsi,stochastic:r.stoch,cci:r.cci,relativeVolume:r.volumeRatio,lastBarTime:r.barTime,signal:r.action,coverage:r.coverage}):"No provider snapshot loaded")+". Question: "+(q||"Explain the current setup and missing confirmations.")+". Explain bullish/bearish/neutral context; distinguish direction from trigger; check freshness, trend, EMA alignment, RSI 50/70/30, Stochastic 20/80, MACD line/signal/histogram, CCI, volume, levels and candle close. List confirmed and missing checks, invalidation, event/liquidity risks. Calculate size and 1R/2R/3R only if entry and stop are entered. Never say buy now from an oscillator alone; do not invent data or place orders. Verify live broker quotes and submit orders manually in Thinkorswim. Educational only."}

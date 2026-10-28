@@ -89,8 +89,9 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - The secondary chart supports refresh, normal height slider/reset, full-screen mode, a dedicated full-screen height slider, collapsible controls, and Escape to close.
 
 
-## Scroll-aware terminal shortcuts (2026-10-28)
-- Added a floating quick-navigation rail that appears after the user scrolls beyond 420px, with one-tap **Top** and **Main Chart + Indicator Graphs** actions.
-- Added the same explicit shortcuts to the slide-out Terminal menu, including a dedicated link to open the Indicator Visuals accordion.
-- The chart shortcut opens the indicator graph accordion and scrolls to the main chart; it closes Multi Chart full-screen first if that overlay is active.
-- JavaScript source syntax passed. Mobile appearance still requires an in-browser/device check.
+## Menu-only navigation + Multi Chart visual studies (2026-10-28)
+- Removed the floating Top / Chart + Indicators rail because it obstructed the view while scrolling. Navigation shortcuts live only in the existing slide-out Terminal menu.
+- The menu contains Back to top, Main Chart + Indicator Graphs, Open Indicator Visuals, and Multi Chart + Indicators.
+- Multi Chart full-screen now contains a collapsible **RTIC INDICATORS** area with the existing ten visual graph panels moved into it (not cloned). On opening the Multi Chart fullscreen, Tickerbot OHLCV is requested for the independent Multi Chart symbol using the selected page timeframe; results do not trigger the main scan's alert/watchlist render.
+- Changing settings while the panel is docked keeps the graph calculations bound to the independent Multi Chart symbol. Closing fullscreen restores the same visual-panel DOM to the main chart section and recalculates for the main chart symbol.
+- The floating navigation component, styles and scroll/resize handlers are removed. Source-level JavaScript syntax checks pass; provider behavior, layout and TradingView entitlement still need live-device testing.

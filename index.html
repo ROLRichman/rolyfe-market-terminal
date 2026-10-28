@@ -673,7 +673,7 @@ async function analyzeSymbol(sym,options={}){
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
     const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
-    if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE")showNextScannerToast({symbol:sym,notify:true});
+    const expandedAlert=expandedStudyState(result);if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE"||(expandedAlert.ready&&(expandedAlert.ppsUp||expandedAlert.ppsDown||expandedAlert.bullConfirmed||expandedAlert.bearConfirmed)))showNextScannerToast({symbol:sym,notify:true});
     else if(updateMain)showScannerStatusToast(sym,interval);
     if(updateMain&&sym===symbol&&selectedMarketInterval()===interval)showAnalysisStatus(result);
     if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
@@ -960,7 +960,7 @@ function sendBrowserScanAlert(item){
  if(!item||!browserScanAlertsAllowed())return;
  const key=[item.symbol,selectedMarketInterval(),item.r.lastBarTime,item.r.action,item.sniper.stage].join("|");
  if(key===lastBrowserScanAlertKey)return;lastBrowserScanAlertKey=key;
- try{new Notification("RO’Lyfe Scan Alert · "+item.symbol,{body:item.sniper.stage+" · "+item.sniper.side+" · "+item.r.action+" · fresh historical-bar context. Review chart and risk before any trade."})}catch(e){}
+ const st=item.studies||expandedStudyState(item.r),context=st.ready?("HMA"+st.period+" "+(st.hmaBull?"bullish":st.hmaBear?"bearish":"mixed")+"; "+(st.ppsUp?"PPS-style up":st.ppsDown?"PPS-style down":"PPS-style wait")+"; "+st.pullbackLabel):"HMA / pullback context unavailable";try{new Notification("RO’Lyfe Scan Alert · "+item.symbol,{body:item.sniper.stage+" · "+item.sniper.side+" · "+item.r.action+" · "+context+". Review chart and risk before any trade."})}catch(e){}
 }
 function showScannerStatusToast(sym,interval){
  const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");

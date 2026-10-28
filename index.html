@@ -217,6 +217,58 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 @media(max-width:650px){.utility-bar{padding:7px}.utility-bar select,.utility-bar input{max-width:none;flex:1 1 90px}.utility-clock{flex-basis:125px}.watch-controls{grid-template-columns:1fr 1fr}.watch-controls #add-symbol-input{grid-column:span 2}.trade-ticket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.item-wrap .item{min-height:40px}#ai-fab{right:10px;bottom:10px;width:58px;height:58px}#ai-panel{right:8px;bottom:78px}}
 
 .data-status-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.data-status-copy{flex:1;min-width:220px}.data-status-row .secondary-button{flex:0 0 auto;white-space:nowrap}@media(max-width:560px){.data-status-row .secondary-button{width:100%}}</style>
+
+<style id="rol-chart-indicator-styles">
+#chart-workspace{order:-5;scroll-margin-top:12px}
+#chart-workspace .chart-inner{min-width:0!important;width:100%;max-width:100%}
+#chart-workspace #chart{width:100%;min-width:0!important;max-width:100%;height:480px}
+#chart-scan-sync{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:9px 0;border:1px solid #1c7951;border-radius:10px;background:linear-gradient(120deg,rgba(0,230,118,.1),rgba(7,15,25,.96))}
+#chart-scan-sync strong{color:#4ade80;font-size:12px;letter-spacing:.03em}
+#chart-scan-sync p{margin:4px 0 0;color:#bac8d8;font-size:11px;line-height:1.45}
+#chart-scan-sync .sync-actions{display:flex;gap:7px;flex-wrap:wrap}
+#chart-scan-sync button{min-height:36px;padding:7px 10px;font-size:11px}
+#chart-indicator-visuals{margin-top:10px;border:1px solid #24384c;border-radius:12px;overflow:hidden;background:#080d15}
+#chart-indicator-visuals>summary{padding:13px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:900;background:#101a27}
+#chart-indicator-visuals>summary span:last-child{font-size:10px;color:#9bb0c7;font-weight:700;text-align:right}
+#chart-indicator-visuals>.panel-body{padding:10px;display:grid;gap:9px}
+#chart-indicator-visuals .chart-indicator-intro{padding:10px;border:1px solid #26394e;border-radius:9px;background:#0d1622;color:#b7c7da;font-size:11px;line-height:1.6;margin:0}
+#chart-indicator-status{font-size:11px;line-height:1.5;color:#b3c2d5;padding:8px 10px;border-left:3px solid #64748b;background:#0b1420}
+#chart-indicator-status.good{border-color:#22c55e;color:#dcfce7}
+#chart-indicator-status.warn{border-color:#fbbf24;color:#fde68a}
+.rol-visual-drop{border:1px solid #26384d;border-radius:10px;overflow:hidden;background:#0b121c;min-width:0}
+.rol-visual-drop>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;padding:12px;font-size:12px;font-weight:900;color:#edf6ff}
+.rol-visual-drop>summary::-webkit-details-marker{display:none}
+.rol-visual-drop>summary:after{content:"＋";color:#4ade80;font-weight:900}
+.rol-visual-drop[open]>summary:after{content:"−"}
+.rol-visual-drop .visual-drop-meta{font-size:10px;font-weight:600;color:#94a3b8;text-align:right}
+.rol-visual-content{padding:9px 9px 11px;border-top:1px solid #1f3043}
+.rol-visual-reading{font-size:11px;line-height:1.5;color:#cbd5e1;margin:0 0 8px;overflow-wrap:anywhere}
+.rol-svg-chart{width:100%;height:auto;display:block;min-width:0;background:#070d14;border:1px solid #1d2c3d;border-radius:8px}
+.rol-visual-legend{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;padding:8px 2px 0;font-size:10px;color:#b5c5d8}
+.rol-visual-legend span{display:inline-flex;align-items:center;gap:5px}
+.rol-visual-legend i{display:inline-block;width:13px;height:3px;border-radius:4px}
+.rol-visual-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 9px}
+.rol-visual-settings label{display:grid;gap:4px;font-size:10px;line-height:1.4;color:#aebfd3}
+.rol-visual-settings input{width:100%;min-width:0;box-sizing:border-box;background:#080e16;color:#f1f5f9;border:1px solid #34465c;border-radius:7px;padding:8px;font-size:12px}
+#chart-linked-controls-slot{display:grid;gap:10px}
+#chart-linked-controls-slot>details{margin:0!important}
+#chart-linked-controls-slot .panel-summary{font-size:12px}
+#chart-workspace .chart-controls{gap:8px}
+#chart-workspace .chart-controls input{min-width:90px;flex:1}
+#chart-workspace .section{margin-top:8px}
+@media(max-width:650px){
+ #chart-workspace{padding:8px}
+ #chart-workspace #chart{height:430px}
+ #chart-scan-sync{align-items:flex-start}
+ #chart-scan-sync .sync-actions{width:100%}
+ #chart-scan-sync .sync-actions button{flex:1}
+ #chart-indicator-visuals>.panel-body{padding:7px}
+ .rol-visual-drop>summary{padding:11px 9px}
+ .rol-visual-content{padding:7px}
+ .rol-visual-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #chart-workspace .chart-controls{font-size:10px}
+}
+</style>
 </head>
 
 <body>
@@ -345,6 +397,28 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div id="chart"></div>
 </div>
 </div>
+<div id="chart-scan-sync" aria-live="polite">
+ <div><strong id="chart-sync-title">MAIN CHART ↔ INDICATOR GRAPHS</strong><p id="chart-sync-note">Main chart: TradingView. Visual studies below: calculated from the selected symbol's Tickerbot historical candles through the RO’Lyfe data service.</p></div>
+ <div class="sync-actions"><button type="button" onclick="retryCurrentData()">↻ Refresh chart + studies</button><button type="button" onclick="openPanel('chart-indicator-visuals')">📉 Open indicator graphs</button></div>
+</div>
+<details id="chart-indicator-visuals" open>
+ <summary><span>📉 INDICATOR VISUALS · DIRECTLY UNDER YOUR CHART</span><span id="chart-indicator-count">9 expandable study graphs</span></summary>
+ <div class="panel-body">
+  <p class="chart-indicator-intro"><b>What syncs with what:</b> the main TradingView chart and every graph below follow the symbol and timeframe selectors at the top of this page. The graph calculations use Tickerbot OHLCV candles requested through the RO’Lyfe Supabase data service. The chart's own internal symbol search is disabled so it cannot quietly drift away from the scan. <b>6M / 1Y / All</b> changes the TradingView display range; the scanner uses up to 300 candles at the selected timeframe. Quote/option-chain data is not included in these OHLCV graphs.</p>
+  <div id="chart-indicator-status" role="status" aria-live="polite">Waiting for a validated scan. Select a symbol/timeframe and refresh to populate these graphs.</div>
+  <details class="rol-visual-drop" id="visual-ema" open><summary><span>① EMA TREND · Close vs EMA 5 / 10 / 20 / 50 / 200</span><span class="visual-drop-meta">Price + trend averages</span></summary><div class="rol-visual-content"><p id="visual-ema-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-ema-graph"></div><div id="visual-ema-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-vwap"><summary><span>② VWAP · Price vs session-weighted average</span><span class="visual-drop-meta">Volume-weighted context</span></summary><div class="rol-visual-content"><p id="visual-vwap-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-vwap-graph"></div><div id="visual-vwap-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-rsi"><summary><span>③ RSI · Relative Strength Index</span><span class="visual-drop-meta">14 default · levels 30 / 50 / 70</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>RSI period<input id="visual-rsi-period" type="number" min="2" max="50" value="14" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-rsi-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-rsi-graph"></div><div id="visual-rsi-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-macd" open><summary><span>④ MACD · Line / Signal / Histogram</span><span class="visual-drop-meta">12 / 26 / 9 default</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>Fast EMA<input id="visual-macd-fast" type="number" min="2" max="50" value="12" onchange="renderChartIndicatorVisuals()"></label><label>Slow EMA<input id="visual-macd-slow" type="number" min="3" max="100" value="26" onchange="renderChartIndicatorVisuals()"></label><label>Signal<input id="visual-macd-signal" type="number" min="2" max="50" value="9" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-macd-reading" class="rol-visual-reading">Waiting for historical-bar scan.</p><div id="visual-macd-graph"></div><div id="visual-macd-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-stochastic" open><summary><span>⑤ STOCHASTIC · %K / %D</span><span class="visual-drop-meta">14 / 3 default · zones 20 / 80</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>Lookback %K<input id="visual-stoch-period" type="number" min="2" max="50" value="14" onchange="renderChartIndicatorVisuals()"></label><label>Smoothing %D<input id="visual-stoch-smooth" type="number" min="1" max="20" value="3" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-stochastic-reading" class="rol-visual-reading">Waiting for historical-bar scan.</p><div id="visual-stochastic-graph"></div><div id="visual-stochastic-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-cci"><summary><span>⑥ CCI · Commodity Channel Index</span><span class="visual-drop-meta">20 default · levels −100 / 0 / +100</span></summary><div class="rol-visual-content"><div class="rol-visual-settings"><label>CCI period<input id="visual-cci-period" type="number" min="2" max="60" value="20" onchange="renderChartIndicatorVisuals()"></label></div><p id="visual-cci-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-cci-graph"></div><div id="visual-cci-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-ttm"><summary><span>⑦ TTM SQUEEZE / MOMENTUM PROXY</span><span class="visual-drop-meta">Educational approximation</span></summary><div class="rol-visual-content"><p id="visual-ttm-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-ttm-graph"></div><div id="visual-ttm-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-hma"><summary><span>⑧ HMA + PPS-STYLE UP / DOWN MARKERS</span><span class="visual-drop-meta">HMA 31 default</span></summary><div class="rol-visual-content"><p id="visual-hma-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-hma-graph"></div><div id="visual-hma-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-pullback"><summary><span>⑨ RL PULLBACK · ATR BAND + EMA TRIGGERS</span><span class="visual-drop-meta">Your V4_5_13 reference settings</span></summary><div class="rol-visual-content"><p id="visual-pullback-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-pullback-graph"></div><div id="visual-pullback-legend" class="rol-visual-legend"></div></div></details>
+  <details class="rol-visual-drop" id="visual-volume"><summary><span>⑩ VOLUME · Current candle vs 20-bar average</span><span class="visual-drop-meta">Volume is not options-chain liquidity</span></summary><div class="rol-visual-content"><p id="visual-volume-reading" class="rol-visual-reading">Waiting for valid candles.</p><div id="visual-volume-graph"></div><div id="visual-volume-legend" class="rol-visual-legend"></div></div></details>
+  <details id="chart-linked-controls"><summary class="panel-summary"><span>⚙️ Indicator settings, favorite studies &amp; learning controls</span><span class="panel-summary-meta">Applies below / in embedded chart as labelled</span></summary><div class="panel-body" id="chart-linked-controls-slot"></div></details>
+ </div>
+</details>
 
 <button onclick="toggleOptions('options')">💥 Options Ladder</button>
 <div id="options" class="option-box"></div>

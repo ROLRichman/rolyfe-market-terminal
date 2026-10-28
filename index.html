@@ -519,6 +519,7 @@ let stopScanRequested=false;
 let activeScanSymbols=[];
 
 window.onload=()=>{
+ arrangeChartFirstLayout();
  refreshMasterWatchlist();const sel=document.getElementById("symbol-select");if(sel)sel.value=symbol;tf=document.getElementById("timeframe-select")?.value||"5";
  const group=document.getElementById("watch-group");if(group)group.value="liquid";
  try{setTerminalTheme(localStorage.getItem("rolyfe-terminal-theme")||"lyfe")}catch(e){setTerminalTheme("lyfe")}
@@ -626,7 +627,15 @@ function loadChart(){
   renderWatchlist();
   renderHeatmap();
   renderSignalSchool();
-  analyzeSymbol(symbol).then(renderSignalSchool);
+  const requestedSymbol=symbol,requestedInterval=selectedMarketInterval();
+  syncChartScanLink(null,"Loading matching scan data for "+requestedSymbol+" · "+chartIntervalLabel()+". The graphs below will only show data validated for this selection.");
+  renderChartIndicatorVisuals(null,"Loading provider candles for "+requestedSymbol+" · "+chartIntervalLabel()+"…");
+  analyzeSymbol(requestedSymbol).then(result=>{
+    if(symbol!==requestedSymbol||selectedMarketInterval()!==requestedInterval)return;
+    renderSignalSchool();
+    if(result&&result.symbol===requestedSymbol&&result.interval===requestedInterval)renderChartIndicatorVisuals(result);
+    else{const msg=document.getElementById("data-status")?.textContent||"No matching scan data.";syncChartScanLink(null,"NO MATCHING SCAN · "+msg);renderChartIndicatorVisuals(null,"No matching "+requestedSymbol+" · "+chartIntervalLabel()+" scan. "+msg);}
+  });
   if(typeof TradingView==="undefined"){
     if(chart) chart.textContent="Chart provider unavailable. The signal/data panels can still report provider status.";
     return;
@@ -638,7 +647,7 @@ function loadChart(){
       interval:tf,
       range:chartRange,
       theme:"dark",
-      allow_symbol_change:true,
+      allow_symbol_change:false,
       autosize:true,
       studies:selectedChartStudies()
     });
@@ -680,6 +689,7 @@ function analysisKey(sym, interval=selectedMarketInterval()){
   return sym+"|"+interval;
 }
 function buildSignal(sym){ return signals[analysisKey(sym)] || "WAIT"; }
+function normalizeMarketSymbol(value){return String(value||"").trim().toUpperCase().split(":").pop().replace(/[-_\/](USD|USDT)$/,"").replace(/(USDT|USD)$/,"").replace(/\.US$/,"");}
 function tickerbotSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "X:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);return m?"X:"+m[1]+"USD":sym}
 function chartSymbol(sym){if(["BTCUSD","ETHUSD","SOLUSD","XRPUSD"].includes(sym))return "COINBASE:"+sym;const m=sym.match(/^([A-Z0-9]+)-USD$/);if(m)return "COINBASE:"+m[1]+"USD";const map={"ES1!":"CME_MINI:ES1!","NQ1!":"CME_MINI:NQ1!","YM1!":"CBOT_MINI:YM1!","RTY1!":"CME_MINI:RTY1!","MES1!":"CME_MINI:MES1!","MNQ1!":"CME_MINI:MNQ1!","MYM1!":"CBOT_MINI:MYM1!","M2K1!":"CME_MINI:M2K1!"};return map[sym]||sym}
 function rsi14(closes){
@@ -828,6 +838,8 @@ async function analyzeSymbol(sym,options={}){
       data=await response.json();
     }finally{clearTimeout(timeoutId);}
     if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+    const reportedSymbol=data.symbol?normalizeMarketSymbol(data.symbol):normalizeMarketSymbol(sym),expectedSymbol=normalizeMarketSymbol(tickerbotSymbol(sym));
+    if(reportedSymbol!==expectedSymbol)throw new Error("SYMBOL MISMATCH: selected "+sym+" but Tickerbot reported "+data.symbol+". This response was rejected; no indicators will be shown from a different ticker. Re-select "+sym+" and retry.");
     if(!Array.isArray(data.bars)||data.bars.length<15)throw new Error("Not enough provider candles to calculate indicators.");
     let bars=data.bars.map(b=>({t:Number(b.t),o:Number(b.o),h:Number(b.h),l:Number(b.l),c:Number(b.c),v:b.v!==null&&b.v!==undefined&&Number.isFinite(Number(b.v))?Number(b.v):null}))
       .filter(b=>Number.isFinite(b.t)&&Number.isFinite(b.o)&&Number.isFinite(b.h)&&Number.isFinite(b.l)&&Number.isFinite(b.c)&&b.o>0&&b.c>0&&b.h>=b.l&&b.h>=Math.max(b.o,b.c)&&b.l<=Math.min(b.o,b.c));
@@ -840,7 +852,7 @@ async function analyzeSymbol(sym,options={}){
     const snap=calculateSnapshot(bars);
     if(!Number.isFinite(snap.rsi)||!Number.isFinite(snap.stoch))throw new Error("Indicator calculation unavailable for this data.");
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
-    const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
+    const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
     const expandedAlert=expandedStudyState(result);if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE"||(expandedAlert.ready&&(expandedAlert.ppsUp||expandedAlert.ppsDown||expandedAlert.bullConfirmed||expandedAlert.bearConfirmed)))showNextScannerToast({symbol:sym,notify:true});
     else if(updateMain)showScannerStatusToast(sym,interval);

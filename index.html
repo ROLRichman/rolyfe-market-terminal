@@ -365,15 +365,15 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
    <div class="indicator-mini"><b>Hull Moving Average (HMA)</b><p id="hma-reading">Waiting for valid candles…</p><p>Period <select id="hma-period" aria-label="HMA period" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"><option value="31" selected>31</option><option value="32">32</option></select></p><p id="hma-explain">Tap Retry data or load a supported symbol to calculate.</p></div>
    <div class="indicator-mini"><b>PPS-style reversal marker</b><p id="pps-reading">Waiting for valid candles…</p><p id="pps-explain">A local HMA/price reversal heuristic; not the licensed PPS study.</p></div>
    <div class="indicator-mini"><b>Pullback setup</b><p id="pullback-reading">Waiting for valid candles…</p><p id="pullback-explain">Transparent local approximation using a 50-period anchor and ATR proximity; this does not reproduce the proprietary script exactly.</p><details class="pullback-settings"><summary class="panel-summary">Pullback study settings from your screenshot</summary><div class="trade-ticket-grid">
-   <label>Length<input id="pb-length" type="number" min="2" max="300" value="50" onchange="renderExpandedIndicators()"></label>
-   <label>Multiplier<input id="pb-multiplier" type="number" min="0.1" max="10" step="0.1" value="1.5" onchange="renderExpandedIndicators()"></label>
-   <label>EMA length buy<input id="pb-buy-ema" type="number" min="1" max="100" value="1" onchange="renderExpandedIndicators()"></label>
-   <label>EMA length sell<input id="pb-sell-ema" type="number" min="2" max="300" value="13" onchange="renderExpandedIndicators()"></label>
-   <label>Volume change threshold up (%)<input id="pb-vol-up" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators()"></label>
-   <label>Volume change threshold down (%)<input id="pb-vol-down" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators()"></label>
-   <label>Spread limit<input id="pb-spread-limit" type="number" min="0" step="0.01" value="0.09" onchange="renderExpandedIndicators()"></label>
-   <label>Show label<input id="pb-show-label" type="checkbox" checked onchange="renderExpandedIndicators()"></label>
-   <label>Arrow placement<select id="pb-move-to" onchange="renderExpandedIndicators()"><option value="UP" selected>UP</option><option value="DOWN">DOWN</option></select></label>
+   <label>Length<input id="pb-length" type="number" min="2" max="300" value="50" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Multiplier<input id="pb-multiplier" type="number" min="0.1" max="10" step="0.1" value="1.5" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>EMA length buy<input id="pb-buy-ema" type="number" min="1" max="100" value="1" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>EMA length sell<input id="pb-sell-ema" type="number" min="2" max="300" value="13" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Volume change threshold up (%)<input id="pb-vol-up" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Volume change threshold down (%)<input id="pb-vol-down" type="number" min="0" max="1000" value="100" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Spread limit<input id="pb-spread-limit" type="number" min="0" step="0.01" value="0.09" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Show label<input id="pb-show-label" type="checkbox" checked onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"></label>
+   <label>Arrow placement<select id="pb-move-to" onchange="renderExpandedIndicators();renderChartIndicatorVisuals()"><option value="UP" selected>UP</option><option value="DOWN">DOWN</option></select></label>
   </div><p class="learning-note">Settings are captured from RL_Pull_Back_V4_5_13. Spread needs a current quote, not OHLCV candles, so the spread limit is displayed but cannot be validated from this historical-bar feed.</p></details></div>
   </div>
   <h3>Options Premium &amp; Expiration Worksheet</h3>

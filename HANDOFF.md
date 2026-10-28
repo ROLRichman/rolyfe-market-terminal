@@ -79,3 +79,11 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - Fullscreen Multi Chart loads the current enabled chart studies plus RSI, MACD, and Stochastic in the TradingView widget. Chart zoom/crosshair/timeframe/drawing interactions are provided by TradingView; the Terminal slider changes the chart viewing height.
 - Fullscreen symbol selection is seeded from the independent Multi Chart selector and does not change the main scan symbol. The multi-chart refresh reloads the independent chart only.
 - Validation: inline JavaScript syntax checked after changes. Full live-browser interaction and TradingView symbol/widget entitlement still require manual confirmation.
+
+
+## Multi Chart symbol search and expanded quick watchlist (2026-10-28)
+- Expanded the independent Multi Chart selector from seven hard-coded tickers to a searchable ticker input with a datalist of 100+ stock, ETF, sector, crypto, FX, index and futures suggestions, plus a quick-pick menu.
+- Manual symbol entry supports Enter or the "Load ticker" button and then refreshes the independent chart. The Multi Chart's embedded TradingView widget and full-screen widget both expose TradingView's native symbol search.
+- Added common exchange mappings for futures, FX pairs, VIX, DXY, S&P 500 and Nasdaq indices. Symbol availability still depends on TradingView entitlement and exchange notation.
+- Main scan and its connected indicator graphs remain separate; Multi Chart symbol selection doesn't change the main scan's ticker.
+- The secondary chart supports refresh, normal height slider/reset, full-screen mode, a dedicated full-screen height slider, collapsible controls, and Escape to close.

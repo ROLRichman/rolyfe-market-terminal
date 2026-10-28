@@ -280,13 +280,16 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 
 .multi-chart-label{display:block;color:#a9bdd2;font-size:12px;font-weight:800;margin:10px 0 5px}.multi-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.multi-chart-actions button,.multi-chart-size-controls button{min-height:38px}.multi-chart-size-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.multi-chart-size-controls input[type=range]{flex:1;min-width:120px}.multi-fullscreen{display:none;position:fixed;inset:0;z-index:100000;background:#05080d;color:#f8fafc;padding:10px;overflow:auto;overscroll-behavior:contain}.multi-fullscreen.open{display:block}.multi-fullscreen-shell{width:100%;max-width:1800px;margin:0 auto}.multi-fullscreen-header{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px;background:#0b1420;border:1px solid #243449;border-radius:12px}.multi-fullscreen-header strong{font-size:13px;letter-spacing:.04em}.multi-fullscreen-header p{margin:4px 0 0;font-size:11px;color:#a9bdd2}.multi-fullscreen-actions{display:flex;flex-wrap:wrap;gap:7px}.multi-fullscreen-actions button,.multi-fullscreen-controls button{min-height:38px;padding:8px 12px}.multi-fullscreen-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 4px}.multi-fullscreen-controls label{font-size:12px;font-weight:800}.multi-fullscreen-controls input[type=range]{flex:1;min-width:130px}.multi-fullscreen-controls p{flex-basis:100%;margin:0;color:#9fb2c7;font-size:11px;line-height:1.5}.multi-fullscreen-controls.collapsed{display:none}.multi-fullscreen-widget{width:100%;min-height:320px;resize:vertical;overflow:hidden;border:1px solid #26384d;border-radius:10px;background:#0b1220}.multi-fullscreen-studies{margin-top:10px;border:1px solid #26384d;border-radius:10px;background:#0b1420}.multi-fullscreen-studies summary{padding:12px;cursor:pointer;font-weight:800}.multi-fullscreen-studies p{padding:0 12px 12px;margin:0;color:#a9bdd2;font-size:12px;line-height:1.6}.multi-fullscreen.open~*{pointer-events:none}@media(max-width:600px){.multi-fullscreen{padding:5px}.multi-fullscreen-header{align-items:flex-start;padding:8px}.multi-fullscreen-actions{width:100%}.multi-fullscreen-actions button{flex:1;font-size:11px;padding:7px}.multi-fullscreen-controls{gap:7px}.multi-fullscreen-widget{min-height:360px}}
 
-/* Scroll-aware jump controls for the chart-first workflow */
-.terminal-scroll-shortcuts{position:fixed;right:10px;top:54%;transform:translate(12px,-50%);z-index:1050;display:flex;flex-direction:column;gap:7px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s;background:rgba(5,13,22,.96);border:1px solid #31506a;border-radius:13px;padding:6px;box-shadow:0 8px 26px #0008;backdrop-filter:blur(10px)}
-.terminal-scroll-shortcuts.visible{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%)}
-.terminal-scroll-shortcuts button{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-height:40px;min-width:40px;width:100%;margin:0;padding:8px 10px;border-radius:8px;background:#102219;border:1px solid #24533e;color:#e9fff3;font-size:12px;font-weight:850;white-space:nowrap}
-.terminal-scroll-shortcuts button:first-child{background:#102033;border-color:#31506a}
-.terminal-scroll-shortcuts button:focus-visible{outline:2px solid #4ade80;outline-offset:2px}
-@media(max-width:600px){.terminal-scroll-shortcuts{right:5px;padding:4px;gap:5px;top:58%}.terminal-scroll-shortcuts button{min-height:38px;padding:8px;font-size:11px}.terminal-scroll-shortcuts button span{max-width:92px;white-space:normal;text-align:left;line-height:1.15}}
+
+/* The RTIC graph set is moved into Multi Chart full-screen without duplicating its DOM IDs. */
+#multi-chart-indicator-dock #chart-indicator-visuals{display:block!important;margin:0;border:0;background:transparent}
+#multi-chart-indicator-dock #chart-indicator-visuals>summary{display:none}
+#multi-chart-indicator-dock #chart-indicator-visuals>.panel-body{padding:0;gap:9px}
+#multi-chart-indicator-dock .chart-indicator-intro{margin-top:0}
+#multi-chart-indicator-accordion{margin-top:12px}
+#multi-chart-indicator-accordion>summary{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+#multi-chart-indicator-accordion>summary span{font-size:11px;color:#9cb2c8;font-weight:800}
+.multi-chart-indicator-note{margin:10px 0;color:#9cb2c8;font-size:12px;line-height:1.55}
 </style>
 </head>
 
@@ -294,17 +297,13 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div id="app">
 <div id="side-backdrop" class="side-backdrop" onclick="closeSideMenu()"></div>
 <aside id="side-menu" class="side-menu" aria-label="RO'Lyfe navigation"><h3>🟢 RO’Lyfe Terminal</h3><button type="button" onclick="closeSideMenu()">✕ Close menu</button>
-<div class="nav-group">Workspace</div><a href="#top" onclick="closeSideMenu()">⌂ Home &amp; Clock</a><a href="#top" onclick="scrollTerminalTop();return false;">↑ Back to top</a><a href="#chart-workspace" onclick="openTerminalChartWorkspace();return false;">▥ Main Chart + Indicator Graphs</a><a href="#chart-indicator-visuals" onclick="openTerminalIndicatorGraphs();return false;">📊 Open Indicator Visuals</a><a href="#watchlist-panel" onclick="openPanel('watchlist-panel')">☷ Master Watchlists</a><a href="#heatmap-panel" onclick="openPanel('heatmap-panel')">▦ Heatmap</a><a href="#sniper-panel" onclick="openPanel('sniper-panel')">🎯 Sniper List</a><a href="#trade-ticket" onclick="closeSideMenu()">✍ Trade Ticket / Risk</a><a href="#signal-guide" onclick="openPanel('signal-guide')">◉ Signal School &amp; Indicators</a><a href="#faq-panel" onclick="openPanel('faq-panel')">? FAQ / Quick Answers</a>
+<div class="nav-group">Workspace</div><a href="#top" onclick="closeSideMenu()">⌂ Home &amp; Clock</a><a href="#top" onclick="scrollTerminalTop();return false;">↑ Back to top</a><a href="#chart-workspace" onclick="openTerminalChartWorkspace();return false;">▥ Main Chart + Indicator Graphs</a><a href="#chart-indicator-visuals" onclick="openTerminalIndicatorGraphs();return false;">📊 Open Indicator Visuals</a><a href="#multi-chart-panel" onclick="openTerminalMultiChart();return false;">🖥 Multi Chart + Indicators</a><a href="#watchlist-panel" onclick="openPanel('watchlist-panel')">☷ Master Watchlists</a><a href="#heatmap-panel" onclick="openPanel('heatmap-panel')">▦ Heatmap</a><a href="#sniper-panel" onclick="openPanel('sniper-panel')">🎯 Sniper List</a><a href="#trade-ticket" onclick="closeSideMenu()">✍ Trade Ticket / Risk</a><a href="#signal-guide" onclick="openPanel('signal-guide')">◉ Signal School &amp; Indicators</a><a href="#faq-panel" onclick="openPanel('faq-panel')">? FAQ / Quick Answers</a>
 <div class="nav-group">Tools &amp; Research</div><a href="#market-tools" onclick="closeSideMenu()">↗ Market &amp; Tools</a><a href="#workbench" onclick="closeSideMenu()">⬇ Export &amp; Email</a><a href="#affiliate-vault" onclick="closeSideMenu()">◇ Affiliate Links</a>
 <div class="nav-group">Connected RO’Lyfe apps</div><a target="_blank" rel="noopener" href="https://rolrichman.github.io/RO-Lyfe-Trading-Intelligence-Classroom/">Trading Intelligence Classroom ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/RO-Lyfe-Tactical-Intelligence-Center-/">Tactical Intelligence Center ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/ro-lyfe-tactical-intelligence-execution-center/">Tactical Execution Center ↗</a><a target="_blank" rel="noopener" href="https://rolrichman.github.io/ro-lyfe-auction-capital-machine/#vault">Auction Capital Machine ↗</a></aside>
 <div class="utility-bar" id="top"><button class="utility-btn" type="button" onclick="toggleSideMenu()">☰ Menu</button><div class="utility-clock"><strong id="terminal-date">Loading date…</strong><small id="terminal-clock">Loading time…</small></div>
 <label style="font-size:10px;color:#91a6bf">Theme <select id="theme-select" onchange="setTerminalTheme(this.value)" aria-label="Color theme"><option value="lyfe">Lyfe Green</option><option value="ocean">Ocean Blue</option><option value="violet">Violet</option><option value="amber">Amber</option><option value="crimson">Crimson</option></select></label>
 <label style="font-size:10px;color:#91a6bf">Calendar <input type="date" id="calendar-date" aria-label="Calendar date"></label><button class="utility-btn" type="button" onclick="document.getElementById('trade-ticket').scrollIntoView({behavior:'smooth'})">✍ Trade Ticket</button></div>
 
-<div id="terminal-scroll-shortcuts" class="terminal-scroll-shortcuts" aria-label="Quick navigation" aria-hidden="true">
- <button type="button" onclick="scrollTerminalTop()" aria-label="Scroll to top">↑ <span>Top</span></button>
- <button type="button" onclick="openTerminalChartWorkspace()" aria-label="Jump to main chart and indicator graphs">📊 <span>Chart + Indicators</span></button>
-</div>
 <div id="scanner-toast" role="status" aria-live="polite"><div class="toast-heading"><span>◉ RO’LYFE LIVE SCANNER · CACHED RESULTS</span><button type="button" onclick="dismissScannerToast()">✕</button></div><div class="toast-body" id="scanner-toast-body"></div><div class="toast-foot"><span id="scanner-toast-meta">From the latest manual scan</span><button type="button" onclick="enableBrowserScanAlerts()">Enable phone alerts</button><button type="button" onclick="openSniperFromToast()">Open Sniper List ↗</button></div></div>
 <h2>🔥 RO’LYFE TERMINAL — LEVEL 3 MONEY MACHINE</h2>
 <p class="terminal-subtitle">STOCK-FIRST MARKET INTELLIGENCE · MULTI-ASSET WATCHLIST · RISK BEFORE EXECUTION</p>
@@ -443,6 +442,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
   <details id="chart-linked-controls"><summary class="panel-summary"><span>⚙️ Indicator settings, favorite studies &amp; learning controls</span><span class="panel-summary-meta">Applies below / in embedded chart as labelled</span></summary><div class="panel-body" id="chart-linked-controls-slot"></div></details>
  </div>
 </details>
+<div id="chart-indicator-home-anchor" aria-hidden="true"></div>
 
 <button onclick="toggleOptions('options')">💥 Options Ladder</button>
 <div id="options" class="option-box"></div>
@@ -520,9 +520,10 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
    <p>Use TradingView’s own zoom, crosshair, timeframe and drawing tools inside the chart. The studies below the price chart are provided by TradingView.</p>
   </div>
   <div id="multi-chart-fullscreen-widget" class="multi-fullscreen-widget" style="height:600px"></div>
-  <details class="multi-fullscreen-studies" open>
-   <summary>📊 Indicators loaded in this full-screen chart</summary>
-   <p>EMA studies from your enabled chart studies, plus RSI, MACD and Stochastic panels. Study availability can vary by symbol/widget entitlement. This independent chart does not drive the Terminal scan or main chart’s locally calculated indicator graphs.</p>
+  <details id="multi-chart-indicator-accordion" class="multi-fullscreen-studies">
+   <summary>📊 RTIC INDICATORS · <span id="multi-chart-indicator-count">10 dropdowns</span><span id="multi-chart-indicator-status-short">Waiting for scan</span></summary>
+   <p class="multi-chart-indicator-note">These are the actual ten RO’Lyfe visual indicator graphs, recalculated from Tickerbot historical bars for this independent Multi Chart ticker and the selected page timeframe. They do not change your main scanner. The embedded TradingView chart can change timeframe on its own; use the page timeframe selector if you want the Tickerbot indicator graphs to match that timeframe.</p>
+   <div id="multi-chart-indicator-dock"></div>
   </details>
  </div>
 </div>
@@ -614,7 +615,7 @@ function arrangeChartFirstLayout(){
  const favourites=document.getElementById("indicator-dropdown"),expanded=document.getElementById("expanded-indicators");
  if(slot&&favourites&&favourites.parentElement!==slot)slot.appendChild(favourites);
  if(slot&&expanded&&expanded.parentElement!==slot)slot.appendChild(expanded);
- const multi=document.getElementById("chart2")?.closest(".section");if(multi){const h=multi.querySelector("h3");if(h)h.textContent="Multi Chart · INDEPENDENT REFERENCE (NOT SCAN-SYNCED)";let note=multi.querySelector(".multi-chart-sync-note");if(!note){note=document.createElement("p");note.className="multi-chart-sync-note learning-note";h?.after(note);}note.textContent="This secondary chart can show a different symbol. It does not drive the main scan or the indicator graphs. Use the top symbol and timeframe selectors for the connected main chart.";const select=multi.querySelector("select");if(select&&!select.id)select.id="independent-chart-symbol";}
+ const multi=document.getElementById("chart2")?.closest(".section");if(multi){if(!multi.id)multi.id="multi-chart-panel";const h=multi.querySelector("h3");if(h)h.textContent="Multi Chart · INDEPENDENT REFERENCE (NOT SCAN-SYNCED)";let note=multi.querySelector(".multi-chart-sync-note");if(!note){note=document.createElement("p");note.className="multi-chart-sync-note learning-note";h?.after(note);}note.textContent="This secondary chart can show a different symbol. It does not drive the main scan or the indicator graphs. Use the top symbol and timeframe selectors for the connected main chart.";const select=multi.querySelector("select");if(select&&!select.id)select.id="independent-chart-symbol";}
 }
 function indicatorFinite(v){return typeof v==="number"&&Number.isFinite(v)}
 function indicatorSma(values,period){const out=Array(values.length).fill(NaN),p=Math.max(1,Math.floor(Number(period)||1));for(let i=p-1;i<values.length;i++){const v=values.slice(i-p+1,i+1);if(v.every(indicatorFinite))out[i]=v.reduce((a,b)=>a+b,0)/p;}return out}
@@ -1126,11 +1127,6 @@ function closeTerminalOverlays(){const menu=document.getElementById("side-menu")
 function scrollTerminalTop(){if(document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))closeMultiChartFullscreen();closeTerminalOverlays();window.scrollTo({top:0,behavior:"smooth"});}
 function openTerminalChartWorkspace(){if(document.getElementById("multi-chart-fullscreen")?.classList.contains("open"))closeMultiChartFullscreen();closeTerminalOverlays();const visual=document.getElementById("chart-indicator-visuals");if(visual)visual.open=true;const target=document.getElementById("chart-workspace");if(target)target.scrollIntoView({behavior:"smooth",block:"start"});else window.scrollTo({top:0,behavior:"smooth"});}
 function openTerminalIndicatorGraphs(){openTerminalChartWorkspace();const visual=document.getElementById("chart-indicator-visuals");if(visual)visual.open=true;setTimeout(()=>visual?.scrollIntoView({behavior:"smooth",block:"start"}),180);}
-function updateTerminalScrollShortcuts(){const el=document.getElementById("terminal-scroll-shortcuts");if(!el)return;const show=window.scrollY>420&&!document.getElementById("multi-chart-fullscreen")?.classList.contains("open");el.classList.toggle("visible",show);el.setAttribute("aria-hidden",String(!show));}
-window.addEventListener("scroll",updateTerminalScrollShortcuts,{passive:true});
-window.addEventListener("resize",updateTerminalScrollShortcuts);
-document.addEventListener("DOMContentLoaded",updateTerminalScrollShortcuts);
-updateTerminalScrollShortcuts();
 
 function toggleAIPanel(force){const p=document.getElementById("ai-panel");if(!p)return;const open=force===undefined?!p.classList.contains("open"):Boolean(force);p.classList.toggle("open",open);if(open)document.getElementById("ai-floating-question")?.focus()}
 function buildCurrentChartPrompt(){const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],q=(document.getElementById("ai-floating-question")?.value||"").trim();return "RO’Lyfe stock-first chart review. Symbol: "+symbol+". Timeframe: "+selectedMarketInterval()+". Current provider snapshot: "+(r?JSON.stringify({close:r.close,trend:r.trend,ema20:r.ema20,ema50:r.ema50,ema200:r.ema200,macd:r.macd,rsi:r.rsi,stochastic:r.stoch,cci:r.cci,relativeVolume:r.volumeRatio,lastBarTime:r.barTime,signal:r.action,coverage:r.coverage}):"No provider snapshot loaded")+". Question: "+(q||"Explain the current setup and missing confirmations.")+". Explain bullish/bearish/neutral context; distinguish direction from trigger; check freshness, trend, EMA alignment, RSI 50/70/30, Stochastic 20/80, MACD line/signal/histogram, CCI, volume, levels and candle close. List confirmed and missing checks, invalidation, event/liquidity risks. Calculate size and 1R/2R/3R only if entry and stop are entered. Never say buy now from an oscillator alone; do not invent data or place orders. Verify live broker quotes and submit orders manually in Thinkorswim. Educational only."}

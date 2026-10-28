@@ -586,8 +586,8 @@ function expandedStudyState(r){
  const trs=bars.slice(-14).map((bar,i)=>{const idx=bars.length-14+i,prior=bars[idx-1];return Math.max(bar.h-bar.l,prior?Math.abs(bar.h-prior.c):0,prior?Math.abs(bar.l-prior.c):0)}).filter(Number.isFinite),atr=trs.length?trs.reduce((a,b)=>a+b,0)/trs.length:null;
  const near=Number.isFinite(atr)&&atr>0&&Number.isFinite(emaAnchor)&&Math.abs(r.close-emaAnchor)<=mult*atr;
  const volChange=prev&&prev.v>0&&Number.isFinite(last.v)?((last.v-prev.v)/prev.v)*100:null;
- const bullZone=near&&r.close>=emaAnchor&&r.close>emaSell&&last.c>prev.c;
- const bearZone=near&&r.close<=emaAnchor&&r.close<emaSell&&last.c<prev.c;
+ const bullZone=near&&emaBuy>=emaAnchor&&emaBuy>emaSell&&emaBuy>prev.c;
+ const bearZone=near&&emaBuy<=emaAnchor&&emaBuy<emaSell&&emaBuy<prev.c;
  const bullConfirmed=bullZone&&Number.isFinite(volChange)&&volChange>=volUp;
  const bearConfirmed=bearZone&&Number.isFinite(volChange)&&volChange<=-volDown;
  let pullbackLabel="No aligned pullback setup · WAIT";

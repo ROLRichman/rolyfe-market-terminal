@@ -270,6 +270,14 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 }
 
 /* Independent Multi Chart: refresh + full-screen zoom workspace */
+
+.multi-chart-symbol-tools{display:grid;grid-template-columns:minmax(120px,1fr) auto minmax(125px,.55fr);gap:8px;align-items:center}
+.multi-chart-symbol-tools input,.multi-chart-symbol-tools select{width:100%;min-width:0;box-sizing:border-box;min-height:42px;background:#0a1220;color:#f8fafc;border:1px solid #334155;border-radius:8px;padding:9px 10px;font-size:13px}
+.multi-chart-symbol-tools input:focus,.multi-chart-symbol-tools select:focus{outline:2px solid #22c55e;outline-offset:1px}
+.multi-chart-symbol-tools button{min-height:42px;white-space:nowrap}
+.multi-chart-search-note{font-size:11px;line-height:1.55;color:#94a9bf;margin:7px 0}
+@media(max-width:650px){.multi-chart-symbol-tools{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.multi-chart-symbol-tools input{grid-column:1/-1}.multi-chart-symbol-tools button,.multi-chart-symbol-tools select{width:100%;font-size:11px}.multi-chart-search-note{font-size:10px}}
+
 .multi-chart-label{display:block;color:#a9bdd2;font-size:12px;font-weight:800;margin:10px 0 5px}.multi-chart-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.multi-chart-actions button,.multi-chart-size-controls button{min-height:38px}.multi-chart-size-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.multi-chart-size-controls input[type=range]{flex:1;min-width:120px}.multi-fullscreen{display:none;position:fixed;inset:0;z-index:100000;background:#05080d;color:#f8fafc;padding:10px;overflow:auto;overscroll-behavior:contain}.multi-fullscreen.open{display:block}.multi-fullscreen-shell{width:100%;max-width:1800px;margin:0 auto}.multi-fullscreen-header{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px;background:#0b1420;border:1px solid #243449;border-radius:12px}.multi-fullscreen-header strong{font-size:13px;letter-spacing:.04em}.multi-fullscreen-header p{margin:4px 0 0;font-size:11px;color:#a9bdd2}.multi-fullscreen-actions{display:flex;flex-wrap:wrap;gap:7px}.multi-fullscreen-actions button,.multi-fullscreen-controls button{min-height:38px;padding:8px 12px}.multi-fullscreen-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 4px}.multi-fullscreen-controls label{font-size:12px;font-weight:800}.multi-fullscreen-controls input[type=range]{flex:1;min-width:130px}.multi-fullscreen-controls p{flex-basis:100%;margin:0;color:#9fb2c7;font-size:11px;line-height:1.5}.multi-fullscreen-controls.collapsed{display:none}.multi-fullscreen-widget{width:100%;min-height:320px;resize:vertical;overflow:hidden;border:1px solid #26384d;border-radius:10px;background:#0b1220}.multi-fullscreen-studies{margin-top:10px;border:1px solid #26384d;border-radius:10px;background:#0b1420}.multi-fullscreen-studies summary{padding:12px;cursor:pointer;font-weight:800}.multi-fullscreen-studies p{padding:0 12px 12px;margin:0;color:#a9bdd2;font-size:12px;line-height:1.6}.multi-fullscreen.open~*{pointer-events:none}@media(max-width:600px){.multi-fullscreen{padding:5px}.multi-fullscreen-header{align-items:flex-start;padding:8px}.multi-fullscreen-actions{width:100%}.multi-fullscreen-actions button{flex:1;font-size:11px;padding:7px}.multi-fullscreen-controls{gap:7px}.multi-fullscreen-widget{min-height:360px}}
 </style>
 </head>
@@ -443,16 +451,20 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div class="section">
 <h3>Multi Chart</h3>
 
-<label for="independent-chart-symbol" class="multi-chart-label">Independent symbol</label>
-<select id="independent-chart-symbol" onchange="loadChart2(this.value)">
-<option>AAPL</option>
-<option>TSLA</option>
-<option>SPY</option>
-<option>BTCUSD</option>
-<option>EURUSD</option>
-<option>ES1!</option>
-<option>NQ1!</option>
-</select>
+<label for="independent-chart-symbol" class="multi-chart-label">Independent chart symbol · search or type any ticker</label>
+<div class="multi-chart-symbol-tools">
+ <input id="independent-chart-symbol" type="text" list="multi-chart-symbol-options" value="AAPL" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Search or type: NVDA, SPY, BTCUSD, ES1!" aria-label="Search or type an independent chart ticker">
+ <datalist id="multi-chart-symbol-options">
+  <option value="SPY" label="S&P 500 ETF"></option><option value="QQQ" label="Nasdaq 100 ETF"></option><option value="IWM" label="Russell 2000 ETF"></option><option value="DIA" label="Dow ETF"></option><option value="VTI"></option><option value="VOO"></option><option value="AAPL"></option><option value="MSFT"></option><option value="NVDA"></option><option value="AMZN"></option><option value="META"></option><option value="GOOGL"></option><option value="GOOG"></option><option value="TSLA"></option><option value="AMD"></option><option value="AVGO"></option><option value="NFLX"></option><option value="PLTR"></option><option value="COIN"></option><option value="SMCI"></option><option value="TSM"></option><option value="INTC"></option><option value="QCOM"></option><option value="MU"></option><option value="AMAT"></option><option value="ADBE"></option><option value="CRM"></option><option value="ORCL"></option><option value="IBM"></option><option value="CSCO"></option><option value="SHOP"></option><option value="UBER"></option><option value="ABNB"></option><option value="HOOD"></option><option value="SOFI"></option><option value="ARM"></option><option value="LLY"></option><option value="NVO"></option><option value="UNH"></option><option value="JNJ"></option><option value="XOM"></option><option value="CVX"></option><option value="CAT"></option><option value="GE"></option><option value="BA"></option><option value="JPM"></option><option value="BAC"></option><option value="GS"></option><option value="MS"></option><option value="C"></option><option value="AXP"></option><option value="V"></option><option value="MA"></option><option value="WMT"></option><option value="COST"></option><option value="TGT"></option><option value="HD"></option><option value="LOW"></option><option value="DIS"></option><option value="KO"></option><option value="PEP"></option><option value="PG"></option><option value="MRK"></option><option value="PFE"></option><option value="ABBV"></option>
+  <option value="XLK"></option><option value="XLF"></option><option value="XLE"></option><option value="XLY"></option><option value="XLI"></option><option value="XLV"></option><option value="XLP"></option><option value="XLU"></option><option value="SMH"></option><option value="SOXX"></option><option value="TQQQ"></option><option value="SQQQ"></option><option value="UVXY"></option><option value="VIX"></option><option value="DXY"></option><option value="TLT"></option><option value="IEF"></option><option value="HYG"></option><option value="GLD"></option><option value="SLV"></option><option value="USO"></option><option value="UNG"></option>
+  <option value="BTCUSD"></option><option value="ETHUSD"></option><option value="SOLUSD"></option><option value="XRPUSD"></option><option value="DOGEUSD"></option><option value="EURUSD"></option><option value="GBPUSD"></option><option value="USDJPY"></option><option value="AUDUSD"></option><option value="USDCAD"></option><option value="ES1!"></option><option value="NQ1!"></option><option value="YM1!"></option><option value="RTY1!"></option><option value="MES1!"></option><option value="MNQ1!"></option><option value="CL1!"></option><option value="GC1!"></option><option value="SI1!"></option><option value="ZB1!"></option><option value="ZN1!"></option>
+ </datalist>
+ <button type="button" onclick="applyMultiChartSymbol()">Load ticker ↗</button>
+ <select id="multi-chart-quick-pick" aria-label="Quick-pick chart symbol" onchange="pickMultiChartSymbol(this.value)">
+  <option value="">Quick picks…</option><option value="AAPL">AAPL</option><option value="SPY">SPY</option><option value="QQQ">QQQ</option><option value="NVDA">NVDA</option><option value="TSLA">TSLA</option><option value="MSFT">MSFT</option><option value="AMD">AMD</option><option value="BTCUSD">BTCUSD</option><option value="ETHUSD">ETHUSD</option><option value="EURUSD">EURUSD</option><option value="ES1!">ES1!</option><option value="NQ1!">NQ1!</option>
+ </select>
+</div>
+<p class="multi-chart-search-note">Type a ticker and press Load, choose a suggestion, or use TradingView’s search inside the chart. Symbol search inside TradingView changes this independent chart only; loading the input again applies the typed ticker. The main scan remains untouched.</p>
 <div class="multi-chart-actions">
 <button type="button" onclick="refreshMultiChart()">↻ Refresh Multi Chart</button>
 <button type="button" onclick="openMultiChartFullscreen()">⛶ Full Screen + Indicators</button>
@@ -695,7 +707,9 @@ function loadChart(){
   }
 }
 
-function multiChartSymbol(){return document.getElementById("independent-chart-symbol")?.value||"AAPL"}
+function multiChartSymbol(){const field=document.getElementById("independent-chart-symbol");return String(field?.value||"AAPL").trim().toUpperCase()}
+function applyMultiChartSymbol(){const field=document.getElementById("independent-chart-symbol"),raw=String(field?.value||"").trim().toUpperCase();if(!raw){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Enter a ticker first, for example NVDA, SPY, BTCUSD or ES1!.";field?.focus();return}if(!/^[A-Z0-9.^=_!:/-]{1,24}$/.test(raw)){const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Ticker contains unsupported characters. Try a symbol like NVDA, EURUSD or ES1!.";return}if(field)field.value=raw;loadChart2(raw);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open"))loadMultiFullscreenWidget(raw);const note=document.querySelector(".multi-chart-search-note");if(note)note.textContent="Loaded "+raw+" in the independent Multi Chart. If the symbol is not supported by the chart provider, try its exchange-prefixed symbol or use TradingView search inside the chart."}
+function pickMultiChartSymbol(value){if(!value)return;const field=document.getElementById("independent-chart-symbol");if(field)field.value=value;applyMultiChartSymbol()}
 function multiChartStudies(){const base=selectedChartStudies();["RSI@tv-basicstudies","MACD@tv-basicstudies","Stochastic@tv-basicstudies"].forEach(x=>{if(!base.includes(x))base.push(x)});return base}
 function refreshMultiChart(){const sym=multiChartSymbol();loadChart2(sym);const modal=document.getElementById("multi-chart-fullscreen");if(modal?.classList.contains("open"))loadMultiFullscreenWidget(sym);const note=document.querySelector(".multi-chart-sync-note");if(note)note.textContent="Refreshed independent chart for "+sym+" · "+chartIntervalLabel()+". This chart remains separate from the main scan and its indicator graphs."}
 function setMultiChartHeight(value){const n=Math.max(320,Math.min(720,Number(value)||480));const chart=document.getElementById("chart2");if(chart)chart.style.height=n+"px";const label=document.getElementById("multi-chart-height-label");if(label)label.textContent=n+"px"}
@@ -723,6 +737,7 @@ function loadChart2(sym){
       range:chartRange,
       theme:"dark",
       autosize:true,
+      allow_symbol_change:true,
       studies:multiChartStudies()
     });
   }catch(error){

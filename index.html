@@ -209,7 +209,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 .side-menu a,.side-menu button{display:flex;width:100%;box-sizing:border-box;gap:9px;align-items:center;text-decoration:none;text-align:left;background:transparent;color:#d4e4f6;border:1px solid transparent;padding:9px 10px;border-radius:8px;font-size:12px;font-weight:650}.side-menu a:hover,.side-menu button:hover{background:#0c2430;border-color:#25475b}
 .item-wrap,.heatmap-wrap{position:relative;min-width:0}.item-wrap .item{width:100%;box-sizing:border-box;padding-right:29px}.item-remove,.heatmap-remove{position:absolute;right:5px;top:5px;background:#1a2634!important;color:#c6d3e2!important;border:1px solid #3a4a5d!important;padding:1px 6px!important;border-radius:6px!important;font-size:11px!important;line-height:19px;z-index:2}.heatmap-wrap .cell{width:100%;box-sizing:border-box;padding-right:20px}
 .watch-controls{grid-template-columns:repeat(4,minmax(0,1fr))}.watch-controls #add-symbol-input{grid-column:span 2}.watch-controls button{font-size:11px}
-#scanner-toast{position:fixed;z-index:1600;top:94px;right:14px;width:min(360px,calc(100vw - 28px));padding:12px 13px;background:#071521f5;border:1px solid #22c98a;border-radius:13px;box-shadow:0 12px 35px #0009;display:none}#scanner-toast.show{display:block;animation:toastIn .2s ease-out}.toast-heading{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#86efc0;font-weight:900;letter-spacing:.7px}.toast-body{font-size:13px;line-height:1.45;margin:7px 0;color:#eff8ff}.toast-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;color:#92a8c1}.toast-foot button{font-size:10px;padding:6px 8px}@keyframes toastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+#scanner-toast{position:fixed;z-index:16000;top:calc(env(safe-area-inset-top,0px) + 76px);left:10px;right:10px;margin-inline:auto;width:min(560px,calc(100vw - 20px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - 96px);overflow:auto;overscroll-behavior:contain;padding:12px 13px;background:#071521f7;border:1px solid #22c98a;border-radius:13px;box-shadow:0 12px 35px #0009;display:none;box-sizing:border-box;pointer-events:auto}#scanner-toast.show{display:block;animation:toastIn .2s ease-out}.toast-heading{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#86efc0;font-weight:900;letter-spacing:.7px}.toast-body{font-size:13px;line-height:1.45;margin:7px 0;color:#eff8ff}.toast-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:10px;color:#92a8c1}.toast-foot button{font-size:10px;padding:6px 8px}.toast-foot span{min-width:140px;flex:1}.toast-foot button{white-space:normal}@keyframes toastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .trade-ticket-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.trade-ticket-grid label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#a8bad0}.trade-ticket-grid input,.trade-ticket-grid select,.trade-ticket-grid textarea{width:100%;box-sizing:border-box}.ticket-result{margin-top:10px;padding:12px;border:1px solid var(--rol-border);border-radius:10px;background:#07131e;line-height:1.6;font-size:12px}.ticket-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.saved-plan-row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border:1px solid #273a4d;border-radius:8px;margin:6px 0;font-size:11px}
 #faq-list details{border:1px solid #26394d;border-radius:9px;padding:9px 11px;margin:6px 0;background:#07121e}#faq-list summary{font-size:12px;font-weight:800;cursor:pointer;color:#e5f1ff}#faq-list p{font-size:11px;line-height:1.6;color:#a9bbd0;margin:8px 0 0}
 #ai-fab{position:fixed;right:16px;bottom:16px;z-index:1800;width:66px;height:66px;border-radius:50%;padding:0;background:radial-gradient(circle at 35% 25%,#173a52,#05101f 72%);border:2px solid #37e6b2;box-shadow:0 0 0 4px #0c9d7833,0 8px 28px #000b;display:flex;align-items:center;justify-content:center}#ai-fab svg{width:46px;height:46px}
@@ -229,7 +229,7 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 <div class="utility-bar" id="top"><button class="utility-btn" type="button" onclick="toggleSideMenu()">☰ Menu</button><div class="utility-clock"><strong id="terminal-date">Loading date…</strong><small id="terminal-clock">Loading time…</small></div>
 <label style="font-size:10px;color:#91a6bf">Theme <select id="theme-select" onchange="setTerminalTheme(this.value)" aria-label="Color theme"><option value="lyfe">Lyfe Green</option><option value="ocean">Ocean Blue</option><option value="violet">Violet</option><option value="amber">Amber</option><option value="crimson">Crimson</option></select></label>
 <label style="font-size:10px;color:#91a6bf">Calendar <input type="date" id="calendar-date" aria-label="Calendar date"></label><button class="utility-btn" type="button" onclick="document.getElementById('trade-ticket').scrollIntoView({behavior:'smooth'})">✍ Trade Ticket</button></div>
-<div id="scanner-toast" role="status" aria-live="polite"><div class="toast-heading"><span>◉ RO’LYFE LIVE SCANNER · CACHED RESULTS</span><button type="button" onclick="dismissScannerToast()">✕</button></div><div class="toast-body" id="scanner-toast-body"></div><div class="toast-foot"><span id="scanner-toast-meta">From the latest manual scan</span><button type="button" onclick="openSniperFromToast()">Open Sniper List ↗</button></div></div>
+<div id="scanner-toast" role="status" aria-live="polite"><div class="toast-heading"><span>◉ RO’LYFE LIVE SCANNER · CACHED RESULTS</span><button type="button" onclick="dismissScannerToast()">✕</button></div><div class="toast-body" id="scanner-toast-body"></div><div class="toast-foot"><span id="scanner-toast-meta">From the latest manual scan</span><button type="button" onclick="enableBrowserScanAlerts()">Enable phone alerts</button><button type="button" onclick="openSniperFromToast()">Open Sniper List ↗</button></div></div>
 <h2>🔥 RO’LYFE TERMINAL — LEVEL 3 MONEY MACHINE</h2>
 <p class="terminal-subtitle">STOCK-FIRST MARKET INTELLIGENCE · MULTI-ASSET WATCHLIST · RISK BEFORE EXECUTION</p>
 <p class="terminal-note">Provider-backed candle data and indicators. Quote timing, supported symbols and freshness depend on provider coverage and the market session.</p>
@@ -561,7 +561,40 @@ function stochastic14(bars){
 }
 function wmaSeries(values,period){const out=Array(values.length).fill(null);for(let i=period-1;i<values.length;i++){let sum=0,den=period*(period+1)/2;for(let j=0;j<period;j++)sum+=values[i-period+1+j]*(j+1);out[i]=sum/den}return out}
 function hmaSeries(values,period){const half=Math.max(1,Math.floor(period/2)),root=Math.max(1,Math.floor(Math.sqrt(period))),wHalf=wmaSeries(values,half),wFull=wmaSeries(values,period),diff=values.map((v,i)=>wHalf[i]===null||wFull[i]===null?null:2*wHalf[i]-wFull[i]);const valid=diff.map(v=>Number.isFinite(v)?v:0);const raw=wmaSeries(valid,root);return raw.map((v,i)=>diff[i]===null?null:v)}
-function renderExpandedIndicators(){const r=analysisCache[analysisKey(symbol,selectedMarketInterval())];const period=Number(document.getElementById("hma-period")?.value)||31;const h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading");if(!r||!Number.isFinite(r.hma)||!Number.isFinite(r.previousHma)){[h,p,pb].forEach(e=>{if(e)e.textContent="Waiting for valid provider candles…"});return}const bullish=r.close>r.hma&&r.hma>r.previousHma,bearish=r.close<r.hma&&r.hma<r.previousHma;if(h)h.textContent="HMA "+period+" · $"+r.hma.toFixed(2)+" · "+(bullish?"⬆ BULLISH":bearish?"⬇ BEARISH":"➡ MIXED");const crossUp=r.previousClose<=r.previousHma&&r.close>r.hma,crossDown=r.previousClose>=r.previousHma&&r.close<r.hma;if(p)p.textContent=crossUp?"⬆ UP MARKER (local heuristic)":crossDown?"⬇ DOWN MARKER (local heuristic)":"No fresh cross · WAIT";const near20=Number.isFinite(r.ema20)&&Math.abs(r.close-r.ema20)/r.close<=0.015;if(pb)pb.textContent=near20&&r.close>=r.ema50?"🟡 Pullback area · confirm bounce":near20&&r.close<r.ema50?"🟠 Pullback under trend filter · caution":"No qualified pullback proximity";const he=document.getElementById("hma-explain");if(he)he.textContent="Close "+(r.close>=r.hma?"above":"below")+" HMA; slope "+(r.hma>r.previousHma?"rising":r.hma<r.previousHma?"falling":"flat")+". Context only, not an entry instruction."}
+function renderExpandedIndicators(){
+ const r=analysisCache[analysisKey(symbol,selectedMarketInterval())],period=Number(document.getElementById("hma-period")?.value)||31;
+ const h=document.getElementById("hma-reading"),p=document.getElementById("pps-reading"),pb=document.getElementById("pullback-reading");
+ const bars=r&&Array.isArray(r.ohlcv)?r.ohlcv:null,closes=bars?bars.map(x=>x.c):[];
+ if(!r||!bars||closes.length<period+Math.ceil(Math.sqrt(period))+2){[h,p,pb].forEach(e=>{if(e)e.textContent="Waiting for enough valid provider candles…"});return}
+ const hmas=hmaSeries(closes,period),hma=hmas.at(-1),prevHma=hmas.at(-2),last=bars.at(-1),prev=bars.at(-2);
+ if(!Number.isFinite(hma)||!Number.isFinite(prevHma)){[h,p,pb].forEach(e=>{if(e)e.textContent="HMA not available for this history length"});return}
+ const bullish=r.close>hma&&hma>prevHma,bearish=r.close<hma&&hma<prevHma;
+ if(h)h.textContent="HMA "+period+" · $"+hma.toFixed(2)+" · "+(bullish?"⬆ BULLISH":bearish?"⬇ BEARISH":"➡ MIXED");
+ const crossUp=prev&&prev.c<=prevHma&&r.close>hma,crossDown=prev&&prev.c>=prevHma&&r.close<hma;
+ if(p)p.textContent=crossUp?"⬆ UP MARKER (local heuristic)":crossDown?"⬇ DOWN MARKER (local heuristic)":"No fresh HMA cross · WAIT";
+ const length=Math.max(2,Math.min(300,Number(document.getElementById("pb-length")?.value)||50));
+ const mult=Math.max(.1,Math.min(10,Number(document.getElementById("pb-multiplier")?.value)||1.5));
+ const buyPeriod=Math.max(1,Math.min(100,Number(document.getElementById("pb-buy-ema")?.value)||1));
+ const sellPeriod=Math.max(2,Math.min(300,Number(document.getElementById("pb-sell-ema")?.value)||13));
+ const emaAnchor=emaSeries(closes,length).at(-1),emaBuy=emaSeries(closes,buyPeriod).at(-1),emaSell=emaSeries(closes,sellPeriod).at(-1);
+ const tr=bars.slice(-15).map((bar,i,arr)=>{const actualIndex=bars.length-arr.length+i,prior=bars[actualIndex-1];return Math.max(bar.h-bar.l,prior?Math.abs(bar.h-prior.c):0,prior?Math.abs(bar.l-prior.c):0)}).filter(Number.isFinite);
+ const atr=tr.length?tr.reduce((sum,v)=>sum+v,0)/tr.length:null;
+ const nearAnchor=Number.isFinite(atr)&&Number.isFinite(emaAnchor)&&Math.abs(r.close-emaAnchor)<=mult*atr;
+ const prevVol=prev&&Number.isFinite(prev.v)?prev.v:null,volChange=prevVol>0&&Number.isFinite(last.v)?((last.v-prevVol)/prevVol)*100:null;
+ const volUp=Math.max(0,Number(document.getElementById("pb-vol-up")?.value)||100),volDown=Math.max(0,Number(document.getElementById("pb-vol-down")?.value)||100);
+ const upVolume=Number.isFinite(volChange)&&volChange>=volUp,downVolume=Number.isFinite(volChange)&&volChange<=-volDown;
+ const bullPullback=nearAnchor&&r.close>=emaAnchor&&r.close>emaSell&&last.c>prev.c;
+ const bearPullback=nearAnchor&&r.close<=emaAnchor&&r.close<emaSell&&last.c<prev.c;
+ const labelOn=document.getElementById("pb-show-label")?.checked!==false;
+ let setup="No pullback alignment yet · WAIT";
+ if(bullPullback)setup="⬆ Bullish pullback watch · "+(upVolume?"volume pop confirmed":"volume threshold not confirmed");
+ if(bearPullback)setup="⬇ Bearish pullback watch · "+(downVolume?"volume decline confirmed":"volume threshold not confirmed");
+ if(pb)pb.textContent=(labelOn?setup:((bullPullback||bearPullback)?"WATCH":"WAIT"))+" · anchor EMA"+length+(Number.isFinite(atr)?" · ATR proximity "+(atr>0?(Math.abs(r.close-emaAnchor)/atr).toFixed(2)+"×":"—"):"");
+ const he=document.getElementById("hma-explain");if(he)he.textContent="Close "+(r.close>=hma?"above":"below")+" HMA; slope "+(hma>prevHma?"rising":hma<prevHma?"falling":"flat")+". Context only, not an entry instruction.";
+ const pe=document.getElementById("pps-explain");if(pe)pe.textContent="Local HMA crossing heuristic only. Buy EMA "+buyPeriod+"; sell EMA "+sellPeriod+". It does not recreate the Thinkorswim proprietary PPS study.";
+ const pbe=document.getElementById("pullback-explain");
+ if(pbe)pbe.textContent="Reference settings: length "+length+" · multiplier "+mult+" · buy EMA "+buyPeriod+" · sell EMA "+sellPeriod+" · volume thresholds +"+volUp+"% / −"+volDown+"% · spread limit "+(document.getElementById("pb-spread-limit")?.value||"0.09")+". Quote spread is not returned by OHLCV, so that guard is not validated here.";
+}
 function calculateOptionLab(){const side=document.getElementById("opt-side-lab").value,strike=Number(document.getElementById("opt-strike-lab").value),prem=Number(document.getElementById("opt-premium-lab").value),iv=Number(document.getElementById("opt-iv-lab").value),expiry=document.getElementById("opt-expiry-lab").value,qty=Math.floor(Number(document.getElementById("opt-qty-lab").value)||0),out=document.getElementById("opt-result-lab");if(!expiry||!Number.isFinite(strike)||strike<=0||!Number.isFinite(prem)||prem<0||qty<1||!Number.isFinite(iv)||iv<0){out.textContent="Enter a valid strike, quoted premium, IV, expiration, and contract quantity from a current options chain.";return}const now=new Date();now.setHours(0,0,0,0);const exp=new Date(expiry+"T00:00:00");const dte=Math.ceil((exp-now)/86400000);if(dte<0){out.textContent="That expiration is in the past. Choose the correct future expiration.";return}const cost=prem*100*qty,breakeven=side==="call"?strike+prem:strike-prem;out.textContent="Estimated premium value: $"+cost.toFixed(2)+" for "+qty+" contract(s) (100-share multiplier, before fees). IV: "+iv.toFixed(1)+"%. Expiration: "+expiry+" · "+dte+" calendar days. Long "+side+" expiration breakeven: $"+breakeven.toFixed(2)+". For selling, use the current bid and model collateral/assignment risk separately; premium received is not profit guaranteed."}
 function calculateSnapshot(bars){
   const closes=bars.map(b=>b.c),volumes=bars.map(b=>b.v);
@@ -627,8 +660,10 @@ async function analyzeSymbol(sym,options={}){
     const snap=calculateSnapshot(bars);
     if(!Number.isFinite(snap.rsi)||!Number.isFinite(snap.stoch))throw new Error("Indicator calculation unavailable for this data.");
     const action=determineSignal(snap.rsi,snap.stoch,document.getElementById("mode").value);
-    const result={...snap,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
+    const result={...snap,ohlcv:bars,action,time:Date.now(),provider:"Tickerbot",bars:bars.length,asOf:data.asOf||null,lastBarTime:snap.barTime,coverage:data.coverage||"not supplied",interval:data.interval||interval,symbol:sym};
     analysisCache[key]=result;signals[key]=action;
+    if(result.action!=="WAIT"||classifySniper(result).stage==="SNIPER CANDIDATE")showNextScannerToast({symbol:sym,notify:true});
+    else if(updateMain)showScannerStatusToast(sym,interval);
     if(updateMain&&sym===symbol&&selectedMarketInterval()===interval)showAnalysisStatus(result);
     if(action!=="WAIT"&&previousAction!==action)fireAlert(sym,action);
     renderWatchlist();renderSignalSchool();
@@ -898,20 +933,39 @@ const FAQS=[
 ["How do I save or email a plan?","Save stores it in this browser, Download/Export creates a file, and Email opens a draft with the plan details."]
 ];
 function renderFAQ(){const root=document.getElementById("faq-list");if(!root)return;root.innerHTML="";FAQS.forEach((it,i)=>{const d=document.createElement("details"),s=document.createElement("summary"),p=document.createElement("p");s.textContent=String(i+1).padStart(2,"0")+". "+it[0];p.textContent=it[1];d.append(s,p);root.append(d)})}
-const SCANNER_TOAST_MS=6000;let scannerToastTimer=null,scannerRotation=0;
+const SCANNER_TOAST_MS=12000,SCAN_ALERT_PREF="rolyfe-terminal-browser-scan-alerts";let scannerToastTimer=null,scannerRotation=0,lastBrowserScanAlertKey="";
 function dismissScannerToast(){const el=document.getElementById("scanner-toast");if(el)el.classList.remove("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=null}
 function scannerCandidates(){
  const interval=selectedMarketInterval(),maxAge=({"1m":15,"5m":30,"10m":45,"15m":90,"1h":360,"4h":1200,"1d":7200,"1w":20000})[interval]||60,now=Date.now(),items=[];
  Object.entries(analysisCache).forEach(([key,r])=>{if(!key.endsWith("|"+interval)||now-r.time>CACHE_MS||!r||!Number.isFinite(r.lastBarTime))return;const ts=r.lastBarTime>1e12?r.lastBarTime:r.lastBarTime*1000,age=(now-ts)/60000;if(age<0||age>maxAge)return;const sniper=classifySniper(r);if(r.action!=="WAIT"||sniper.stage==="SNIPER CANDIDATE")items.push({symbol:r.symbol||key.split("|")[0],r,sniper,age})});
  return items.sort((a,b)=>(a.sniper.stage==="SNIPER CANDIDATE"?0:a.r.action!=="WAIT"?1:2)-(b.sniper.stage==="SNIPER CANDIDATE"?0:b.r.action!=="WAIT"?1:2)).slice(0,5)
 }
-function showNextScannerToast(){
+function browserScanAlertsAllowed(){try{return localStorage.getItem(SCAN_ALERT_PREF)==="on"&&"Notification"in window&&Notification.permission==="granted"}catch(e){return false}}
+function enableBrowserScanAlerts(){
+ if(!("Notification"in window)){const m=document.getElementById("scanner-toast-meta");if(m)m.textContent="This browser does not support page notifications; on-screen alerts remain enabled.";return}
+ Notification.requestPermission().then(permission=>{try{localStorage.setItem(SCAN_ALERT_PREF,permission==="granted"?"on":"off")}catch(e){}const m=document.getElementById("scanner-toast-meta");if(m)m.textContent=permission==="granted"?"Phone/browser notifications enabled for qualifying fresh scan alerts.":"Notifications were not enabled; on-screen scan alerts still work."}).catch(()=>{const m=document.getElementById("scanner-toast-meta");if(m)m.textContent="Notification permission was not completed. On-screen alerts remain enabled."});
+}
+function sendBrowserScanAlert(item){
+ if(!item||!browserScanAlertsAllowed())return;
+ const key=[item.symbol,selectedMarketInterval(),item.r.lastBarTime,item.r.action,item.sniper.stage].join("|");
+ if(key===lastBrowserScanAlertKey)return;lastBrowserScanAlertKey=key;
+ try{new Notification("RO’Lyfe Scan Alert · "+item.symbol,{body:item.sniper.stage+" · "+item.sniper.side+" · "+item.r.action+" · fresh historical-bar context. Review chart and risk before any trade."})}catch(e){}
+}
+function showScannerStatusToast(sym,interval){
  const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");
- if(!el||!body)return;const items=scannerCandidates();if(!items.length){dismissScannerToast();return}
- const item=items[scannerRotation%items.length];scannerRotation++;
- body.textContent=item.symbol+" · "+item.sniper.stage+" · "+item.sniper.side+". RSI "+item.r.rsi.toFixed(1)+" · Stochastic "+item.r.stoch.toFixed(1)+" · "+item.age.toFixed(0)+" min from last bar.";
- if(meta)meta.textContent="Fresh cached provider data · "+items.length+" qualifying item(s) · no new request started";
+ if(!el||!body)return;
+ body.textContent=sym+" · Scan checked on "+interval+". No approved directional setup is available from the current valid readings.";
+ if(meta)meta.textContent="Scan complete · WAIT is not a trade signal · refresh data if the bar timestamp is stale";
  el.classList.add("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=setTimeout(dismissScannerToast,SCANNER_TOAST_MS)
+}
+function showNextScannerToast(options={}){
+ const el=document.getElementById("scanner-toast"),body=document.getElementById("scanner-toast-body"),meta=document.getElementById("scanner-toast-meta");
+ if(!el||!body)return;const items=scannerCandidates();if(!items.length){if(options.symbol)showScannerStatusToast(options.symbol,selectedMarketInterval());else dismissScannerToast();return}
+ const item=(options.symbol&&items.find(x=>x.symbol===options.symbol))||items[scannerRotation%items.length];scannerRotation++;
+ body.textContent=item.symbol+" · "+item.sniper.stage+" · "+item.sniper.side+". RSI "+item.r.rsi.toFixed(1)+" · Stochastic "+item.r.stoch.toFixed(1)+" · "+item.age.toFixed(0)+" min from last bar.";
+ if(meta)meta.textContent="Fresh provider candles · "+items.length+" qualifying item(s) · no order sent";
+ el.classList.add("show");if(scannerToastTimer)clearTimeout(scannerToastTimer);scannerToastTimer=setTimeout(dismissScannerToast,SCANNER_TOAST_MS);
+ if(options.notify)sendBrowserScanAlert(item)
 }
 function openSniperFromToast(){const p=document.getElementById("sniper-panel");if(p)p.open=true;dismissScannerToast();p?.scrollIntoView({behavior:"smooth",block:"start"})}
 

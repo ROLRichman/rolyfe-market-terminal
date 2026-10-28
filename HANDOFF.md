@@ -70,3 +70,12 @@ Educational decision support only. Not financial, investment, legal, tax, lendin
 - Moved Favorite Indicators controls and the HMA/PPS-style/pullback/option learning panel below the chart inside the chart-linked controls accordion.
 - Disabled independent symbol changes inside the main TradingView widget so the top symbol selector remains the source of truth. Added a provider returned-symbol guard; a mismatched response (e.g. requested SPY but provider says AAPL) is rejected and no indicator graphs are shown for that response.
 - Mobile styling keeps graphs within screen width with SVG plots. The graphs are source-checked for JavaScript syntax; actual browser rendering/provider data freshness still requires manual testing.
+
+
+## Multi Chart fullscreen workflow (2026-10-28)
+- Preserved the main chart and its ten chart-linked indicator graphs unchanged.
+- The secondary chart remains explicitly independent of the main scan. Added a labelled independent-symbol selector, refresh action, and compact chart-height slider.
+- Added a full-viewport Multi Chart workspace with its own TradingView chart, adjustable chart-height slider, reset, refresh, close/Escape behavior, and collapsible controls row to reclaim vertical space.
+- Fullscreen Multi Chart loads the current enabled chart studies plus RSI, MACD, and Stochastic in the TradingView widget. Chart zoom/crosshair/timeframe/drawing interactions are provided by TradingView; the Terminal slider changes the chart viewing height.
+- Fullscreen symbol selection is seeded from the independent Multi Chart selector and does not change the main scan symbol. The multi-chart refresh reloads the independent chart only.
+- Validation: inline JavaScript syntax checked after changes. Full live-browser interaction and TradingView symbol/widget entitlement still require manual confirmation.

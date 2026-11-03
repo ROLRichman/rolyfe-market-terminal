@@ -15,7 +15,7 @@ test('Market Terminal retains its original scanner and shows the Scanner Desk di
 });
 
 test('Market Terminal exposes the global page-language selector',()=>{
- assert.match(page,/src="rol-translator\\.js"/);
+ assert.ok(page.includes('src="rol-translator.js"'));
  for(const language of ['English','Spanish','French','Haitian Creole','Portuguese'])assert.ok(translator.includes(language));
  assert.match(translator,/rolPageLanguageSelect/);
  assert.match(translator,/rol-page-translate/);

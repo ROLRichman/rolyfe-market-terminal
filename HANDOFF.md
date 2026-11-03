@@ -1,3 +1,13 @@
+## November 2, 2026 — cross-project Scanner Desk
+
+- Added a compact Scanner Desk dropdown to the existing sticky Market Terminal topbar.
+- The menu routes to the Terminal's own scanner plus the existing Tactical RTIC scanner, Live Chart Desk Watchlist Scanner, Sports Center 17-sector Market Lab, Classroom and Trading Calculator Pro status page.
+- This is navigation only. It does not duplicate or change the Terminal scan engine, provider logic, watchlists, Multi Chart, docked indicator panels, signal notices, trade ticket or journal.
+- Calculator Pro's dedicated scanner module folders currently remain empty placeholders and are labelled as module status, not live scanners.
+- Branch: `feature/rol-scanner-directory-links`; pending automated checks and review. Not merged or deployed.
+
+---
+
 # RO’Lyfe Terminal — Project Handoff
 **Updated:** 2026-10-27  
 **Live app:** https://rolrichman.github.io/rolyfe-market-terminal/  

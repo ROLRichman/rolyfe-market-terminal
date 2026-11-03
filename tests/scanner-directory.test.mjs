@@ -14,8 +14,12 @@ test('Market Terminal retains its original scanner and shows the Scanner Desk di
  assert.match(page,/ROlyfe-Trading-Calculator-Pro/);
 });
 
-test('translator exposes all five common languages',()=>{
- assert.match(page,/src="rol-translator\.js"/);
+test('Market Terminal exposes the global page-language selector',()=>{
+ assert.match(page,/src="rol-translator\\.js"/);
  for(const language of ['English','Spanish','French','Haitian Creole','Portuguese'])assert.ok(translator.includes(language));
- assert.match(translator,/action:"translate"/);
+ assert.match(translator,/rolPageLanguageSelect/);
+ assert.match(translator,/rol-page-translate/);
+ assert.match(translator,/MutationObserver/);
+ assert.match(translator,/data-market-data/);
+ assert.doesNotMatch(translator,/rolTranslateNetworkInput|Use selected text|Paste text to translate/);
 });

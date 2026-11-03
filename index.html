@@ -290,18 +290,6 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 #multi-chart-indicator-accordion>summary{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
 #multi-chart-indicator-accordion>summary span{font-size:11px;color:#9cb2c8;font-weight:800}
 .multi-chart-indicator-note{margin:10px 0;color:#9cb2c8;font-size:12px;line-height:1.55}
-
-/* Scanner directory is a compact dropdown in the existing Terminal topbar. */
-.rol-terminal-scanner-menu{position:relative;align-self:center}
-.rol-terminal-scanner-menu>summary{list-style:none;cursor:pointer;padding:9px 11px;border:1px solid #25795b;border-radius:8px;background:#0a281d;color:#9bf2c8;font-size:11px;font-weight:900;white-space:nowrap}
-.rol-terminal-scanner-menu>summary::-webkit-details-marker{display:none}
-.rol-terminal-scanner-menu>summary:after{content:"⌄";margin-left:7px;color:#f3c969}
-.rol-terminal-scanner-menu[open]>summary:after{content:"⌃"}
-.rol-terminal-scanner-links{position:absolute;right:0;top:calc(100% + 7px);z-index:1400;width:min(320px,calc(100vw - 22px));max-height:min(70vh,560px);overflow:auto;display:grid;gap:6px;padding:9px;background:#071521;border:1px solid #267b5c;border-radius:11px;box-shadow:0 14px 35px #000b}
-.rol-terminal-scanner-links a{padding:8px 9px;border:1px solid #1e4053;border-radius:8px;color:#eef6ff;text-decoration:none;font-size:11px}
-.rol-terminal-scanner-links a:hover{border-color:#54e6a4;background:#09251c}
-@media(max-width:560px){.rol-terminal-scanner-menu{width:100%}.rol-terminal-scanner-menu>summary{width:100%;text-align:center}.rol-terminal-scanner-links{left:0;right:auto;width:100%}}
-
 </style>
 </head>
 
@@ -330,7 +318,6 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 </select>
 <select id="timeframe-select" onchange="tf=this.value;loadChart()" aria-label="Chart timeframe"><option value="1">1m</option><option value="5" selected>5m</option><option value="10">10m</option><option value="15">15m</option><option value="60">1H</option><option value="240">4H</option><option value="D">DAY</option><option value="W">WEEK</option></select>
 <select id="chart-range" aria-label="Chart history range" onchange="chartRange=this.value;loadChart()"><option value="6M" selected>6M</option><option value="12M">1Y</option><option value="ALL">All</option></select>
-<details class="rol-terminal-scanner-menu" id="rolTerminalScannerDirectory"><summary>🔎 Scanner Desk</summary><div class="rol-terminal-scanner-links"><a href="#scan-button">Run this Market Terminal scanner ↧</a><a href="https://rolrichman.github.io/RO-Lyfe-Tactical-Intelligence-Center-/rtic-scanner.js/" target="_blank" rel="noopener">Tactical RTIC Live Scanner ↗</a><a href="https://rolrichman.github.io/RO-Lyfe-Trading-Intelligence-Classroom/live-chart-desk/#symbol-scanner" target="_blank" rel="noopener">Live Desk Watchlist Scanner ↗</a><a href="https://rolrichman.github.io/RO-Lyfe-Live-Sports-Center/?embed=market-lab" target="_blank" rel="noopener">Sector Scanner + Chart Lab ↗</a><a href="https://rolrichman.github.io/RO-Lyfe-Trading-Intelligence-Classroom/" target="_blank" rel="noopener">Trading Intelligence Classroom ↗</a><a href="https://rolrichman.github.io/ROlyfe-Trading-Calculator-Pro/" target="_blank" rel="noopener">Trading Calculator Pro · module status ↗</a></div></details>
 </div>
 
 <div class="section data-status-row"><div class="data-status-copy" id="data-status" role="status" aria-live="polite"><b>DATA INTEGRITY:</b> Starting provider-backed candle check. Signal lights stay neutral until valid data confirms a technical watch condition. Technical snapshot only; not a trade recommendation.</div><button type="button" class="secondary-button" onclick="retryCurrentData()">↻ Retry data</button></div>

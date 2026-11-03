@@ -15,7 +15,7 @@ test('Market Terminal retains its original scanner and shows the Scanner Desk di
 });
 
 test('translator exposes all five common languages',()=>{
- assert.match(page,/src="rol-translator\\.js"/);
+ assert.match(page,/src="rol-translator\.js"/);
  for(const language of ['English','Spanish','French','Haitian Creole','Portuguese'])assert.ok(translator.includes(language));
  assert.match(translator,/action:"translate"/);
 });

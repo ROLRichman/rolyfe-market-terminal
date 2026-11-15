@@ -3,6 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://s3.tradingview.com/tv.js"></script>
+<script src="https://rolrichman.github.io/rolyfe-personal-trading-desk/shared/rolyfe-global-tools.js" data-no-clock="true" defer></script>
 
 <style>
 body{
@@ -586,6 +587,20 @@ function compileWatchGroups(){const result={};Object.keys(DEFAULT_WATCH_GROUPS).
 let WATCH_GROUPS=compileWatchGroups();
 function refreshMasterWatchlist(){WATCH_GROUPS=compileWatchGroups();watchlist=Array.from(new Set(Object.keys(WATCH_GROUPS).filter(k=>k!=="all").flatMap(k=>WATCH_GROUPS[k])));const sel=document.getElementById("symbol-select");if(sel){const current=symbol;sel.innerHTML="";watchlist.forEach(s=>{const o=document.createElement("option");o.value=s;o.text=s;sel.appendChild(o)});if(watchlist.includes(current))sel.value=current;else{symbol=watchlist[0]||"AAPL";sel.value=symbol}}}
 refreshMasterWatchlist();
+window.addEventListener("rol-global-symbol-change",event=>{
+ const raw=String(event.detail&&event.detail.symbol||"").trim().toUpperCase();
+ if(!raw)return;
+ let value=raw.replace(/-USD$/,"USD");
+ const select=document.getElementById("symbol-select");
+ if(select){
+   let option=Array.from(select.options).find(o=>o.value.toUpperCase()===value||o.text.toUpperCase()===value);
+   if(!option){option=document.createElement("option");option.value=value;option.textContent=value+" · Global instrument";select.add(option);}
+   select.value=value;
+ }
+ symbol=value;
+ if(typeof loadChart==="function")loadChart();
+});
+
 
 let signals={};
 let scanInProgress=false;

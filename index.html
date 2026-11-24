@@ -305,6 +305,18 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
 
 <script src="https://rolrichman.github.io/rolyfe-personal-trading-desk/shared/atlas-local.js?v=20261115-3" defer></script>
 <script src="https://rolrichman.github.io/rolyfe-personal-trading-desk/shared/atlas-universal.js?v=20261115-2" defer></script>
+<style>
+.tv-news-panel{margin:14px 0;padding:12px;border:1px solid #294235;border-radius:12px;background:#0b1711;overflow:hidden}
+.tv-news-panel>summary{cursor:pointer;list-style:none;font-weight:800;color:#8ce5b4;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.tv-news-panel>summary::-webkit-details-marker{display:none}
+.tv-news-panel>summary:after{content:"＋";color:#72e6a5}
+.tv-news-panel[open]>summary:after{content:"−"}
+.tv-news-widget{width:100%;min-height:520px;margin-top:12px}
+.tv-news-widget .tradingview-widget-container__widget{width:100%;min-height:520px}
+.tv-news-attribution{padding-top:8px;font-size:11px;color:#9bb7a5}
+.tv-news-attribution a{color:#80c7ff}
+@media(max-width:640px){.tv-news-widget,.tv-news-widget .tradingview-widget-container__widget{min-height:480px}}
+</style>
 </head>
 
 <body>
@@ -440,6 +452,11 @@ body{background:linear-gradient(165deg,var(--rol-bg),#020617 68%)}.section,.lear
  <div class="sync-actions"><button type="button" onclick="retryCurrentData()">↻ Refresh chart + studies</button><button type="button" onclick="openPanel('chart-indicator-visuals')">📉 Open indicator graphs</button></div>
 </div>
 <details id="chart-indicator-visuals" open>
+<details class="tv-news-panel" id="tradingViewNewsPanel" open>
+ <summary>📰 TradingView Top Stories <small>Market-wide headlines</small></summary>
+ <div class="tradingview-widget-container tv-news-widget"><div class="tradingview-widget-container__widget"></div><div class="tv-news-attribution"><a href="https://www.tradingview.com/news/" target="_blank" rel="noopener">TradingView News</a></div>
+ <script type="application/json" class="tv-news-widget-config">{"feedMode":"all_symbols","isTransparent":true,"displayMode":"regular","width":"100%","height":520,"colorTheme":"dark","locale":"en"}</script></div>
+</details>
  <summary><span>📉 INDICATOR VISUALS · DIRECTLY UNDER YOUR CHART</span><span id="chart-indicator-count">10 expandable study graphs</span></summary>
  <div class="panel-body">
   <p class="chart-indicator-intro"><b>What syncs with what:</b> the main TradingView chart and every graph below follow the symbol and timeframe selectors at the top of this page. The graph calculations use Tickerbot OHLCV candles requested through the RO’Lyfe Supabase data service. The chart's own internal symbol search is disabled so it cannot quietly drift away from the scan. <b>6M / 1Y / All</b> changes the TradingView display range; the scanner uses up to 300 candles at the selected timeframe. Quote/option-chain data is not included in these OHLCV graphs.</p>
@@ -1426,6 +1443,9 @@ function loop(){
   setTimeout(loop,10000);
 }
 
+</script>
+<script>
+(()=>{const p=document.getElementById("tradingViewNewsPanel");if(!p)return;let loaded=false;const load=()=>{if(loaded)return;const c=p.querySelector(".tv-news-widget-config"),host=p.querySelector(".tv-news-widget");if(!c||!host)return;let cfg;try{cfg=JSON.parse(c.textContent||"{}")}catch(_){return}const s=document.createElement("script");s.src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js";s.async=true;s.textContent=JSON.stringify(cfg);host.appendChild(s);loaded=true};if(p.open)load();p.addEventListener("toggle",()=>{if(p.open)load()})})();
 </script>
 </body>
 </html>
